@@ -44,13 +44,20 @@ class food(imdb):
         self._image_set = image_set
         self._devkit_path = self._get_default_path() if devkit_path is None \
             else devkit_path
-        self._data_path = os.path.join(self._devkit_path, 'VOC' + self._year)
+        self._data_path = os.path.join(self._devkit_path, 'Food' + self._cantee)
         self._classes = ('__background__',  # always index 0
-                         'aeroplane', 'bicycle', 'bird', 'boat',
-                         'bottle', 'bus', 'car', 'cat', 'chair',
-                         'cow', 'diningtable', 'dog', 'horse',
-                         'motorbike', 'person', 'pottedplant',
-                         'sheep', 'sofa', 'train', 'tvmonitor')
+                         '煮南瓜','凉拌豆腐','凉拌豆腐丝＆黄瓜丝＆胡萝卜丝',
+                         '凉拌黑木耳＆黄瓜片','凉拌黄瓜','凉拌豆腐干＆胡萝卜片',
+                         '凉拌黄瓜片＆豆腐','凉皮','凉拌猪耳','炒面',
+                         '凉拌猪肉片','炒花菜','烩白豆腐虾仁','红烧猪扒',
+                         '红烧猪蹄','炒西兰花＆玉米笋＆黑木耳＆藕片',
+                         '小炒肉（猪肉片＆青椒＆豆腐）','肉末茄子',
+                         '红烧鱼整条','炒大白菜','土豆烧鸡（大盘鸡）',
+                         '西红柿炒鸡蛋','咸蛋','紫菜蛋花汤','白米饭','馒头',
+                         '画卷','胡辣汤','炒菜花（白色的菜花）','煎蛋','黑木耳 == 4',
+                         '烧饼','未知','未知','糙米饭','红米粥','褐色肉球',
+                         '白色鱼片','豆角','鲍菇','青菜','西蓝花 & 虾',
+                         '清蒸鱼块','炸鱼','豆角茄子','鸡腿')
         self._class_to_ind = dict(zip(self.classes, xrange(self.num_classes)))
         self._image_ext = '.jpg'
         self._image_index = self._load_image_set_index()
@@ -101,7 +108,7 @@ class food(imdb):
         """
         # Example path to image set file:
         # self._devkit_path + /VOCdevkit2007/VOC2007/ImageSets/Main/val.txt
-        image_set_file = os.path.join(self._data_path, 'ImageSets', 'Main',
+        image_set_file = os.path.join(self._data_path, 'ImageSets', 
                                       self._image_set + '.txt')
         assert os.path.exists(image_set_file), \
             'Path does not exist: {}'.format(image_set_file)
@@ -113,7 +120,7 @@ class food(imdb):
         """
         Return the default path where PASCAL VOC is expected to be installed.
         """
-        return os.path.join(cfg.DATA_DIR, 'VOCdevkit' + self._year)
+        return os.path.join(cfg.DATA_DIR, 'Food')
 
     def gt_roidb(self):
         """
@@ -240,7 +247,7 @@ class food(imdb):
             difficult = 0 if diffc == None else int(diffc.text)
             ishards[ix] = difficult
 
-            cls = self._class_to_ind[obj.find('name').text.lower().strip()]
+            cls = int(obj.find('name').text.strip())#self._class_to_ind[obj.find('name').text.lower().strip()]
             boxes[ix, :] = [x1, y1, x2, y2]
             gt_classes[ix] = cls
             overlaps[ix, cls] = 1.0
