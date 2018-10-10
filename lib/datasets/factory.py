@@ -15,8 +15,14 @@ from datasets.pascal_voc import pascal_voc
 from datasets.coco import coco
 from datasets.imagenet import imagenet
 from datasets.vg import vg
-
+from datasets.food import food
 import numpy as np
+
+# Set up Food_<carteen>_<split>
+for cantee in ['YIH', ]:
+  for split in ['train', 'val', 'trainval', 'test']:
+    name = 'food_{}_{}'.format(cantee, split)
+    __sets[name] = (lambda split=split, cantee=cantee: food(split, cantee))
 
 # Set up voc_<year>_<split>
 for year in ['2007', '2012']:
