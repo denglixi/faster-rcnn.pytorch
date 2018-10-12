@@ -206,6 +206,7 @@ lib/pycocotools/_mask.c
 models
 data
 output
+images
 
 #pyenv-
 .python-version

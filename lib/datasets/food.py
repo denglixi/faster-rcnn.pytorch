@@ -23,7 +23,7 @@ import pickle
 from .imdb import imdb
 from .imdb import ROOT_DIR
 from . import ds_utils
-from .voc_eval import voc_eval
+from .food_eval import food_eval
 
 # TODO: make fast_rcnn irrelevant
 # >>>> obsolete, because it depends on sth outside of this project
@@ -39,16 +39,16 @@ except NameError:
 
 class food(imdb):
     def __init__(self, image_set, cantee, devkit_path=None):
-        imdb.__init__(self, 'food_' + cantee+ '_' + image_set)
+        imdb.__init__(self, 'food_' + cantee + '_' + image_set)
         self._cantee = cantee
         self._image_set = image_set
         self._devkit_path = self._get_default_path() if devkit_path is None \
             else devkit_path
-        self._data_path = os.path.join(self._devkit_path, 'Food' + self._cantee)
+        self._data_path = os.path.join(self._devkit_path, 'Food_' + self._cantee)
         self._classes = ('__background__',  # always index 0
-                         '煮南瓜','凉拌豆腐','凉拌豆腐丝＆黄瓜丝＆胡萝卜丝',
+                         '煮南瓜', '凉拌豆腐','凉拌豆腐丝＆黄瓜丝＆胡萝卜丝',
                          '凉拌黑木耳＆黄瓜片','凉拌黄瓜','凉拌豆腐干＆胡萝卜片',
-                         '凉拌黄瓜片＆豆腐','凉皮','凉拌猪耳','炒面',
+                         '凉拌黄瓜片＆豆腐', '凉皮','凉拌猪耳','炒面',
                          '凉拌猪肉片','炒花菜','烩白豆腐虾仁','红烧猪扒',
                          '红烧猪蹄','炒西兰花＆玉米笋＆黑木耳＆藕片',
                          '小炒肉（猪肉片＆青椒＆豆腐）','肉末茄子',
@@ -108,7 +108,7 @@ class food(imdb):
         """
         # Example path to image set file:
         # self._devkit_path + /VOCdevkit2007/VOC2007/ImageSets/Main/val.txt
-        image_set_file = os.path.join(self._data_path, 'ImageSets', 
+        image_set_file = os.path.join(self._data_path, 'ImageSets',
                                       self._image_set + '.txt')
         assert os.path.exists(image_set_file), \
             'Path does not exist: {}'.format(image_set_file)
@@ -247,10 +247,18 @@ class food(imdb):
             difficult = 0 if diffc == None else int(diffc.text)
             ishards[ix] = difficult
 
-            cls = int(obj.find('name').text.strip())#self._class_to_ind[obj.find('name').text.lower().strip()]
+            try:
+                cls = int(obj.find('name').text.strip())#self._class_to_ind[obj.find('name').text.lower().strip()]
+            except:
+                print(filename)
+                raise
             boxes[ix, :] = [x1, y1, x2, y2]
             gt_classes[ix] = cls
-            overlaps[ix, cls] = 1.0
+            try:
+                overlaps[ix, cls] = 1.0
+            except:
+                print(filename)
+                raise
             seg_areas[ix] = (x2 - x1 + 1) * (y2 - y1 + 1)
 
         overlaps = scipy.sparse.csr_matrix(overlaps)
@@ -270,7 +278,7 @@ class food(imdb):
     def _get_voc_results_file_template(self):
         # VOCdevkit/results/VOC2007/Main/<comp_id>_det_test_aeroplane.txt
         filename = self._get_comp_id() + '_det_' + self._image_set + '_{:s}.txt'
-        filedir = os.path.join(self._devkit_path, 'results', 'VOC' + self._year, 'Main')
+        filedir = os.path.join(self._devkit_path, 'results', 'food' + self._cantee )
         if not os.path.exists(filedir):
             os.makedirs(filedir)
         path = os.path.join(filedir, filename)
@@ -281,7 +289,7 @@ class food(imdb):
             if cls == '__background__':
                 continue
             print('Writing {} VOC results file'.format(cls))
-            filename = self._get_voc_results_file_template().format(cls)
+            filename = self._get_voc_results_file_template().format(str(cls_ind))
             with open(filename, 'wt') as f:
                 for im_ind, index in enumerate(self.image_index):
                     dets = all_boxes[cls_ind][im_ind]
@@ -297,28 +305,28 @@ class food(imdb):
     def _do_python_eval(self, output_dir='output'):
         annopath = os.path.join(
             self._devkit_path,
-            'VOC' + self._year,
+            'Food_' + self._cantee,
             'Annotations',
             '{:s}.xml')
         imagesetfile = os.path.join(
             self._devkit_path,
-            'VOC' + self._year,
+            'Food_' + self._cantee,
             'ImageSets',
-            'Main',
             self._image_set + '.txt')
         cachedir = os.path.join(self._devkit_path, 'annotations_cache')
         aps = []
         # The PASCAL VOC metric changed in 2010
-        use_07_metric = True if int(self._year) < 2010 else False
-        print('VOC07 metric? ' + ('Yes' if use_07_metric else 'No'))
+        # use_07_metric = True if int(self._year) < 2010 else False
+        use_07_metric = True
+        # print('VOC07 metric? ' + ('Yes' if use_07_metric else 'No'))
         if not os.path.isdir(output_dir):
             os.mkdir(output_dir)
         for i, cls in enumerate(self._classes):
-            if cls == '__background__':
+            if  i == 0:
                 continue
-            filename = self._get_voc_results_file_template().format(cls)
-            rec, prec, ap = voc_eval(
-                filename, annopath, imagesetfile, cls, cachedir, ovthresh=0.5,
+            filename = self._get_voc_results_file_template().format(str(i))
+            rec, prec, ap = food_eval(
+                filename, annopath, imagesetfile, i, cachedir, ovthresh=0.5,
                 use_07_metric=use_07_metric)
             aps += [ap]
             print('AP for {} = {:.4f}'.format(cls, ap))
@@ -360,8 +368,8 @@ class food(imdb):
         if self.config['matlab_eval']:
             self._do_matlab_eval(output_dir)
         if self.config['cleanup']:
-            for cls in self._classes:
-                if cls == '__background__':
+            for cls,_ in enumerate(self._classes):
+                if cls == 0:
                     continue
                 filename = self._get_voc_results_file_template().format(cls)
                 os.remove(filename)

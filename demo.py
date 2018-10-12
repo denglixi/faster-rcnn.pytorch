@@ -164,13 +164,19 @@ if __name__ == '__main__':
   load_name = os.path.join(input_dir,
     'faster_rcnn_{}_{}_{}.pth'.format(args.checksession, args.checkepoch, args.checkpoint))
 
-  pascal_classes = np.asarray(['__background__',
-                       'aeroplane', 'bicycle', 'bird', 'boat',
-                       'bottle', 'bus', 'car', 'cat', 'chair',
-                       'cow', 'diningtable', 'dog', 'horse',
-                       'motorbike', 'person', 'pottedplant',
-                       'sheep', 'sofa', 'train', 'tvmonitor'])
-
+  pascal_classes = np.asarray(['__background__',  # always index 0
+                         '煮南瓜', '凉拌豆腐','凉拌豆腐丝＆黄瓜丝＆胡萝卜丝',
+                         '凉拌黑木耳＆黄瓜片','凉拌黄瓜','凉拌豆腐干＆胡萝卜片',
+                         '凉拌黄瓜片＆豆腐', '凉皮','凉拌猪耳','炒面',
+                         '凉拌猪肉片','炒花菜','烩白豆腐虾仁','红烧猪扒',
+                         '红烧猪蹄','炒西兰花＆玉米笋＆黑木耳＆藕片',
+                         '小炒肉（猪肉片＆青椒＆豆腐）','肉末茄子',
+                         '红烧鱼整条','炒大白菜','土豆烧鸡（大盘鸡）',
+                         '西红柿炒鸡蛋','咸蛋','紫菜蛋花汤','白米饭','馒头',
+                         '画卷','胡辣汤','炒菜花（白色的菜花）','煎蛋','黑木耳 == 4',
+                         '烧饼','未知','未知','糙米饭','红米粥','褐色肉球',
+                         '白色鱼片','豆角','鲍菇','青菜','西蓝花 & 虾',
+                         '清蒸鱼块','炸鱼','豆角茄子','鸡腿'])
   # initilize the network here.
   if args.net == 'vgg16':
     fasterRCNN = vgg16(pascal_classes, pretrained=False, class_agnostic=args.class_agnostic)
@@ -341,7 +347,7 @@ if __name__ == '__main__':
               cls_boxes = pred_boxes[inds, :]
             else:
               cls_boxes = pred_boxes[inds][:, j * 4:(j + 1) * 4]
-            
+
             cls_dets = torch.cat((cls_boxes, cls_scores.unsqueeze(1)), 1)
             # cls_dets = torch.cat((cls_boxes, cls_scores), 1)
             cls_dets = cls_dets[order]
