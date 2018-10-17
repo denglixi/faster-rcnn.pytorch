@@ -85,6 +85,8 @@ def parse_args():
     parser.add_argument('--vis', dest='vis',
                         help='visualization mode',
                         action='store_true')
+    parser.add_argument('--test_cache', dest='test_cache',
+                        action='store_true')
     args = parser.parse_args()
     return args
 
@@ -131,6 +133,11 @@ if __name__ == '__main__':
                          '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]']
     elif args.dataset == "food":
         args.imdb_name = "food_YIH_train"
+        args.imdbval_name = "food_YIH_train"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+    elif args.dataset == "foodtechmixed":
+        args.imdb_name = "food_Tech_train"
         args.imdbval_name = "food_YIH_train"
         args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
                          'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
@@ -237,10 +244,11 @@ if __name__ == '__main__':
 
     _t = {'im_detect': time.time(), 'misc': time.time()}
     det_file = os.path.join(output_dir, 'detections.pkl')
-    with open(det_file, 'rb') as f:
-        all_boxes = pickle.load(f)
-    imdb.evaluate_detections(all_boxes, output_dir)
-    exit()
+    if(args.test_cache):
+        with open(det_file, 'rb') as f:
+            all_boxes = pickle.load(f)
+        imdb.evaluate_detections(all_boxes, output_dir)
+        exit()
 
     fasterRCNN.eval()
     empty_array = np.transpose(np.array([[], [], [], [], []]), (1, 0))
@@ -334,7 +342,7 @@ if __name__ == '__main__':
         if vis:
             cv2.imwrite('result.png', im2show)
             pdb.set_trace()
-            #cv2.imshow('test', im2show)
+            # cv2.imshow('test', im2show)
             # cv2.waitKey(0)
 
     with open(det_file, 'wb') as f:

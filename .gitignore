@@ -207,6 +207,7 @@ models
 data
 output
 images
+logs
 
 #pyenv-
 .python-version

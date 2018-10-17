@@ -155,9 +155,6 @@ def voc_eval(detpath,
     tp = np.zeros(nd)
     fp = np.zeros(nd)
 
-    import pdb
-    pdb.set_trace()
-
     if BB.shape[0] > 0:
         # sort by confidence
         sorted_ind = np.argsort(-confidence)
