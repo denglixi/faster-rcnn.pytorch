@@ -28,10 +28,11 @@ from roi_data_layer.roidb import combined_roidb
 from roi_data_layer.roibatchLoader import roibatchLoader
 from model.utils.config import cfg, cfg_from_file, cfg_from_list, get_output_dir
 from model.utils.net_utils import weights_normal_init, save_net, load_net, \
-    adjust_learning_rate, save_checkpoint, clip_gradient
+    adjust_learning_rate, save_checkpoint, clip_gradient, set_learning_rate
 
 from model.faster_rcnn.vgg16 import vgg16
 from model.faster_rcnn.resnet import resnet
+from model.faster_rcnn.prefood_res50 import PreResNet50
 
 
 def parse_args():
@@ -81,6 +82,12 @@ def parse_args():
                         action='store_true')
 
 # config optimization
+    parser.add_argument('--wu', dest='warming_up',
+                        help='train from scrach',
+                        action='store_true')
+    parser.add_argument('--wulr', dest='warming_up_lr',
+                        help='learning rate at 1st epoch if set up warming_up',
+                        default=0.0001, type=float)
     parser.add_argument('--o', dest='optimizer',
                         help='training optimizer',
                         default="sgd", type=str)
@@ -100,8 +107,14 @@ def parse_args():
                         default=1, type=int)
 
 # resume trained model
+    parser.add_argument('--pretrained', dest='pretrained',
+                        help='use pretrained model or not',
+                        default=True, type=bool)
     parser.add_argument('--r', dest='resume',
                         help='resume checkpoint or not',
+                        default=False, type=bool)
+    parser.add_argument('--resume_opt', dest='resume_opt',
+                        help='resume optimizer or not',
                         default=False, type=bool)
     parser.add_argument('--checksession', dest='checksession',
                         help='checksession to load model',
@@ -212,7 +225,7 @@ if __name__ == '__main__':
     pprint.pprint(cfg)
     np.random.seed(cfg.RNG_SEED)
 
-    #torch.backends.cudnn.benchmark = True
+    # torch.backends.cudnn.benchmark = True
     if torch.cuda.is_available() and not args.cuda:
         print("WARNING: You have a CUDA device, so you should probably run with --cuda")
 
@@ -261,17 +274,20 @@ if __name__ == '__main__':
 
     # initilize the network here.
     if args.net == 'vgg16':
-        fasterRCNN = vgg16(imdb.classes, pretrained=True,
+        fasterRCNN = vgg16(imdb.classes, pretrained=args.pretrained,
                            class_agnostic=args.class_agnostic)
     elif args.net == 'res101':
-        fasterRCNN = resnet(imdb.classes, 101, pretrained=True,
+        fasterRCNN = resnet(imdb.classes, 101, pretrained=args.pretrained,
                             class_agnostic=args.class_agnostic)
     elif args.net == 'res50':
-        fasterRCNN = resnet(imdb.classes, 50, pretrained=True,
+        fasterRCNN = resnet(imdb.classes, 50, pretrained=args.pretrained,
                             class_agnostic=args.class_agnostic)
     elif args.net == 'res152':
-        fasterRCNN = resnet(imdb.classes, 152, pretrained=True,
+        fasterRCNN = resnet(imdb.classes, 152, pretrained=args.pretrained,
                             class_agnostic=args.class_agnostic)
+    elif args.net == 'foodres50':
+        fasterRCNN = PreResNet50(imdb.classes,
+                                 class_agnostic=args.class_agnostic)
     else:
         print("network is not defined")
         pdb.set_trace()
@@ -280,8 +296,8 @@ if __name__ == '__main__':
 
     lr = cfg.TRAIN.LEARNING_RATE
     lr = args.lr
-    #tr_momentum = cfg.TRAIN.MOMENTUM
-    #tr_momentum = args.momentum
+    # tr_momentum = cfg.TRAIN.MOMENTUM
+    # tr_momentum = args.momentum
 
     params = []
     for key, value in dict(fasterRCNN.named_parameters()).items():
@@ -300,16 +316,21 @@ if __name__ == '__main__':
     elif args.optimizer == "sgd":
         optimizer = torch.optim.SGD(params, momentum=cfg.TRAIN.MOMENTUM)
 
+    if args.cuda:
+        fasterRCNN.cuda()
+
     if args.resume:
         load_name = os.path.join(output_dir,
-                                 'faster_rcnn_{}_{}_{}.pth'.format(args.checksession, args.checkepoch, args.checkpoint))
+                                 'faster_rcnn_{}_{}_{}.pth'.format(args.checksession,
+                                                                   args.checkepoch, args.checkpoint))
         print("loading checkpoint %s" % (load_name))
         checkpoint = torch.load(load_name)
         args.session = checkpoint['session']
         args.start_epoch = checkpoint['epoch']
         fasterRCNN.load_state_dict(checkpoint['model'])
-        optimizer.load_state_dict(checkpoint['optimizer'])
-        lr = optimizer.param_groups[0]['lr']
+        if args.resume_opt:
+            optimizer.load_state_dict(checkpoint['optimizer'])
+            lr = optimizer.param_groups[0]['lr']
         if 'pooling_mode' in checkpoint.keys():
             cfg.POOLING_MODE = checkpoint['pooling_mode']
         print("loaded checkpoint %s" % (load_name))
@@ -317,14 +338,12 @@ if __name__ == '__main__':
     if args.mGPUs:
         fasterRCNN = nn.DataParallel(fasterRCNN)
 
-    if args.cuda:
-        fasterRCNN.cuda()
-
     iters_per_epoch = int(train_size / args.batch_size)
 
     if args.use_tfboard:
         from tensorboardX import SummaryWriter
-        logger = SummaryWriter("logs/" + args.dataset)
+        logger = SummaryWriter("logs/" + args.dataset +
+                               "_" + str(args.session))
 
     for epoch in range(args.start_epoch, args.max_epochs + 1):
         # setting to train mode
@@ -355,6 +374,17 @@ if __name__ == '__main__':
             loss_temp += loss.item()
 
             # backward
+            if args.warming_up:
+                if epoch == 1 and step < 1000:
+                    lr = args.warming_up_lr
+                    set_learning_rate(optimizer, lr)
+                elif epoch == 1 and step < 2000:
+                    lr = args.warming_up_lr * 100
+                    set_learning_rate(optimizer, lr)
+                elif epoch == 1:
+                    lr = args.lr
+                    set_learning_rate(optimizer, lr)
+
             optimizer.zero_grad()
             loss.backward()
             if args.net == "vgg16":
@@ -393,7 +423,8 @@ if __name__ == '__main__':
                         'loss_rpn_cls': loss_rpn_cls,
                         'loss_rpn_box': loss_rpn_box,
                         'loss_rcnn_cls': loss_rcnn_cls,
-                        'loss_rcnn_box': loss_rcnn_box
+                        'loss_rcnn_box': loss_rcnn_box,
+                        'lr': lr
                     }
                     logger.add_scalars(
                         "logs_s_{}/losses".format(args.session), info, (epoch - 1) * iters_per_epoch + step)

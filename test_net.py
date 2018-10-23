@@ -138,7 +138,7 @@ if __name__ == '__main__':
                          'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
     elif args.dataset == "foodtechmixed":
         args.imdb_name = "food_Tech_train"
-        args.imdbval_name = "food_YIH_train"
+        args.imdbval_name = "food_Tech_val"
         args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
                          'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 

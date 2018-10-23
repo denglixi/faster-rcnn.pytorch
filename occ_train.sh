@@ -1,5 +1,5 @@
 #!/bin/sh
-GPU_ID=0,1
+GPU_ID=0
 WORKER_NUMBER=2
 LEARNING_RATE=0.001
 DECAY_STEP=5
@@ -13,7 +13,7 @@ EPOCH=7
 CHECKPOINT=10021
 CUDA_VISIBLE_DEVICES=$GPU_ID
 python trainval_net.py \
-                   --dataset foodtechmixed --net vgg16 \
+                   --dataset pascal_voc --net vgg16 \
                    --s $SESSION \
                    --r=$RESUME \
                    --checksession $CHECKSESSION --checkepoch $EPOCH --checkpoint $CHECKPOINT \

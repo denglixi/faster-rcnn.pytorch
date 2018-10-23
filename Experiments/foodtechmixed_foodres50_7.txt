@@ -1,0 +1,21 @@
+----------basic setting----------
+WORKER_NUMBER=1
+DATASET=foodtechmixed
+NET=foodres50
+PRETRAIN=
+MAXEPOCHS=100
+
+----------learning rate setting----------
+OPTIMIZER=adam
+LEARNING_RATE=0.001
+DECAY_STEP=8
+BATCH_SIZE=4
+IS_WARMING_UP=IS_WARMING_UP
+WARMING_UP_LR=0.000001
+
+----------resume----------
+RESUME=
+PRETRAIN=
+DATASET=foodtechmixed
+NET=foodres50
+OPTIMIZER=adam
