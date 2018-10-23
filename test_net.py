@@ -30,6 +30,7 @@ from model.rpn.bbox_transform import bbox_transform_inv
 from model.utils.net_utils import save_net, load_net, vis_detections
 from model.faster_rcnn.vgg16 import vgg16
 from model.faster_rcnn.resnet import resnet
+from model.faster_rcnn.prefood_res50 import PreResNet50
 
 
 try:
@@ -138,7 +139,7 @@ if __name__ == '__main__':
                          'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
     elif args.dataset == "foodtechmixed":
         args.imdb_name = "food_Tech_train"
-        args.imdbval_name = "food_Tech_val"
+        args.imdbval_name = "food_Tech_train"
         args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
                          'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
@@ -180,6 +181,9 @@ if __name__ == '__main__':
     elif args.net == 'res152':
         fasterRCNN = resnet(imdb.classes, 152, pretrained=False,
                             class_agnostic=args.class_agnostic)
+    elif args.net == 'foodres50':
+        fasterRCNN = PreResNet50(imdb.classes,
+                                 class_agnostic=args.class_agnostic)
     else:
         print("network is not defined")
         pdb.set_trace()
@@ -245,6 +249,8 @@ if __name__ == '__main__':
     _t = {'im_detect': time.time(), 'misc': time.time()}
     det_file = os.path.join(output_dir, 'detections.pkl')
     if(args.test_cache):
+        import pdb
+        pdb.set_trace()
         with open(det_file, 'rb') as f:
             all_boxes = pickle.load(f)
         imdb.evaluate_detections(all_boxes, output_dir)
@@ -261,6 +267,8 @@ if __name__ == '__main__':
         num_boxes.data.resize_(data[3].size()).copy_(data[3])
 
         det_tic = time.time()
+        import pdb
+        pdb.set_trace()
         rois, cls_prob, bbox_pred, \
             rpn_loss_cls, rpn_loss_box, \
             RCNN_loss_cls, RCNN_loss_bbox, \
@@ -340,10 +348,12 @@ if __name__ == '__main__':
         sys.stdout.flush()
 
         if vis:
-            cv2.imwrite('result.png', im2show)
-            pdb.set_trace()
-            # cv2.imshow('test', im2show)
-            # cv2.waitKey(0)
+            # cv2.imwrite('result.png', im2show)
+            # pdb.set_trace()
+            cv2.namedWindow("frame", 0)
+            cv2.resizeWindow("frame", 800, 800)
+            cv2.imshow('frame', im2show)
+            cv2.waitKey(0)
 
     with open(det_file, 'wb') as f:
         pickle.dump(all_boxes, f, pickle.HIGHEST_PROTOCOL)

@@ -5,29 +5,29 @@ WORKER_NUMBER=1
 
 # basic set
 DATASET=foodtechmixed
-NET=res101 #{foodres50, res101, vgg16}
-SESSION=5
+NET=foodres50 #{foodres50, res101, vgg16}
+SESSION=8
 PRETRAIN=
 MAXEPOCHS=100
 
 # optimizer setting
 OPTIMIZER=adam
-LEARNING_RATE=0.001
+LEARNING_RATE=0.0001
 DECAY_STEP=8
 IS_WARMING_UP=false
 WARMING_UP_LR=0.000001
-BATCH_SIZE=4
+BATCH_SIZE=1
 
 # resume from
-RESUME=true  # null is for false
-RESUME_OPT=  # null for false
-CHECKSESSION=5
-CHECKEPOCH=29
-CHECKPOINT=2999
+RESUME=1 # null is for false
+RESUME_OPT=1  # null for false
+CHECKSESSION=7
+CHECKEPOCH=14
+CHECKPOINT=749
 
 
 # writing the experiment detail to file
-filename="./Experiments/${DATASET}_${NET}_${SESSION}.txt"
+filename=./Experiments/`date +%Y-%m-%d-%H-%M-%S`-${DATASET}_${NET}_${SESSION}.log
 echo "write the experiments detail to file"
 cat>${filename}<<EOF
 ----------basic setting----------
@@ -54,8 +54,10 @@ NET=$NET
 OPTIMIZER=$OPTIMIZER
 EOF
 
+LOG=./Experiments/DetailLogs/log-`date +%Y-%m-%d-%H-%M-%S`-${DATASET}-${NET}-${SESSION}.log
+
 # training command
-if [ $IS_WARMING_UP ]; then
+if $IS_WARMING_UP ; then
     CUDA_VISIBLE_DEVICES=$GPU_ID python trainval_net.py \
                    --dataset $DATASET --net $NET \
                    --epochs $MAXEPOCHS \
@@ -68,16 +70,18 @@ if [ $IS_WARMING_UP ]; then
                    --lr $LEARNING_RATE --lr_decay_step $DECAY_STEP \
                    --cuda --mGPUs --use_tfb --save_model \
                    --wu --wulr $WARMING_UP_LR
+                       #2>&1 | tee $LOG $@
 else
     CUDA_VISIBLE_DEVICES=$GPU_ID python trainval_net.py \
                    --dataset $DATASET --net $NET \
+                   --epochs $MAXEPOCHS \
                    --s $SESSION \
                    --o $OPTIMIZER \
-                   --r=$RESUME \
-                   --epochs $MAXEPOCHS \
+                   --r=$RESUME --resume_opt=$RESUME_OPT\
                    --pretrain=$PRETRAIN \
                    --checksession $CHECKSESSION --checkepoch $CHECKEPOCH --checkpoint $CHECKPOINT \
                    --bs $BATCH_SIZE --nw $WORKER_NUMBER \
                    --lr $LEARNING_RATE --lr_decay_step $DECAY_STEP \
                    --cuda --mGPUs --use_tfb --save_model
+                       #2>&1 | tee $LOG $@
 fi

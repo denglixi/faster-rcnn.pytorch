@@ -254,6 +254,8 @@ class resnet(_fasterRCNN):
         # Fix blocks
 
         assert(0 <= cfg.RESNET.FIXED_BLOCKS < 4)
+        print("*****the net was fixed: %i*********" %
+              (cfg.RESNET.FIXED_BLOCKS))
         if cfg.RESNET.FIXED_BLOCKS >= 3:
             for p in self.RCNN_base[6].parameters():
                 p.requires_grad = False

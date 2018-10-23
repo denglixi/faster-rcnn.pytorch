@@ -15,6 +15,7 @@ import math
 import torchvision.models as models
 from model.faster_rcnn.faster_rcnn import _fasterRCNN
 import pdb
+from model.utils.config import cfg
 
 
 class vgg16(_fasterRCNN):
@@ -42,7 +43,11 @@ class vgg16(_fasterRCNN):
             *list(vgg.features._modules.values())[:-1])
 
         # Fix the layers before conv3:
-        for layer in range(10):
+
+        assert(0 <= cfg.VGG.FIXED_LAYERS <= 10)
+        print("*****the net was fixed: %i*********" % (cfg.VGG.FIXED_LAYERS))
+
+        for layer in range(cfg.VGG.FIXED_LAYERS):
             for p in self.RCNN_base[layer].parameters():
                 p.requires_grad = False
 

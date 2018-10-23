@@ -1,18 +1,27 @@
 #!/bin/sh
 
-SESSION=1
-EPOCH=17
-CHECKPOINT=2999
 
-IMAGEDIR=./images/YIH
+IMAGEDIR=./images/techall
 MODELDIR=./models/
 
 #webcam_num -2 show image online -1 saveimage
 
-python demo.py --net vgg16 \
-               --dataset foodtechmixed \
+# load weight
+SESSION=7
+EPOCH=1
+CHECKPOINT=749
+
+
+# basic set
+DATASET=foodtechmixed
+NET=foodres50 #{foodres50, res101, vgg16}
+
+WEB_NUM=-2
+
+python demo.py --net $NET \
+               --dataset $DATASET \
                --image_dir $IMAGEDIR \
                --load_dir $MODELDIR \
                --checksession $SESSION --checkepoch $EPOCH --checkpoint $CHECKPOINT \
-               --webcam_num -1 \
+               --webcam_num $WEB_NUM \
                --cuda

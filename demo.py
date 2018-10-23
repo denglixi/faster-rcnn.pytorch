@@ -34,7 +34,7 @@ from model.utils.net_utils import save_net, load_net, vis_detections
 from model.utils.blob import im_list_to_blob
 from model.faster_rcnn.vgg16 import vgg16
 from model.faster_rcnn.resnet import resnet
-import pdb
+from model.faster_rcnn.prefood_res50 import PreResNet50
 
 try:
     xrange          # Python 2
@@ -183,6 +183,9 @@ if __name__ == '__main__':
     elif args.net == 'res152':
         fasterRCNN = resnet(pascal_classes, 152, pretrained=False,
                             class_agnostic=args.class_agnostic)
+    elif args.net == 'foodres50':
+        fasterRCNN = PreResNet50(pascal_classes,
+                                 class_agnostic=args.class_agnostic)
     else:
         print("network is not defined")
         pdb.set_trace()
@@ -196,6 +199,7 @@ if __name__ == '__main__':
         checkpoint = torch.load(
             load_name, map_location=(lambda storage, loc: storage))
     fasterRCNN.load_state_dict(checkpoint['model'])
+    pdb.set_trace()
     if 'pooling_mode' in checkpoint.keys():
         cfg.POOLING_MODE = checkpoint['pooling_mode']
 
