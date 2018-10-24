@@ -6,20 +6,20 @@ WORKER_NUMBER=1
 # basic set
 DATASET=foodtechmixed
 NET=foodres50 #{foodres50, res101, vgg16}
-SESSION=8
+SESSION=9
 PRETRAIN=
 MAXEPOCHS=100
 
 # optimizer setting
 OPTIMIZER=adam
 LEARNING_RATE=0.0001
-DECAY_STEP=8
+DECAY_STEP=7
 IS_WARMING_UP=false
 WARMING_UP_LR=0.000001
 BATCH_SIZE=1
 
 # resume from
-RESUME=1 # null is for false
+RESUME= # null is for false
 RESUME_OPT=1  # null for false
 CHECKSESSION=7
 CHECKEPOCH=14

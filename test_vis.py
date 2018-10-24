@@ -139,7 +139,7 @@ if __name__ == '__main__':
                          'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
     elif args.dataset == "foodtechmixed":
         args.imdb_name = "food_Tech_train"
-        args.imdbval_name = "food_Tech_val"
+        args.imdbval_name = "food_Tech_train"
         args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
                          'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
@@ -275,7 +275,7 @@ if __name__ == '__main__':
         scores = cls_prob.data
         boxes = rois.data[:, :, 1:5]
 
-        if cfg.TEST.BBOX_REG:
+        if False:  # cfg.TEST.BBOX_REG:
             # Apply bounding-box regression deltas
             box_deltas = bbox_pred.data
             if cfg.TRAIN.BBOX_NORMALIZE_TARGETS_PRECOMPUTED:
@@ -294,6 +294,7 @@ if __name__ == '__main__':
         else:
             # Simply repeat the boxes, once for each class
             pred_boxes = np.tile(boxes, (1, scores.shape[1]))
+            pred_boxes = torch.cuda.FloatTensor(pred_boxes)
 
         pred_boxes /= data[1][0][2].item()
 
@@ -307,10 +308,10 @@ if __name__ == '__main__':
             im = cv2.imread(imdb.image_path_at(i))
             im2show = np.copy(im)
         for j in xrange(1, imdb.num_classes):
-            inds = torch.nonzero(scores[:, j] > thresh).view(-1)
+            inds = torch.nonzero(scores[:, 0] > thresh).view(-1)
             # if there is det
             if inds.numel() > 0:
-                cls_scores = scores[:, j][inds]
+                cls_scores = scores[:, 0][inds]
                 _, order = torch.sort(cls_scores, 0, True)
                 if args.class_agnostic:
                     cls_boxes = pred_boxes[inds, :]
@@ -318,19 +319,21 @@ if __name__ == '__main__':
                     cls_boxes = pred_boxes[inds][:, j * 4:(j + 1) * 4]
 
                 cls_dets = torch.cat((cls_boxes, cls_scores.unsqueeze(1)), 1)
-                # cls_dets = torch.cat((cls_boxes, cls_scores), 1)
+                #cls_dets = torch.cat((cls_boxes, cls_scores), 1)
                 cls_dets = cls_dets[order]
-                keep = nms(cls_dets, cfg.TEST.NMS)
-                cls_dets = cls_dets[keep.view(-1).long()]
+                # keep = nms(cls_dets, 0.0)  # cfg.TEST.NMS)
+                #cls_dets = cls_dets[keep.view(-1).long()]
+                pdb.set_trace()
                 if vis:
                     im2show = vis_detections(
                         im2show, imdb.classes[j], cls_dets.cpu().numpy(), 0.003)
                 all_boxes[j][i] = cls_dets.cpu().numpy()
+                break
             else:
                 all_boxes[j][i] = empty_array
 
         # Limit to max_per_image detections *over all classes*
-        if max_per_image > 0:
+        if False:  # max_per_image > 0:
             image_scores = np.hstack([all_boxes[j][i][:, -1]
                                       for j in xrange(1, imdb.num_classes)])
             if len(image_scores) > max_per_image:

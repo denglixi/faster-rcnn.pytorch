@@ -559,7 +559,7 @@ class PreResNet50(_fasterRCNN):
 
         def set_bn_fix(m):
             classname = m.__class__.__name__
-            if classname.find('bn') != -1:
+            if classname.find('BatchNorm') != -1:
                 for p in m.parameters():
                     p.requires_grad = False
 
@@ -577,7 +577,7 @@ class PreResNet50(_fasterRCNN):
 
             def set_bn_eval(m):
                 classname = m.__class__.__name__
-                if classname.find('bn') != -1:
+                if classname.find('BatchNorm') != -1:
                     m.eval()
 
             self.RCNN_base.apply(set_bn_eval)
