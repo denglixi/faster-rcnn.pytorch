@@ -8,9 +8,9 @@ DATASET=foodtechmixed
 NET=foodres50 #{foodres50, res101, vgg16}
 
 # load weight
-SESSION=7
-EPOCH=1
-CHECKPOINT=749
+SESSION=9
+EPOCH=23
+CHECKPOINT=2999
 
 # vis
 IS_VIS=true

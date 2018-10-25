@@ -106,6 +106,11 @@ class KitModule(nn.Module):
 #    def forward(self):
 
 
+class res50_layer1(KitModule):
+    def __init__(self, weight_file):
+        super(res50_layer1, self).__init__(weight_file)
+
+
 class res50_base(KitModule):
     def __init__(self, weight_file):
         super(res50_base, self).__init__(weight_file)

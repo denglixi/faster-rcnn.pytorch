@@ -6,12 +6,12 @@ WORKER_NUMBER=1
 # basic set
 DATASET=foodtechmixed
 NET=foodres50 #{foodres50, res101, vgg16}
-SESSION=10
+SESSION=9
 PRETRAIN=
 MAXEPOCHS=100
 
 # optimizer setting
-OPTIMIZER=sgd
+OPTIMIZER=adam
 LEARNING_RATE=0.001
 DECAY_STEP=7
 IS_WARMING_UP=false
@@ -19,11 +19,11 @@ WARMING_UP_LR=0.000001
 BATCH_SIZE=1
 
 # resume from
-RESUME= # null is for false
-RESUME_OPT=1  # null for false
-CHECKSESSION=7
-CHECKEPOCH=14
-CHECKPOINT=749
+RESUME=1 # null is for false
+RESUME_OPT=  # null for false
+CHECKSESSION=8
+CHECKEPOCH=12
+CHECKPOINT=2999
 
 
 # writing the experiment detail to file
@@ -72,7 +72,7 @@ if $IS_WARMING_UP ; then
                    --wu --wulr $WARMING_UP_LR
                        #2>&1 | tee $LOG $@
 else
-    CUDA_VISIBLE_DEVICES=$GPU_ID python trainval_net.py \
+    CUDA_VISIBLE_DEVICES=$GPU_ID python train_vis.py \
                    --dataset $DATASET --net $NET \
                    --epochs $MAXEPOCHS \
                    --s $SESSION \

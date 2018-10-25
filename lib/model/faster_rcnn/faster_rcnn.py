@@ -73,6 +73,7 @@ class _fasterRCNN(nn.Module):
             rpn_loss_cls = 0
             rpn_loss_bbox = 0
 
+        # return roi_data
         rois = Variable(rois)
         # do roi pooling based on predicted rois
 

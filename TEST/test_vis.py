@@ -308,10 +308,11 @@ if __name__ == '__main__':
             im = cv2.imread(imdb.image_path_at(i))
             im2show = np.copy(im)
         for j in xrange(1, imdb.num_classes):
-            inds = torch.nonzero(scores[:, 0] > thresh).view(-1)
+            thresh = 0.1
+            inds = torch.nonzero(scores[:, j] > thresh).view(-1)
             # if there is det
             if inds.numel() > 0:
-                cls_scores = scores[:, 0][inds]
+                cls_scores = scores[:, j][inds]
                 _, order = torch.sort(cls_scores, 0, True)
                 if args.class_agnostic:
                     cls_boxes = pred_boxes[inds, :]
@@ -319,16 +320,13 @@ if __name__ == '__main__':
                     cls_boxes = pred_boxes[inds][:, j * 4:(j + 1) * 4]
 
                 cls_dets = torch.cat((cls_boxes, cls_scores.unsqueeze(1)), 1)
-                #cls_dets = torch.cat((cls_boxes, cls_scores), 1)
                 cls_dets = cls_dets[order]
-                # keep = nms(cls_dets, 0.0)  # cfg.TEST.NMS)
-                #cls_dets = cls_dets[keep.view(-1).long()]
-                pdb.set_trace()
+                keep = nms(cls_dets, cfg.TEST.NMS)
+                cls_dets = cls_dets[keep.view(-1).long()]
                 if vis:
                     im2show = vis_detections(
                         im2show, imdb.classes[j], cls_dets.cpu().numpy(), 0.003)
                 all_boxes[j][i] = cls_dets.cpu().numpy()
-                break
             else:
                 all_boxes[j][i] = empty_array
 

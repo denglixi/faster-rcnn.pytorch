@@ -57,6 +57,7 @@ def clip_gradient(model, clip_norm):
 def vis_detections(im, class_name, dets, thresh=0.8):
     """Visual debugging of detections."""
     for i in range(np.minimum(10, dets.shape[0])):
+        # for i in range(1990, 2000):
         bbox = tuple(int(np.round(x)) for x in dets[i, :4])
         score = dets[i, -1]
         if score > thresh:

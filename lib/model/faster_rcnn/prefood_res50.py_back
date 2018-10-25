@@ -40,7 +40,7 @@ class KitModule(nn.Module):
         raise NotImplemented
 
     # @staticmethod
-    def __batch_normalization(self, dim, name, **kwargs):
+    def batch_normalization(self, dim, name, **kwargs):
         if dim == 1:
             layer = nn.BatchNorm1d(**kwargs)
         elif dim == 2:
@@ -69,7 +69,7 @@ class KitModule(nn.Module):
         return layer
 
     # @staticmethod
-    def __conv(self, dim, name, **kwargs):
+    def conv(self, dim, name, **kwargs):
         if dim == 1:
             layer = nn.Conv1d(**kwargs)
         elif dim == 2:
@@ -87,7 +87,7 @@ class KitModule(nn.Module):
         return layer
 
     # @staticmethod
-    def __dense(self, name, **kwargs):
+    def dense(self, name, **kwargs):
         layer = nn.Linear(**kwargs)
         layer.state_dict()['weight'].copy_(
             torch.from_numpy(__weights_dict[name]['weights']))
@@ -99,9 +99,9 @@ class KitModule(nn.Module):
 # class res50_b1(KitModule):
 #    def __init__(self, weight_file):
 #        super(res50_base, self).__init__(weight_file)
-#        self.conv1 = self.__conv(2, name='conv1', in_channels=3, out_channels=64, kernel_size=(
+#        self.conv1 = self.conv(2, name='conv1', in_channels=3, out_channels=64, kernel_size=(
 #            7, 7), stride=(2, 2), groups=1, bias=True)
-#        self.bn_conv1 = self.__batch_normalization(
+#        self.bn_conv1 = self.batch_normalization(
 #            2, 'bn_conv1', num_features=64, eps=9.999999747378752e-06, momentum=0.0)
 #    def forward(self):
 
@@ -110,177 +110,177 @@ class res50_base(KitModule):
     def __init__(self, weight_file):
         super(res50_base, self).__init__(weight_file)
 
-        self.conv1 = self.__conv(2, name='conv1', in_channels=3, out_channels=64, kernel_size=(
+        self.conv1 = self.conv(2, name='conv1', in_channels=3, out_channels=64, kernel_size=(
             7, 7), stride=(2, 2), groups=1, bias=True)
-        self.bn_conv1 = self.__batch_normalization(
+        self.bn_conv1 = self.batch_normalization(
             2, 'bn_conv1', num_features=64, eps=9.999999747378752e-06, momentum=0.0)
-        self.res2a_branch1 = self.__conv(2, name='res2a_branch1', in_channels=64, out_channels=256, kernel_size=(
+        self.res2a_branch1 = self.conv(2, name='res2a_branch1', in_channels=64, out_channels=256, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
-        self.res2a_branch2a = self.__conv(2, name='res2a_branch2a', in_channels=64, out_channels=64, kernel_size=(
+        self.res2a_branch2a = self.conv(2, name='res2a_branch2a', in_channels=64, out_channels=64, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
-        self.bn2a_branch1 = self.__batch_normalization(
+        self.bn2a_branch1 = self.batch_normalization(
             2, 'bn2a_branch1', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
-        self.bn2a_branch2a = self.__batch_normalization(
+        self.bn2a_branch2a = self.batch_normalization(
             2, 'bn2a_branch2a', num_features=64, eps=9.999999747378752e-06, momentum=0.0)
-        self.res2a_branch2b = self.__conv(2, name='res2a_branch2b', in_channels=64, out_channels=64, kernel_size=(
+        self.res2a_branch2b = self.conv(2, name='res2a_branch2b', in_channels=64, out_channels=64, kernel_size=(
             3, 3), stride=(1, 1), groups=1, bias=False)
-        self.bn2a_branch2b = self.__batch_normalization(
+        self.bn2a_branch2b = self.batch_normalization(
             2, 'bn2a_branch2b', num_features=64, eps=9.999999747378752e-06, momentum=0.0)
-        self.res2a_branch2c = self.__conv(2, name='res2a_branch2c', in_channels=64, out_channels=256, kernel_size=(
+        self.res2a_branch2c = self.conv(2, name='res2a_branch2c', in_channels=64, out_channels=256, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
-        self.bn2a_branch2c = self.__batch_normalization(
+        self.bn2a_branch2c = self.batch_normalization(
             2, 'bn2a_branch2c', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
-        self.res2b_branch2a = self.__conv(2, name='res2b_branch2a', in_channels=256, out_channels=64, kernel_size=(
+        self.res2b_branch2a = self.conv(2, name='res2b_branch2a', in_channels=256, out_channels=64, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
-        self.bn2b_branch2a = self.__batch_normalization(
+        self.bn2b_branch2a = self.batch_normalization(
             2, 'bn2b_branch2a', num_features=64, eps=9.999999747378752e-06, momentum=0.0)
-        self.res2b_branch2b = self.__conv(2, name='res2b_branch2b', in_channels=64, out_channels=64, kernel_size=(
+        self.res2b_branch2b = self.conv(2, name='res2b_branch2b', in_channels=64, out_channels=64, kernel_size=(
             3, 3), stride=(1, 1), groups=1, bias=False)
-        self.bn2b_branch2b = self.__batch_normalization(
+        self.bn2b_branch2b = self.batch_normalization(
             2, 'bn2b_branch2b', num_features=64, eps=9.999999747378752e-06, momentum=0.0)
-        self.res2b_branch2c = self.__conv(2, name='res2b_branch2c', in_channels=64, out_channels=256, kernel_size=(
+        self.res2b_branch2c = self.conv(2, name='res2b_branch2c', in_channels=64, out_channels=256, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
-        self.bn2b_branch2c = self.__batch_normalization(
+        self.bn2b_branch2c = self.batch_normalization(
             2, 'bn2b_branch2c', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
-        self.res2c_branch2a = self.__conv(2, name='res2c_branch2a', in_channels=256, out_channels=64, kernel_size=(
+        self.res2c_branch2a = self.conv(2, name='res2c_branch2a', in_channels=256, out_channels=64, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
-        self.bn2c_branch2a = self.__batch_normalization(
+        self.bn2c_branch2a = self.batch_normalization(
             2, 'bn2c_branch2a', num_features=64, eps=9.999999747378752e-06, momentum=0.0)
-        self.res2c_branch2b = self.__conv(2, name='res2c_branch2b', in_channels=64, out_channels=64, kernel_size=(
+        self.res2c_branch2b = self.conv(2, name='res2c_branch2b', in_channels=64, out_channels=64, kernel_size=(
             3, 3), stride=(1, 1), groups=1, bias=False)
-        self.bn2c_branch2b = self.__batch_normalization(
+        self.bn2c_branch2b = self.batch_normalization(
             2, 'bn2c_branch2b', num_features=64, eps=9.999999747378752e-06, momentum=0.0)
-        self.res2c_branch2c = self.__conv(2, name='res2c_branch2c', in_channels=64, out_channels=256, kernel_size=(
+        self.res2c_branch2c = self.conv(2, name='res2c_branch2c', in_channels=64, out_channels=256, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
-        self.bn2c_branch2c = self.__batch_normalization(
+        self.bn2c_branch2c = self.batch_normalization(
             2, 'bn2c_branch2c', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
-        self.res3a_branch1 = self.__conv(2, name='res3a_branch1', in_channels=256, out_channels=512, kernel_size=(
+        self.res3a_branch1 = self.conv(2, name='res3a_branch1', in_channels=256, out_channels=512, kernel_size=(
             1, 1), stride=(2, 2), groups=1, bias=False)
-        self.res3a_branch2a = self.__conv(2, name='res3a_branch2a', in_channels=256, out_channels=128, kernel_size=(
+        self.res3a_branch2a = self.conv(2, name='res3a_branch2a', in_channels=256, out_channels=128, kernel_size=(
             1, 1), stride=(2, 2), groups=1, bias=False)
-        self.bn3a_branch1 = self.__batch_normalization(
+        self.bn3a_branch1 = self.batch_normalization(
             2, 'bn3a_branch1', num_features=512, eps=9.999999747378752e-06, momentum=0.0)
-        self.bn3a_branch2a = self.__batch_normalization(
+        self.bn3a_branch2a = self.batch_normalization(
             2, 'bn3a_branch2a', num_features=128, eps=9.999999747378752e-06, momentum=0.0)
-        self.res3a_branch2b = self.__conv(2, name='res3a_branch2b', in_channels=128, out_channels=128, kernel_size=(
+        self.res3a_branch2b = self.conv(2, name='res3a_branch2b', in_channels=128, out_channels=128, kernel_size=(
             3, 3), stride=(1, 1), groups=1, bias=False)
-        self.bn3a_branch2b = self.__batch_normalization(
+        self.bn3a_branch2b = self.batch_normalization(
             2, 'bn3a_branch2b', num_features=128, eps=9.999999747378752e-06, momentum=0.0)
-        self.res3a_branch2c = self.__conv(2, name='res3a_branch2c', in_channels=128, out_channels=512, kernel_size=(
+        self.res3a_branch2c = self.conv(2, name='res3a_branch2c', in_channels=128, out_channels=512, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
-        self.bn3a_branch2c = self.__batch_normalization(
+        self.bn3a_branch2c = self.batch_normalization(
             2, 'bn3a_branch2c', num_features=512, eps=9.999999747378752e-06, momentum=0.0)
-        self.res3b_branch2a = self.__conv(2, name='res3b_branch2a', in_channels=512, out_channels=128, kernel_size=(
+        self.res3b_branch2a = self.conv(2, name='res3b_branch2a', in_channels=512, out_channels=128, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
-        self.bn3b_branch2a = self.__batch_normalization(
+        self.bn3b_branch2a = self.batch_normalization(
             2, 'bn3b_branch2a', num_features=128, eps=9.999999747378752e-06, momentum=0.0)
-        self.res3b_branch2b = self.__conv(2, name='res3b_branch2b', in_channels=128, out_channels=128, kernel_size=(
+        self.res3b_branch2b = self.conv(2, name='res3b_branch2b', in_channels=128, out_channels=128, kernel_size=(
             3, 3), stride=(1, 1), groups=1, bias=False)
-        self.bn3b_branch2b = self.__batch_normalization(
+        self.bn3b_branch2b = self.batch_normalization(
             2, 'bn3b_branch2b', num_features=128, eps=9.999999747378752e-06, momentum=0.0)
-        self.res3b_branch2c = self.__conv(2, name='res3b_branch2c', in_channels=128, out_channels=512, kernel_size=(
+        self.res3b_branch2c = self.conv(2, name='res3b_branch2c', in_channels=128, out_channels=512, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
-        self.bn3b_branch2c = self.__batch_normalization(
+        self.bn3b_branch2c = self.batch_normalization(
             2, 'bn3b_branch2c', num_features=512, eps=9.999999747378752e-06, momentum=0.0)
-        self.res3c_branch2a = self.__conv(2, name='res3c_branch2a', in_channels=512, out_channels=128, kernel_size=(
+        self.res3c_branch2a = self.conv(2, name='res3c_branch2a', in_channels=512, out_channels=128, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
-        self.bn3c_branch2a = self.__batch_normalization(
+        self.bn3c_branch2a = self.batch_normalization(
             2, 'bn3c_branch2a', num_features=128, eps=9.999999747378752e-06, momentum=0.0)
-        self.res3c_branch2b = self.__conv(2, name='res3c_branch2b', in_channels=128, out_channels=128, kernel_size=(
+        self.res3c_branch2b = self.conv(2, name='res3c_branch2b', in_channels=128, out_channels=128, kernel_size=(
             3, 3), stride=(1, 1), groups=1, bias=False)
-        self.bn3c_branch2b = self.__batch_normalization(
+        self.bn3c_branch2b = self.batch_normalization(
             2, 'bn3c_branch2b', num_features=128, eps=9.999999747378752e-06, momentum=0.0)
-        self.res3c_branch2c = self.__conv(2, name='res3c_branch2c', in_channels=128, out_channels=512, kernel_size=(
+        self.res3c_branch2c = self.conv(2, name='res3c_branch2c', in_channels=128, out_channels=512, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
-        self.bn3c_branch2c = self.__batch_normalization(
+        self.bn3c_branch2c = self.batch_normalization(
             2, 'bn3c_branch2c', num_features=512, eps=9.999999747378752e-06, momentum=0.0)
-        self.res3d_branch2a = self.__conv(2, name='res3d_branch2a', in_channels=512, out_channels=128, kernel_size=(
+        self.res3d_branch2a = self.conv(2, name='res3d_branch2a', in_channels=512, out_channels=128, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
-        self.bn3d_branch2a = self.__batch_normalization(
+        self.bn3d_branch2a = self.batch_normalization(
             2, 'bn3d_branch2a', num_features=128, eps=9.999999747378752e-06, momentum=0.0)
-        self.res3d_branch2b = self.__conv(2, name='res3d_branch2b', in_channels=128, out_channels=128, kernel_size=(
+        self.res3d_branch2b = self.conv(2, name='res3d_branch2b', in_channels=128, out_channels=128, kernel_size=(
             3, 3), stride=(1, 1), groups=1, bias=False)
-        self.bn3d_branch2b = self.__batch_normalization(
+        self.bn3d_branch2b = self.batch_normalization(
             2, 'bn3d_branch2b', num_features=128, eps=9.999999747378752e-06, momentum=0.0)
-        self.res3d_branch2c = self.__conv(2, name='res3d_branch2c', in_channels=128, out_channels=512, kernel_size=(
+        self.res3d_branch2c = self.conv(2, name='res3d_branch2c', in_channels=128, out_channels=512, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
-        self.bn3d_branch2c = self.__batch_normalization(
+        self.bn3d_branch2c = self.batch_normalization(
             2, 'bn3d_branch2c', num_features=512, eps=9.999999747378752e-06, momentum=0.0)
-        self.res4a_branch1 = self.__conv(2, name='res4a_branch1', in_channels=512, out_channels=1024, kernel_size=(
+        self.res4a_branch1 = self.conv(2, name='res4a_branch1', in_channels=512, out_channels=1024, kernel_size=(
             1, 1), stride=(2, 2), groups=1, bias=False)
-        self.res4a_branch2a = self.__conv(2, name='res4a_branch2a', in_channels=512, out_channels=256, kernel_size=(
+        self.res4a_branch2a = self.conv(2, name='res4a_branch2a', in_channels=512, out_channels=256, kernel_size=(
             1, 1), stride=(2, 2), groups=1, bias=False)
-        self.bn4a_branch1 = self.__batch_normalization(
+        self.bn4a_branch1 = self.batch_normalization(
             2, 'bn4a_branch1', num_features=1024, eps=9.999999747378752e-06, momentum=0.0)
-        self.bn4a_branch2a = self.__batch_normalization(
+        self.bn4a_branch2a = self.batch_normalization(
             2, 'bn4a_branch2a', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
-        self.res4a_branch2b = self.__conv(2, name='res4a_branch2b', in_channels=256, out_channels=256, kernel_size=(
+        self.res4a_branch2b = self.conv(2, name='res4a_branch2b', in_channels=256, out_channels=256, kernel_size=(
             3, 3), stride=(1, 1), groups=1, bias=False)
-        self.bn4a_branch2b = self.__batch_normalization(
+        self.bn4a_branch2b = self.batch_normalization(
             2, 'bn4a_branch2b', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
-        self.res4a_branch2c = self.__conv(2, name='res4a_branch2c', in_channels=256, out_channels=1024, kernel_size=(
+        self.res4a_branch2c = self.conv(2, name='res4a_branch2c', in_channels=256, out_channels=1024, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
-        self.bn4a_branch2c = self.__batch_normalization(
+        self.bn4a_branch2c = self.batch_normalization(
             2, 'bn4a_branch2c', num_features=1024, eps=9.999999747378752e-06, momentum=0.0)
-        self.res4b_branch2a = self.__conv(2, name='res4b_branch2a', in_channels=1024, out_channels=256, kernel_size=(
+        self.res4b_branch2a = self.conv(2, name='res4b_branch2a', in_channels=1024, out_channels=256, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
-        self.bn4b_branch2a = self.__batch_normalization(
+        self.bn4b_branch2a = self.batch_normalization(
             2, 'bn4b_branch2a', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
-        self.res4b_branch2b = self.__conv(2, name='res4b_branch2b', in_channels=256, out_channels=256, kernel_size=(
+        self.res4b_branch2b = self.conv(2, name='res4b_branch2b', in_channels=256, out_channels=256, kernel_size=(
             3, 3), stride=(1, 1), groups=1, bias=False)
-        self.bn4b_branch2b = self.__batch_normalization(
+        self.bn4b_branch2b = self.batch_normalization(
             2, 'bn4b_branch2b', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
-        self.res4b_branch2c = self.__conv(2, name='res4b_branch2c', in_channels=256, out_channels=1024, kernel_size=(
+        self.res4b_branch2c = self.conv(2, name='res4b_branch2c', in_channels=256, out_channels=1024, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
-        self.bn4b_branch2c = self.__batch_normalization(
+        self.bn4b_branch2c = self.batch_normalization(
             2, 'bn4b_branch2c', num_features=1024, eps=9.999999747378752e-06, momentum=0.0)
-        self.res4c_branch2a = self.__conv(2, name='res4c_branch2a', in_channels=1024, out_channels=256, kernel_size=(
+        self.res4c_branch2a = self.conv(2, name='res4c_branch2a', in_channels=1024, out_channels=256, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
-        self.bn4c_branch2a = self.__batch_normalization(
+        self.bn4c_branch2a = self.batch_normalization(
             2, 'bn4c_branch2a', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
-        self.res4c_branch2b = self.__conv(2, name='res4c_branch2b', in_channels=256, out_channels=256, kernel_size=(
+        self.res4c_branch2b = self.conv(2, name='res4c_branch2b', in_channels=256, out_channels=256, kernel_size=(
             3, 3), stride=(1, 1), groups=1, bias=False)
-        self.bn4c_branch2b = self.__batch_normalization(
+        self.bn4c_branch2b = self.batch_normalization(
             2, 'bn4c_branch2b', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
-        self.res4c_branch2c = self.__conv(2, name='res4c_branch2c', in_channels=256, out_channels=1024, kernel_size=(
+        self.res4c_branch2c = self.conv(2, name='res4c_branch2c', in_channels=256, out_channels=1024, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
-        self.bn4c_branch2c = self.__batch_normalization(
+        self.bn4c_branch2c = self.batch_normalization(
             2, 'bn4c_branch2c', num_features=1024, eps=9.999999747378752e-06, momentum=0.0)
-        self.res4d_branch2a = self.__conv(2, name='res4d_branch2a', in_channels=1024, out_channels=256, kernel_size=(
+        self.res4d_branch2a = self.conv(2, name='res4d_branch2a', in_channels=1024, out_channels=256, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
-        self.bn4d_branch2a = self.__batch_normalization(
+        self.bn4d_branch2a = self.batch_normalization(
             2, 'bn4d_branch2a', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
-        self.res4d_branch2b = self.__conv(2, name='res4d_branch2b', in_channels=256, out_channels=256, kernel_size=(
+        self.res4d_branch2b = self.conv(2, name='res4d_branch2b', in_channels=256, out_channels=256, kernel_size=(
             3, 3), stride=(1, 1), groups=1, bias=False)
-        self.bn4d_branch2b = self.__batch_normalization(
+        self.bn4d_branch2b = self.batch_normalization(
             2, 'bn4d_branch2b', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
-        self.res4d_branch2c = self.__conv(2, name='res4d_branch2c', in_channels=256, out_channels=1024, kernel_size=(
+        self.res4d_branch2c = self.conv(2, name='res4d_branch2c', in_channels=256, out_channels=1024, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
-        self.bn4d_branch2c = self.__batch_normalization(
+        self.bn4d_branch2c = self.batch_normalization(
             2, 'bn4d_branch2c', num_features=1024, eps=9.999999747378752e-06, momentum=0.0)
-        self.res4e_branch2a = self.__conv(2, name='res4e_branch2a', in_channels=1024, out_channels=256, kernel_size=(
+        self.res4e_branch2a = self.conv(2, name='res4e_branch2a', in_channels=1024, out_channels=256, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
-        self.bn4e_branch2a = self.__batch_normalization(
+        self.bn4e_branch2a = self.batch_normalization(
             2, 'bn4e_branch2a', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
-        self.res4e_branch2b = self.__conv(2, name='res4e_branch2b', in_channels=256, out_channels=256, kernel_size=(
+        self.res4e_branch2b = self.conv(2, name='res4e_branch2b', in_channels=256, out_channels=256, kernel_size=(
             3, 3), stride=(1, 1), groups=1, bias=False)
-        self.bn4e_branch2b = self.__batch_normalization(
+        self.bn4e_branch2b = self.batch_normalization(
             2, 'bn4e_branch2b', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
-        self.res4e_branch2c = self.__conv(2, name='res4e_branch2c', in_channels=256, out_channels=1024, kernel_size=(
+        self.res4e_branch2c = self.conv(2, name='res4e_branch2c', in_channels=256, out_channels=1024, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
-        self.bn4e_branch2c = self.__batch_normalization(
+        self.bn4e_branch2c = self.batch_normalization(
             2, 'bn4e_branch2c', num_features=1024, eps=9.999999747378752e-06, momentum=0.0)
-        self.res4f_branch2a = self.__conv(2, name='res4f_branch2a', in_channels=1024, out_channels=256, kernel_size=(
+        self.res4f_branch2a = self.conv(2, name='res4f_branch2a', in_channels=1024, out_channels=256, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
-        self.bn4f_branch2a = self.__batch_normalization(
+        self.bn4f_branch2a = self.batch_normalization(
             2, 'bn4f_branch2a', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
-        self.res4f_branch2b = self.__conv(2, name='res4f_branch2b', in_channels=256, out_channels=256, kernel_size=(
+        self.res4f_branch2b = self.conv(2, name='res4f_branch2b', in_channels=256, out_channels=256, kernel_size=(
             3, 3), stride=(1, 1), groups=1, bias=False)
-        self.bn4f_branch2b = self.__batch_normalization(
+        self.bn4f_branch2b = self.batch_normalization(
             2, 'bn4f_branch2b', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
-        self.res4f_branch2c = self.__conv(2, name='res4f_branch2c', in_channels=256, out_channels=1024, kernel_size=(
+        self.res4f_branch2c = self.conv(2, name='res4f_branch2c', in_channels=256, out_channels=1024, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
-        self.bn4f_branch2c = self.__batch_normalization(
+        self.bn4f_branch2c = self.batch_normalization(
             2, 'bn4f_branch2c', num_features=1024, eps=9.999999747378752e-06, momentum=0.0)
 
     def forward(self, x):
@@ -444,51 +444,51 @@ class res50_base(KitModule):
         return res4f_relu
 
 
-def res50_top(KitModule):
+class res50_top(KitModule):
     def __init__(self, weight_file):
         super(res50_top, self).__init__(weight_file)
 
-        self.res5a_branch1 = self.__conv(2, name='res5a_branch1', in_channels=1024, out_channels=2048, kernel_size=(
+        self.res5a_branch1 = self.conv(2, name='res5a_branch1', in_channels=1024, out_channels=2048, kernel_size=(
             1, 1), stride=(2, 2), groups=1, bias=False)
-        self.res5a_branch2a = self.__conv(2, name='res5a_branch2a', in_channels=1024, out_channels=512, kernel_size=(
+        self.res5a_branch2a = self.conv(2, name='res5a_branch2a', in_channels=1024, out_channels=512, kernel_size=(
             1, 1), stride=(2, 2), groups=1, bias=False)
-        self.bn5a_branch1 = self.__batch_normalization(
+        self.bn5a_branch1 = self.batch_normalization(
             2, 'bn5a_branch1', num_features=2048, eps=9.999999747378752e-06, momentum=0.0)
-        self.bn5a_branch2a = self.__batch_normalization(
+        self.bn5a_branch2a = self.batch_normalization(
             2, 'bn5a_branch2a', num_features=512, eps=9.999999747378752e-06, momentum=0.0)
-        self.res5a_branch2b = self.__conv(2, name='res5a_branch2b', in_channels=512, out_channels=512, kernel_size=(
+        self.res5a_branch2b = self.conv(2, name='res5a_branch2b', in_channels=512, out_channels=512, kernel_size=(
             3, 3), stride=(1, 1), groups=1, bias=False)
-        self.bn5a_branch2b = self.__batch_normalization(
+        self.bn5a_branch2b = self.batch_normalization(
             2, 'bn5a_branch2b', num_features=512, eps=9.999999747378752e-06, momentum=0.0)
-        self.res5a_branch2c = self.__conv(2, name='res5a_branch2c', in_channels=512, out_channels=2048, kernel_size=(
+        self.res5a_branch2c = self.conv(2, name='res5a_branch2c', in_channels=512, out_channels=2048, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
-        self.bn5a_branch2c = self.__batch_normalization(
+        self.bn5a_branch2c = self.batch_normalization(
             2, 'bn5a_branch2c', num_features=2048, eps=9.999999747378752e-06, momentum=0.0)
-        self.res5b_branch2a = self.__conv(2, name='res5b_branch2a', in_channels=2048, out_channels=512, kernel_size=(
+        self.res5b_branch2a = self.conv(2, name='res5b_branch2a', in_channels=2048, out_channels=512, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
-        self.bn5b_branch2a = self.__batch_normalization(
+        self.bn5b_branch2a = self.batch_normalization(
             2, 'bn5b_branch2a', num_features=512, eps=9.999999747378752e-06, momentum=0.0)
-        self.res5b_branch2b = self.__conv(2, name='res5b_branch2b', in_channels=512, out_channels=512, kernel_size=(
+        self.res5b_branch2b = self.conv(2, name='res5b_branch2b', in_channels=512, out_channels=512, kernel_size=(
             3, 3), stride=(1, 1), groups=1, bias=False)
-        self.bn5b_branch2b = self.__batch_normalization(
+        self.bn5b_branch2b = self.batch_normalization(
             2, 'bn5b_branch2b', num_features=512, eps=9.999999747378752e-06, momentum=0.0)
-        self.res5b_branch2c = self.__conv(2, name='res5b_branch2c', in_channels=512, out_channels=2048, kernel_size=(
+        self.res5b_branch2c = self.conv(2, name='res5b_branch2c', in_channels=512, out_channels=2048, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
-        self.bn5b_branch2c = self.__batch_normalization(
+        self.bn5b_branch2c = self.batch_normalization(
             2, 'bn5b_branch2c', num_features=2048, eps=9.999999747378752e-06, momentum=0.0)
-        self.res5c_branch2a = self.__conv(2, name='res5c_branch2a', in_channels=2048, out_channels=512, kernel_size=(
+        self.res5c_branch2a = self.conv(2, name='res5c_branch2a', in_channels=2048, out_channels=512, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
-        self.bn5c_branch2a = self.__batch_normalization(
+        self.bn5c_branch2a = self.batch_normalization(
             2, 'bn5c_branch2a', num_features=512, eps=9.999999747378752e-06, momentum=0.0)
-        self.res5c_branch2b = self.__conv(2, name='res5c_branch2b', in_channels=512, out_channels=512, kernel_size=(
+        self.res5c_branch2b = self.conv(2, name='res5c_branch2b', in_channels=512, out_channels=512, kernel_size=(
             3, 3), stride=(1, 1), groups=1, bias=False)
-        self.bn5c_branch2b = self.__batch_normalization(
+        self.bn5c_branch2b = self.batch_normalization(
             2, 'bn5c_branch2b', num_features=512, eps=9.999999747378752e-06, momentum=0.0)
-        self.res5c_branch2c = self.__conv(2, name='res5c_branch2c', in_channels=512, out_channels=2048, kernel_size=(
+        self.res5c_branch2c = self.conv(2, name='res5c_branch2c', in_channels=512, out_channels=2048, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
-        self.bn5c_branch2c = self.__batch_normalization(
+        self.bn5c_branch2c = self.batch_normalization(
             2, 'bn5c_branch2c', num_features=2048, eps=9.999999747378752e-06, momentum=0.0)
-        self.fc798_1 = self.__dense(
+        self.fc798_1 = self.dense(
             name='fc798_1', in_features=2048, out_features=798, bias=True)
 
     def forward(self, x):
@@ -527,9 +527,9 @@ def res50_top(KitModule):
         bn5c_branch2c = self.bn5c_branch2c(res5c_branch2c)
         res5c = res5b_relu + bn5c_branch2c
         res5c_relu = F.relu(res5c)
-        pool5 = F.avg_pool2d(res5c_relu, kernel_size=(
-            7, 7), stride=(1, 1), padding=(0,), ceil_mode=False)
-        return pool5
+        # pool5 = F.avg_pool2d(res5c_relu, kernel_size=(
+        #    7, 7), stride=(1, 1), padding=(0,), ceil_mode=False)
+        return res5c_relu
 
         #fc798_0 = pool5.view(pool5.size(0), -1)
         #fc798_1 = self.fc798_1(fc798_0)
@@ -559,7 +559,7 @@ class PreResNet50(_fasterRCNN):
 
         def set_bn_fix(m):
             classname = m.__class__.__name__
-            if classname.find('bn') != -1:
+            if classname.find('BatchNorm') != -1:
                 for p in m.parameters():
                     p.requires_grad = False
 
@@ -577,7 +577,7 @@ class PreResNet50(_fasterRCNN):
 
             def set_bn_eval(m):
                 classname = m.__class__.__name__
-                if classname.find('bn') != -1:
+                if classname.find('BatchNorm') != -1:
                     m.eval()
 
             self.RCNN_base.apply(set_bn_eval)
