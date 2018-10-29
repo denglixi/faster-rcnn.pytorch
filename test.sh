@@ -5,11 +5,11 @@ GPU_ID=1
 
 # basic set
 DATASET=foodtechmixed
-NET=res101 #{foodres50, res101, vgg16}
+NET=foodres50 #{foodres50, res101, vgg16}
 
 # load weight
-SESSION=6
-EPOCH=26
+SESSION=10
+EPOCH=20
 CHECKPOINT=2999
 
 # vis

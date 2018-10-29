@@ -138,30 +138,8 @@ def del_node_by_tagkeyvalue(nodelist, tag, kv_map):
                 parent_node.remove(child)
 
 
-def construct_dict(key_file, val_file):
-    res = {}
-    with open(key_file, 'r') as f:
-        keys = [x.strip('\n') for x in f.readlines()]
-    with open(val_file, 'r') as f:
-        vals = [x.strip('\n') for x in f.readlines()]
-    for k, v in zip(keys, vals):
-        res[k] = v
-    return res
-
-
 if __name__ == "__main__":
-
-    path = "./data/Food/Food_YIH/old"
-    files = os.listdir(path)
-    for x_f in files:
-        tree = read_xml(os.path.join(path, x_f))
-        objects = tree.findall('object')
-        convert_dict = construct_dict('./key.txt', './value.txt')
-
-        for obj in objects:
-            obj.find('name').text = convert_dict[obj.find('name').text]
-
-        write_xml(tree, path + "/../new/" + x_f)
+    pass
 
 
 def demo():
