@@ -21,7 +21,7 @@ __sets = {}
 
 # Set up Food_<carteen>_<split>
 for cantee in ['Tech', "YIH"]:
-    for split in ['train', 'val', ]:
+    for split in ['train', 'val', "occur_in_tech"]:
         name = 'food_{}_{}'.format(cantee, split)
         __sets[name] = (lambda split=split,
                         cantee=cantee: food_tech_mix(split, cantee))
