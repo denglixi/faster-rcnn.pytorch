@@ -386,7 +386,8 @@ if __name__ == '__main__':
         gt_boxes_cpu = gt_boxes.cpu().numpy()[0]  # It is 0 for batch size is 1
         gt_boxes_cpu[:, 0:4] /= float(im_info[0][2].cpu().numpy())
 
-        save_vis_root_path = "./savevis/"
+        save_vis_root_path = '/savevis/{}_{}_{}/'.format(
+            args.checksession, args.checkepoch, args.checkpoint)
 
         # islink not working
         # if os.path.islink(save_vis_root_path):

@@ -287,7 +287,7 @@ if __name__ == '__main__':
                             class_agnostic=args.class_agnostic)
     elif args.net == 'foodres50':
         fasterRCNN = PreResNet50(imdb.classes,
-                                 class_agnostic=args.class_agnostic)
+                                 class_agnostic=args.class_agnostic, weight_file=None)
     else:
         print("network is not defined")
         pdb.set_trace()

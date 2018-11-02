@@ -184,7 +184,7 @@ if __name__ == '__main__':
         fasterRCNN = resnet(pascal_classes, 152, pretrained=False,
                             class_agnostic=args.class_agnostic)
     elif args.net == 'foodres50':
-        fasterRCNN = PreResNet50(pascal_classes,
+        fasterRCNN = PreResNet50(pascal_classes, pretrained=False,
                                  class_agnostic=args.class_agnostic)
     else:
         print("network is not defined")
@@ -199,7 +199,6 @@ if __name__ == '__main__':
         checkpoint = torch.load(
             load_name, map_location=(lambda storage, loc: storage))
     fasterRCNN.load_state_dict(checkpoint['model'])
-    pdb.set_trace()
     if 'pooling_mode' in checkpoint.keys():
         cfg.POOLING_MODE = checkpoint['pooling_mode']
 

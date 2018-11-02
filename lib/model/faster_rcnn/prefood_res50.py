@@ -31,7 +31,7 @@ def load_weights(weight_file):
 
 
 class KitModule(nn.Module):
-    def __init__(self, weight_file):
+    def __init__(self, weight_file=None):
         super(KitModule, self).__init__()
         global __weights_dict
         __weights_dict = load_weights(weight_file)
@@ -50,22 +50,25 @@ class KitModule(nn.Module):
         else:
             raise NotImplementedError()
 
-        if 'scale' in __weights_dict[name]:
-            layer.state_dict()['weight'].copy_(
-                torch.from_numpy(__weights_dict[name]['scale']))
-        else:
-            layer.weight.data.fill_(1)
+        try:
+            if 'scale' in __weights_dict[name]:
+                layer.state_dict()['weight'].copy_(
+                    torch.from_numpy(__weights_dict[name]['scale']))
+            else:
+                layer.weight.data.fill_(1)
 
-        if 'bias' in __weights_dict[name]:
-            layer.state_dict()['bias'].copy_(
-                torch.from_numpy(__weights_dict[name]['bias']))
-        else:
-            layer.bias.data.fill_(0)
+            if 'bias' in __weights_dict[name]:
+                layer.state_dict()['bias'].copy_(
+                    torch.from_numpy(__weights_dict[name]['bias']))
+            else:
+                layer.bias.data.fill_(0)
 
-        layer.state_dict()['running_mean'].copy_(
-            torch.from_numpy(__weights_dict[name]['mean']))
-        layer.state_dict()['running_var'].copy_(
-            torch.from_numpy(__weights_dict[name]['var']))
+            layer.state_dict()['running_mean'].copy_(
+                torch.from_numpy(__weights_dict[name]['mean']))
+            layer.state_dict()['running_var'].copy_(
+                torch.from_numpy(__weights_dict[name]['var']))
+        except (KeyError, TypeError):
+            print("no weight of {} from pretrained model".format(name))
         return layer
 
     # @staticmethod
@@ -79,21 +82,28 @@ class KitModule(nn.Module):
         else:
             raise NotImplementedError()
 
-        layer.state_dict()['weight'].copy_(
-            torch.from_numpy(__weights_dict[name]['weights']))
-        if 'bias' in __weights_dict[name]:
-            layer.state_dict()['bias'].copy_(
-                torch.from_numpy(__weights_dict[name]['bias']))
+        try:
+            layer.state_dict()['weight'].copy_(
+                torch.from_numpy(__weights_dict[name]['weights']))
+            if 'bias' in __weights_dict[name]:
+                layer.state_dict()['bias'].copy_(
+                    torch.from_numpy(__weights_dict[name]['bias']))
+        except (KeyError, TypeError):
+            print("no weight of {} from pretrained model".format(name))
+
         return layer
 
     # @staticmethod
     def dense(self, name, **kwargs):
         layer = nn.Linear(**kwargs)
-        layer.state_dict()['weight'].copy_(
-            torch.from_numpy(__weights_dict[name]['weights']))
-        if 'bias' in __weights_dict[name]:
-            layer.state_dict()['bias'].copy_(
-                torch.from_numpy(__weights_dict[name]['bias']))
+        try:
+            layer.state_dict()['weight'].copy_(
+                torch.from_numpy(__weights_dict[name]['weights']))
+            if 'bias' in __weights_dict[name]:
+                layer.state_dict()['bias'].copy_(
+                    torch.from_numpy(__weights_dict[name]['bias']))
+        except (KeyError, TypeError):
+            print("no weight of {} from pretrained model".format(name))
         return layer
 
 # class res50_b1(KitModule):
@@ -107,12 +117,12 @@ class KitModule(nn.Module):
 
 
 class res50_layer1(KitModule):
-    def __init__(self, weight_file):
+    def __init__(self, weight_file=None):
         super(res50_layer1, self).__init__(weight_file)
 
 
 class res50_base(KitModule):
-    def __init__(self, weight_file):
+    def __init__(self, weight_file=None):
         super(res50_base, self).__init__(weight_file)
 
         self.conv1 = self.conv(2, name='conv1', in_channels=3, out_channels=64, kernel_size=(
@@ -450,7 +460,7 @@ class res50_base(KitModule):
 
 
 class res50_top(KitModule):
-    def __init__(self, weight_file):
+    def __init__(self, weight_file=None):
         super(res50_top, self).__init__(weight_file)
 
         self.res5a_branch1 = self.conv(2, name='res5a_branch1', in_channels=1024, out_channels=2048, kernel_size=(
@@ -543,8 +553,11 @@ class res50_top(KitModule):
 
 class PreResNet50(_fasterRCNN):
 
-    def __init__(self, classes, class_agnostic=False):
+    def __init__(self, classes, pretrained=False, class_agnostic=False):
+
         self.model_path = "/home/d/denglixi/weights/pytorch_faster_rcnn/prefood_res50.pth"
+        if not pretrained:
+            self.model_path = None
         self.dout_base_model = 1024
         self.class_agnostic = class_agnostic
 
