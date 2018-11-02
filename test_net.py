@@ -248,23 +248,37 @@ if __name__ == '__main__':
 
     _t = {'im_detect': time.time(), 'misc': time.time()}
     det_file = os.path.join(output_dir, 'detections.pkl')
+
+    args.save_for_vis = True
+
     if(args.test_cache):
-        import pdb
-        pdb.set_trace()
         with open(det_file, 'rb') as f:
             all_boxes = pickle.load(f)
         imdb.evaluate_detections(all_boxes, output_dir)
         exit()
+        if args.save_for_vis:
+            gt_roidb = imdb.gt_roidb()
+            for im_idx in len(imdb.image_index):
+                pass
+                # Not Implement
+                # TODO 1. save cls that was not been detected or was wrong classified
+                # TODO 1. save cls that wrong detected
+                #
 
     fasterRCNN.eval()
     empty_array = np.transpose(np.array([[], [], [], [], []]), (1, 0))
     for i in range(num_images):
+
+        data_tic = time.time()
 
         data = next(data_iter)
         im_data.data.resize_(data[0].size()).copy_(data[0])
         im_info.data.resize_(data[1].size()).copy_(data[1])
         gt_boxes.data.resize_(data[2].size()).copy_(data[2])
         num_boxes.data.resize_(data[3].size()).copy_(data[3])
+
+        data_toc = time.time()
+        data_load_time = data_toc - data_tic
 
         det_tic = time.time()
         rois, cls_prob, bbox_pred, \
@@ -303,7 +317,7 @@ if __name__ == '__main__':
 
         detect_time = det_toc - det_tic
         misc_tic = time.time()
-        if vis:
+        if vis or args.save_for_vis:
             im = cv2.imread(imdb.image_path_at(i))
             im2show = np.copy(im)
         for j in xrange(1, imdb.num_classes):
@@ -322,9 +336,9 @@ if __name__ == '__main__':
                 cls_dets = cls_dets[order]
                 keep = nms(cls_dets, cfg.TEST.NMS)
                 cls_dets = cls_dets[keep.view(-1).long()]
-                if vis:
+                if vis or args.save_for_vis:
                     im2show = vis_detections(
-                        im2show, imdb.classes[j], cls_dets.cpu().numpy(), 0.003)
+                        im2show, imdb.classes[j], cls_dets.cpu().numpy(), 0.1)
                 all_boxes[j][i] = cls_dets.cpu().numpy()
             else:
                 all_boxes[j][i] = empty_array
@@ -339,11 +353,12 @@ if __name__ == '__main__':
                     keep = np.where(all_boxes[j][i][:, -1] >= image_thresh)[0]
                     all_boxes[j][i] = all_boxes[j][i][keep, :]
 
+        # save images by gt for analysis
         misc_toc = time.time()
         nms_time = misc_toc - misc_tic
 
-        sys.stdout.write('im_detect: {:d}/{:d} {:.3f}s {:.3f}s   \r'
-                         .format(i + 1, num_images, detect_time, nms_time))
+        sys.stdout.write('im_detect: {:d}/{:d} dataload:{:.3f}s det:{:.3f}s nms:{:.3f}s  \r'
+                         .format(i + 1, num_images, data_load_time,  detect_time, nms_time))
         sys.stdout.flush()
 
         if vis:
@@ -353,6 +368,69 @@ if __name__ == '__main__':
             cv2.resizeWindow("frame", 800, 800)
             cv2.imshow('frame', im2show)
             cv2.waitKey(0)
+
+        # To save image for analysis
+        # Limit to threshhold detections *over all classes*
+        threshhold_of_vis = 0.1
+        if max_per_image > 0:
+            image_scores = np.hstack([all_boxes[j][i][:, -1]
+                                      for j in xrange(1, imdb.num_classes)])
+            image_thresh = 0.1  # np.sort(image_scores)[-max_per_image]
+            for j in xrange(1, imdb.num_classes):
+                keep = np.where(all_boxes[j][i][:, -1] >= image_thresh)[0]
+                all_boxes[j][i] = all_boxes[j][i][keep, :]
+
+        # boxes_of_i = [ _[i] if _[i][4] > 0.1 for _ in all_boxes]
+        boxes_of_i = [_[i] for _ in all_boxes]
+        # filter boxes with lower score
+        gt_boxes_cpu = gt_boxes.cpu().numpy()[0]  # It is 0 for batch size is 1
+        gt_boxes_cpu[:, 0:4] /= float(im_info[0][2].cpu().numpy())
+
+        save_vis_root_path = "./savevis/"
+
+        # islink not working
+        # if os.path.islink(save_vis_root_path):
+        #    linkpath = os.readlink(save_vis_root_path)
+        #    if not os.path.exists(linkpath):
+        #        os.makedirs(linkpath)
+        # else:
+        #    if not os.path.exists(save_vis_root_path):
+        #        os.makedirs(save_vis_root_path)
+
+        # show ground-truth
+        for gt_b in gt_boxes_cpu:
+            im2show = vis_detections(
+                im2show, imdb.classes[int(gt_b[-1])], gt_b[np.newaxis, :], 0.1, (204, 0, 0))
+
+        i_row, i_c, _ = im2show.shape
+        im2show = cv2.resize(im2show, (int(i_c/2), int(i_row/2)))
+
+        # 1. gt未检测到
+        # 2. gt类别错误(TODO)
+        for gt_b in gt_boxes_cpu:
+            gt_cls_idx = int(gt_b[4])
+            # 1 && 2
+            if len(boxes_of_i[gt_cls_idx]) == 0:
+                save_vis_path = save_vis_root_path + \
+                    'FN/' + imdb.classes[int(gt_cls_idx)]
+                if not os.path.exists(save_vis_path):
+                    os.makedirs(save_vis_path)
+                # im2vis_analysis = vis_detections(
+                #    im2show, imdb.classes[int(gt_b[-1])], gt_b[np.newaxis,:], 0.1, (204, 0, 0))
+                cv2.imwrite(os.path.join(save_vis_path,
+                                         imdb.image_index[i]+'.jpg'), im2show)
+
+        gt_classes = [int(_[-1]) for _ in gt_boxes_cpu]
+        # 3. FP
+        for i, det_b_cls in enumerate(boxes_of_i):
+            if len(det_b_cls) > 0:
+                if i not in gt_classes:
+                    save_vis_path = save_vis_root_path + \
+                        'FP/' + str(imdb.classes[i])
+                    if not os.path.exists(save_vis_path):
+                        os.makedirs(save_vis_path)
+                    cv2.imwrite(os.path.join(save_vis_path,
+                                             imdb.image_index[i]+'.jpg'), im2show)
 
     with open(det_file, 'wb') as f:
         pickle.dump(all_boxes, f, pickle.HIGHEST_PROTOCOL)

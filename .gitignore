@@ -209,6 +209,7 @@ output
 images
 logs
 Experiments
+savevis
 
 #pyenv-
 .python-version

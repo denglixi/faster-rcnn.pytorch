@@ -16,7 +16,9 @@ CHECKPOINT=2999
 IS_VIS=false
 
 # test cache
+#IS_TEST_CACHE=true
 IS_TEST_CACHE=false
+
 
 if $IS_VIS ;then
     CUDA_VISIBLE_DEVICES=$GPU_ID python test_vis.py --dataset $DATASET --net $NET \

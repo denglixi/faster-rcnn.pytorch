@@ -212,7 +212,10 @@ class roibatchLoader(data.Dataset):
                 3, data_height, data_width)
             im_info = im_info.view(3)
 
-            gt_boxes = torch.FloatTensor([1, 1, 1, 1, 1])
+            #gt_boxes = torch.FloatTensor([1, 1, 1, 1, 1])
+            # for visualization of test dataset, read the gt_boxes
+
+            gt_boxes = torch.from_numpy(blobs['gt_boxes'])
             num_boxes = 0
 
             return data, im_info, gt_boxes, num_boxes
