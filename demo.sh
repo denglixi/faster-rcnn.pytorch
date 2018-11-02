@@ -7,9 +7,9 @@ MODELDIR=./models/
 #webcam_num -2 show image online -1 saveimage
 
 # load weight
-SESSION=7
-EPOCH=1
-CHECKPOINT=749
+SESSION=10
+EPOCH=69
+CHECKPOINT=2999
 
 
 # basic set
