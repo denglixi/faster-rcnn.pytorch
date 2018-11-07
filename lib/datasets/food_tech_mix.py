@@ -348,6 +348,8 @@ class food_tech_mix(imdb):
         print('-- Thanks, The Management')
         print('--------------------------------------------------------------')
 
+        return zip(self._classes, aps), np.mean(aps)
+
     def _do_matlab_eval(self, output_dir='output'):
         print('-----------------------------------------------------')
         print('Computing results with the official MATLAB eval code.')

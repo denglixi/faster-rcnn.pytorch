@@ -88,6 +88,8 @@ def parse_args():
                         action='store_true')
     parser.add_argument('--test_cache', dest='test_cache',
                         action='store_true')
+    parser.add_argument('--save_for_vis', dest='save_for_vis',
+                        type=bool, default=False)
     args = parser.parse_args()
     return args
 
@@ -182,7 +184,7 @@ if __name__ == '__main__':
         fasterRCNN = resnet(imdb.classes, 152, pretrained=False,
                             class_agnostic=args.class_agnostic)
     elif args.net == 'foodres50':
-        fasterRCNN = PreResNet50(imdb.classes,
+        fasterRCNN = PreResNet50(imdb.classes, pretrained=True,
                                  class_agnostic=args.class_agnostic)
     else:
         print("network is not defined")
@@ -195,8 +197,8 @@ if __name__ == '__main__':
     fasterRCNN.load_state_dict(checkpoint['model'])
     if 'pooling_mode' in checkpoint.keys():
         cfg.POOLING_MODE = checkpoint['pooling_mode']
-
     print('load model successfully!')
+
     # initilize the tensor holder here.
     im_data = torch.FloatTensor(1)
     im_info = torch.FloatTensor(1)
@@ -232,7 +234,8 @@ if __name__ == '__main__':
     else:
         thresh = 0.0
 
-    save_name = 'faster_rcnn_10'
+    save_name = 'faster_rcnn_{}_{}_{}'.format(
+        args.checksession, args.checkepoch, args.checkpoint)
     num_images = len(imdb.image_index)
     all_boxes = [[[] for _ in xrange(num_images)]
                  for _ in xrange(imdb.num_classes)]
@@ -248,8 +251,6 @@ if __name__ == '__main__':
 
     _t = {'im_detect': time.time(), 'misc': time.time()}
     det_file = os.path.join(output_dir, 'detections.pkl')
-
-    args.save_for_vis = True
 
     if(args.test_cache):
         with open(det_file, 'rb') as f:
@@ -386,52 +387,53 @@ if __name__ == '__main__':
         gt_boxes_cpu = gt_boxes.cpu().numpy()[0]  # It is 0 for batch size is 1
         gt_boxes_cpu[:, 0:4] /= float(im_info[0][2].cpu().numpy())
 
-        save_vis_root_path = '/savevis/{}_{}_{}/'.format(
-            args.checksession, args.checkepoch, args.checkpoint)
+        if args.save_for_vis:
+            save_vis_root_path = './savevis/{}_{}_{}/'.format(
+                args.checksession, args.checkepoch, args.checkpoint)
 
-        # islink not working
-        # if os.path.islink(save_vis_root_path):
-        #    linkpath = os.readlink(save_vis_root_path)
-        #    if not os.path.exists(linkpath):
-        #        os.makedirs(linkpath)
-        # else:
-        #    if not os.path.exists(save_vis_root_path):
-        #        os.makedirs(save_vis_root_path)
+            # islink not working
+            # if os.path.islink(save_vis_root_path):
+            #    linkpath = os.readlink(save_vis_root_path)
+            #    if not os.path.exists(linkpath):
+            #        os.makedirs(linkpath)
+            # else:
+            #    if not os.path.exists(save_vis_root_path):
+            #        os.makedirs(save_vis_root_path)
 
-        # show ground-truth
-        for gt_b in gt_boxes_cpu:
-            im2show = vis_detections(
-                im2show, imdb.classes[int(gt_b[-1])], gt_b[np.newaxis, :], 0.1, (204, 0, 0))
+            # show ground-truth
+            for gt_b in gt_boxes_cpu:
+                im2show = vis_detections(
+                    im2show, imdb.classes[int(gt_b[-1])], gt_b[np.newaxis, :], 0.1, (204, 0, 0))
 
-        i_row, i_c, _ = im2show.shape
-        im2show = cv2.resize(im2show, (int(i_c/2), int(i_row/2)))
+            i_row, i_c, _ = im2show.shape
+            im2show = cv2.resize(im2show, (int(i_c/2), int(i_row/2)))
 
-        # 1. gt未检测到
-        # 2. gt类别错误(TODO)
-        for gt_b in gt_boxes_cpu:
-            gt_cls_idx = int(gt_b[4])
-            # 1 && 2
-            if len(boxes_of_i[gt_cls_idx]) == 0:
-                save_vis_path = save_vis_root_path + \
-                    'FN/' + imdb.classes[int(gt_cls_idx)]
-                if not os.path.exists(save_vis_path):
-                    os.makedirs(save_vis_path)
-                # im2vis_analysis = vis_detections(
-                #    im2show, imdb.classes[int(gt_b[-1])], gt_b[np.newaxis,:], 0.1, (204, 0, 0))
-                cv2.imwrite(os.path.join(save_vis_path,
-                                         imdb.image_index[i]+'.jpg'), im2show)
-
-        gt_classes = [int(_[-1]) for _ in gt_boxes_cpu]
-        # 3. FP
-        for i, det_b_cls in enumerate(boxes_of_i):
-            if len(det_b_cls) > 0:
-                if i not in gt_classes:
+            # 1. gt未检测到
+            # 2. gt类别错误(TODO)
+            for gt_b in gt_boxes_cpu:
+                gt_cls_idx = int(gt_b[4])
+                # 1 && 2
+                if len(boxes_of_i[gt_cls_idx]) == 0:
                     save_vis_path = save_vis_root_path + \
-                        'FP/' + str(imdb.classes[i])
+                        'FN/' + imdb.classes[int(gt_cls_idx)]
                     if not os.path.exists(save_vis_path):
                         os.makedirs(save_vis_path)
+                    # im2vis_analysis = vis_detections(
+                    #    im2show, imdb.classes[int(gt_b[-1])], gt_b[np.newaxis,:], 0.1, (204, 0, 0))
                     cv2.imwrite(os.path.join(save_vis_path,
                                              imdb.image_index[i]+'.jpg'), im2show)
+
+            gt_classes = [int(_[-1]) for _ in gt_boxes_cpu]
+            # 3. FP
+            for i, det_b_cls in enumerate(boxes_of_i):
+                if len(det_b_cls) > 0:
+                    if i not in gt_classes:
+                        save_vis_path = save_vis_root_path + \
+                            'FP/' + str(imdb.classes[i])
+                        if not os.path.exists(save_vis_path):
+                            os.makedirs(save_vis_path)
+                        cv2.imwrite(os.path.join(save_vis_path,
+                                                 imdb.image_index[i]+'.jpg'), im2show)
 
     with open(det_file, 'wb') as f:
         pickle.dump(all_boxes, f, pickle.HIGHEST_PROTOCOL)

@@ -74,16 +74,39 @@ def get_xml_from_file(file_path, xml_dir):
     stats = {}
     with open(file_path) as f:
         all_xml_name = [x.strip()+".xml" for x in f.readlines()]
-    for x_f in all_xml_name:
-        objs = parse_rec(os.path.join(xml_dir, x_f))
-        for obj in objs:
-            cls_name = int(obj['name'])
-            if cls_name in stats:
-                stats[cls_name] += 1
-            else:
-                stats[cls_name] = 1
+    try:
+        for x_f in all_xml_name:
+            objs = parse_rec(os.path.join(xml_dir, x_f))
+            for obj in objs:
+                cls_name = int(obj['name'])
+                if cls_name in stats:
+                    stats[cls_name] += 1
+                else:
+                    stats[cls_name] = 1
+    except Exception:
+        print("--------------")
+        print(os.path.join(xml_dir, x_f))
+        raise Exception
     stats = sorted(stats.items(), key=lambda t: t[0])
     return stats
+
+
+def printdict(d):
+    for k in d:
+        print(k, end='    ')
+    print("\n")
+    for k in d:
+        print(d[k], end='    ')
+    print("\n")
+
+
+def printlist_of_tuples(d):
+    for k, v in d:
+        print(k, end='    ')
+    print("\n")
+    for k, v in d:
+        print(v, end='    ')
+    print("\n")
 
 
 def main():
@@ -91,16 +114,33 @@ def main():
     #    "/home/d/denglixi/data/Food/YIH/19sept")
     # stats = get_all_xml_files_from_path(
     #    "/home/d/denglixi/data/Food/YIH/20sept")
-    xmlset = "/home/d/denglixi/data/Food/Food_Tech/ImageSets/train.txt"
-    xml_dir = "/home/d/denglixi/data/Food/Food_Tech/Annotations"
-    stats = get_xml_from_file(xmlset, xml_dir)
+
+    # YIH
+    xmlset = "/home/d/denglixi/data/Food/Food_YIH/ImageSets/occur_in_tech.txt"
+    xml_dir = "/home/d/denglixi/data/Food/Food_YIH/Annotations"
+    stats_yih = get_xml_from_file(xmlset, xml_dir)
+    print("dict of YIH:")
+    printlist_of_tuples(stats_yih)
+    return
+
+    # tech statics
+    tech_set = "/home/d/denglixi/data/Food/Food_Tech/ImageSets/val.txt"
+    tech_xml_dir = "/home/d/denglixi/data/Food/Food_Tech/Annotations"
+    stats_tech = get_xml_from_file(tech_set, tech_xml_dir)
+    print("dict of tech:")
+    printlist_of_tuples(stats_tech)
+
+    # inter = dict.fromkeys([x for x in stats_yih if x in stats_tech])
+    # printdict(inter)
+
+    print("inner of YIH & tech")
+    inner = [k for k in stats_yih if k in stats_tech]
+    inner = sorted(inner)
+    print(inner)
+    for i in inner:
+        print(stats_yih[i])
 
     zhfont1 = FontProperties(fname='./simsun.ttc')
-    for v, k in stats:
-        print(v, end='\t')
-    print("\n")
-    for v, k in stats:
-        print(k, end='\t')
 
     return
     #plt.rcParams['font.sans-serif'] = ['simsum.ttc']

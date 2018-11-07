@@ -47,5 +47,4 @@ if __name__ == "__main__":
                 convert_dict = construct_dict('./key.txt', './value.txt')
                 for obj in objects:
                     obj.find('name').text = convert_dict[obj.find('name').text]
-
                 write_xml(tree, os.path.join(root, x_f))

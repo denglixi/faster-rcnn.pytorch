@@ -92,7 +92,9 @@ def main():
 
     # 3. 通过协程
     # how to implement??
+    # NotImplemented
 
+    # 保存筛选信息
     with open("filter_xml.txt", 'w') as f:
         for i in filter_xmls:
             x_name = os.path.split(i)[1]
