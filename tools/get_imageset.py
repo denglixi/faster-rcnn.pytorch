@@ -10,6 +10,7 @@
 获取特定的imageset 文件
 1. 读xml
 2. 过滤
+    实现了按照obejct的类别过滤
 """
 import os
 from xml_process import parse_rec

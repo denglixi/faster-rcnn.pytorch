@@ -66,7 +66,7 @@ def main():
     imageset_path = os.path.join(DATA_PATH, 'ImageSets')
     if not os.path.exists(imageset_path):
         os.makedirs(imageset_path)
-    with open(os.path.join(imageset_path, "allxml.txt"), "w") as f:
+    with open(os.path.join(imageset_path, "trainval.txt"), "w") as f:
         for f_name in os.listdir(anno_path):
             split_f_name = os.path.splitext(f_name)
             ext = split_f_name[1]

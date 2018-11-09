@@ -5,6 +5,9 @@
 #
 # Distributed under terms of the MIT license.
 #
+# shell to create voc dataset from rawdata we collect
+# 1. convert .JPG to .jpg
+# 2. create VOC format dataset
 
 RAW_DATA_PATH="./YIH"
 DATA_PATH="./Food_YIH/"

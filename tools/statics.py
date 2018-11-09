@@ -32,7 +32,12 @@ def get_all_xml_files_from_dir(dir_path):
     for i in allfiles:
         objs = parse_rec(os.path.join(dir_path, i))
         for obj in objs:
-            cls_name = int(obj['name'])
+            try:
+                cls_name = int(obj['name'])
+            except Exception as e:
+                print(e)
+                print(dir_path + i)
+
             if cls_name in stats:
                 stats[cls_name] += 1
             else:
@@ -54,7 +59,12 @@ def get_all_xml_files_from_path(root_path):
             if os.path.splitext(x_f)[1] == '.xml':
                 objs = parse_rec(os.path.join(root, x_f))
                 for obj in objs:
-                    cls_name = int(obj['name'])
+                    try:
+                        cls_name = int(obj['name'])
+                    except Exception as e:
+                        print(e)
+                        print(root + x_f)
+
                     if cls_name in stats:
                         stats[cls_name] += 1
                     else:
@@ -109,19 +119,69 @@ def printlist_of_tuples(d):
     print("\n")
 
 
+def read_original_id(id_file_path):
+    with open(id_file_path) as f:
+        return [int(x.strip('\n')) for x in f.readlines()]
+
+
+def is_id_in_annotation(xml_id, annotation_id):
+    """is_id_in_annotation
+
+    :param xml_id: list of id occured in xml files
+    :param annotation_id: list of id which used for annotation
+    """
+    not_in_anno = [x for x in xml_id if x not in annotation_id]
+    not_in_xml = [x for x in annotation_id if x not in xml_id]
+    return not_in_anno, not_in_xml
+
+
+def test_can(statisc, annotation_id):
+    xml_id = [x[0] for x in statisc]
+    return is_id_in_annotation(xml_id, annotation_id)
+
 def main():
+    """main"""
     # stats = get_all_xml_files_from_path(
     #    "/home/d/denglixi/data/Food/YIH/19sept")
     # stats = get_all_xml_files_from_path(
     #    "/home/d/denglixi/data/Food/YIH/20sept")
 
+    # tech chicken
+    techchicken_root = '/home/next/Big/data/Techno Edge/ChickenRice'
+    techchicken_statis = get_all_xml_files_from_path(techchicken_root)
+    print("-----------tech chicken----------")
+    #printlist_of_tuples(techchicken_statis)
+    print( test_can(techchicken_statis, read_original_id('./unified_id/techchicken_original_id.txt')) )
+
+    # Utown
+    utown_root = '/home/next/Big/data/UTown_NoAC/MixedVeg/'
+    utown_statis = get_all_xml_files_from_path(utown_root)
+    print("-----------utown----------")
+    #printlist_of_tuples(utown_statis)
+    print( test_can(utown_statis, read_original_id('./unified_id/utown_original_id.txt')) )
+
+    # science
+    science_root = '/home/next/Big/data/Science'
+    science_statis = get_all_xml_files_from_path(science_root)
+    print("-----------sciecce----------")
+    #printlist_of_tuples(science_statis)
+    #print( test_can(utown_statis, read_original_id('./unified_id/utown_original_id.txt')) )
+
+    # arts
+    arts_root = '/home/next/Big/data/Arts/'
+    arts_statis = get_all_xml_files_from_path(arts_root)
+    print("-----------arts----------")
+    #printlist_of_tuples(arts_statis)
+    print(sum([x[1] for x in arts_statis]))
+    print( test_can(arts_statis, read_original_id('./unified_id/arts_original_id.txt')) )
+
+    return
     # YIH
     xmlset = "/home/d/denglixi/data/Food/Food_YIH/ImageSets/occur_in_tech.txt"
     xml_dir = "/home/d/denglixi/data/Food/Food_YIH/Annotations"
     stats_yih = get_xml_from_file(xmlset, xml_dir)
     print("dict of YIH:")
     printlist_of_tuples(stats_yih)
-    return
 
     # tech statics
     tech_set = "/home/d/denglixi/data/Food/Food_Tech/ImageSets/val.txt"
@@ -133,6 +193,7 @@ def main():
     # inter = dict.fromkeys([x for x in stats_yih if x in stats_tech])
     # printdict(inter)
 
+    return
     print("inner of YIH & tech")
     inner = [k for k in stats_yih if k in stats_tech]
     inner = sorted(inner)

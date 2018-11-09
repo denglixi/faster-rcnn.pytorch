@@ -8,6 +8,8 @@
 
 """
 transform the splited anonotations of each carteen to the uniform labels
+two files represent the original ID and unified ID respectively are needed.
+
 """
 
 import os
@@ -33,18 +35,24 @@ def parseargs():
     args = parser.parse_args()
     return args
 
-
-if __name__ == "__main__":
-    args = parseargs()
-
-    path = "/home/d/denglixi/data/Food/YIH/20sept"
+def unifiedID(carteen_dir, origin_ID_file_path, unified_ID_file_path):
+    path = carteen_dir
+    convert_dict = construct_dict(origin_ID_file_path, unified_ID_file_path)
     for root, dirs, files in os.walk(path):
         for x_f in files:
             if os.path.splitext(x_f)[1] == '.xml':
                 print(root+x_f)
                 tree = read_xml(os.path.join(root, x_f))
                 objects = tree.findall('object')
-                convert_dict = construct_dict('./key.txt', './value.txt')
                 for obj in objects:
                     obj.find('name').text = convert_dict[obj.find('name').text]
                 write_xml(tree, os.path.join(root, x_f))
+
+
+if __name__ == "__main__":
+    args = parseargs()
+    cantten = "YIH"
+    carteen_dir= "YIH"
+    origin_ID_file_path = 'key.txt'
+    unified_ID_file_path = 'val.txt'
+    unifiedID(carteen_dir, origin_ID_file_path, unified_ID_file_path)
