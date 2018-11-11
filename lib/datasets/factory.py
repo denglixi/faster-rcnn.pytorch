@@ -15,7 +15,7 @@ from datasets.coco import coco
 from datasets.imagenet import imagenet
 from datasets.vg import vg
 from datasets.food import food
-from datasets.food_tech_mix import food_tech_mix
+from datasets.food_data import food_merge_imdb
 
 __sets = {}
 
@@ -26,7 +26,7 @@ for cantee in ['exclYIH', "All", "exclArts", "exclUTown", "exclTechChicken", "ex
             category = category + '_train'
             name = 'food_{}_{}_{}'.format(cantee, split, category)
             __sets[name] = (lambda split=split,
-                            cantee=cantee, category=category: food_tech_mix(split, cantee, category))
+                            cantee=cantee, category=category: food_merge_imdb(split, cantee, category))
 
 # Set up Food_<carteen>_<split>
 for cantee in ['Tech', "YIH"]:

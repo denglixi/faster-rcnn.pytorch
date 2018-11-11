@@ -211,7 +211,7 @@ def main():
             #printlist_of_tuples(all_stats)
             class_file = './classes.txt'
             with open(class_file,'a') as f:
-                f.write('{}_{}_classes = [\'__background__\''.format(ct,dataset), )
+                f.write('{}_{}_classes = [\'__background__\','.format(ct,dataset), )
                 for k,v in all_stats:
                     f.write("'{}',".format(k))
                 f.write("]\n")

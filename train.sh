@@ -4,10 +4,10 @@ GPU_ID=1
 WORKER_NUMBER=1
 
 # basic set
-DATASET=foodtechmixed
+DATASET=foodAll
 NET=foodres50 #{foodres50, res101, vgg16}
 SESSION=10
-PRETRAIN=
+PRETRAIN=true
 MAXEPOCHS=100
 
 # optimizer setting

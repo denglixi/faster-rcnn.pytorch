@@ -555,7 +555,7 @@ class PreResNet50(_fasterRCNN):
 
     def __init__(self, classes, pretrained=False, class_agnostic=False):
 
-        self.model_path = "/home/d/denglixi/weights/pytorch_faster_rcnn/prefood_res50.pth"
+        self.model_path = "data/pretrained_model/prefood_res50.pth"
         if not pretrained:
             self.model_path = None
         self.dout_base_model = 1024

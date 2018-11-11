@@ -24,7 +24,7 @@ from .imdb import imdb
 from .imdb import ROOT_DIR
 from . import ds_utils
 from .voc_eval import voc_eval
-from .category import get_categories
+from .food_category import get_categories
 
 # TODO: make fast_rcnn irrelevant
 # >>>> obsolete, because it depends on sth outside of this project
@@ -40,7 +40,7 @@ except NameError:
 
 
 
-class food_tech_mix(imdb):
+class food_merge_imdb(imdb):
     def __init__(self, image_set, cantee, categories, devkit_path=None):
         """
         categories: All_trainval, exclYIH_trainval, ...

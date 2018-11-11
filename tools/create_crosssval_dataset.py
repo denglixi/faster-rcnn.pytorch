@@ -22,7 +22,10 @@ def create_dir(path):
 for exclude_ct in canteens + ['All']:
     print("canteens: exclude ", exclude_ct)
     # create
-    exclude_food_root = os.path.join(food_dataset_dir, 'Food_excl'+exclude_ct)
+    if exclude_ct == 'All':
+        exclude_food_root = os.path.join(food_dataset_dir, 'Food_'+exclude_ct)
+    else:
+        exclude_food_root = os.path.join(food_dataset_dir, 'Food_excl'+exclude_ct)
     exclude_food_Anno_dir  = os.path.join(exclude_food_root, "Annotations")
     exclude_food_ImSet_dir = os.path.join(exclude_food_root, "ImageSets")
     exclude_food_JPEG_dir = os.path.join(exclude_food_root, "JPEGImages")
@@ -42,10 +45,10 @@ for exclude_ct in canteens + ['All']:
         ct_JPEG_dir = os.path.join(ct_root, 'JPEGImages')
         # 处理空格
         # create soft link for mixed datset
-        #for f in os.listdir(ct_Anno_dir):
-        #    os.symlink( ct_Anno_dir+'/'+ f , exclude_food_Anno_dir +'/' + f )
-        #for f in os.listdir(ct_JPEG_dir):
-        #    os.symlink( ct_JPEG_dir+'/'+ f , exclude_food_JPEG_dir+'/' + f )
+        for f in os.listdir(ct_Anno_dir):
+            os.symlink( ct_Anno_dir+'/'+ f , exclude_food_Anno_dir +'/' + f )
+        for f in os.listdir(ct_JPEG_dir):
+            os.symlink( ct_JPEG_dir+'/'+ f , exclude_food_JPEG_dir+'/' + f )
         # trainval.txt
         ct_trainval_path = os.path.join(ct_ImSet_dir, 'trainval.txt')
         with open(ct_trainval_path) as f:

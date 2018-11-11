@@ -212,6 +212,11 @@ if __name__ == '__main__':
         args.imdbval_name = "food_Tech_val"
         args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
                          'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+    elif args.dataset == "foodAll":
+        args.imdb_name = "food_All_train_All_train"
+        args.imdbval_name = "food_All_val_All_train"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
     args.cfg_file = "cfgs/{}_ls.yml".format(
         args.net) if args.large_scale else "cfgs/{}.yml".format(args.net)
@@ -286,8 +291,8 @@ if __name__ == '__main__':
         fasterRCNN = resnet(imdb.classes, 152, pretrained=args.pretrained,
                             class_agnostic=args.class_agnostic)
     elif args.net == 'foodres50':
-        fasterRCNN = PreResNet50(imdb.classes,
-                                 class_agnostic=args.class_agnostic, weight_file=None)
+        fasterRCNN = PreResNet50(imdb.classes, pretrained=args.pretrained,
+                                 class_agnostic=args.class_agnostic )
     else:
         print("network is not defined")
         pdb.set_trace()
