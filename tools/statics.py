@@ -23,7 +23,7 @@ from xml_process import parse_rec
 
 def get_all_xml_files_from_dir(dir_path):
     """get_all_xml_files_from_dir
-    获取某个文件夹下所有xml文件
+
 
     :param dir_path:
     """
@@ -49,9 +49,8 @@ def get_all_xml_files_from_dir(dir_path):
 
 def get_all_xml_files_from_path(root_path):
     """get_all_xml_files_from_path
-    获取某个路径下，所有循环文件夹的xml文件
-
-    :param root_path:
+    including sub dir
+    uparam root_path:
     """
     stats = {}
     for root, dirs, files in os.walk(root_path):
@@ -76,10 +75,9 @@ def get_all_xml_files_from_path(root_path):
 
 def get_xml_from_file(file_path, xml_dir):
     """get_xml_from_file
-    根据文件内容，获取文件内容中给所有xml文件
 
-    :param file_path: 文件路径，每一行一个xml文件名，不带后缀
-    :param xml_dir:xml所在的文件夹
+    :param file_path: train.txt
+    :param xml_dir: Annotation dir
     """
     stats = {}
     with open(file_path) as f:
@@ -139,12 +137,8 @@ def test_can(statisc, annotation_id):
     xml_id = [x[0] for x in statisc]
     return is_id_in_annotation(xml_id, annotation_id)
 
-def main():
-    """main"""
-    # stats = get_all_xml_files_from_path(
-    #    "/home/d/denglixi/data/Food/YIH/19sept")
-    # stats = get_all_xml_files_from_path(
-    #    "/home/d/denglixi/data/Food/YIH/20sept")
+
+def statics_all_raw_data():
 
     # tech chicken
     techchicken_root = '/home/next/Big/data/Techno Edge/ChickenRice'
@@ -175,7 +169,6 @@ def main():
     print(sum([x[1] for x in arts_statis]))
     print( test_can(arts_statis, read_original_id('./unified_id/arts_original_id.txt')) )
 
-    return
     # YIH
     xmlset = "/home/d/denglixi/data/Food/Food_YIH/ImageSets/occur_in_tech.txt"
     xml_dir = "/home/d/denglixi/data/Food/Food_YIH/Annotations"
@@ -190,28 +183,64 @@ def main():
     print("dict of tech:")
     printlist_of_tuples(stats_tech)
 
+
+def main():
+    """main"""
+    # stats = get_all_xml_files_from_path(
+    #    "/home/d/denglixi/data/Food/YIH/19sept")
+    # stats = get_all_xml_files_from_path(
+    #    "/home/d/denglixi/data/Food/YIH/20sept")
+
     # inter = dict.fromkeys([x for x in stats_yih if x in stats_tech])
     # printdict(inter)
 
-    return
     print("inner of YIH & tech")
-    inner = [k for k in stats_yih if k in stats_tech]
-    inner = sorted(inner)
-    print(inner)
-    for i in inner:
-        print(stats_yih[i])
+    # inner = [k for k in stats_yih if k in stats_tech]
+    # inner = sorted(inner)
+    # print(inner)
+    # for i in inner:
+    #     print(stats_yih[i])
 
-    zhfont1 = FontProperties(fname='./simsun.ttc')
+    canttens = ['All', 'exclArts', 'exclYIH', 'exclTechChicken','exclTechMixedVeg', 'exclUTown']
+    for ct in canttens:
+        datasets= ['trainval', 'train', 'val']
+        for dataset in datasets:
+            all_trainval_set = "/home/lixi/data/FoodDataset/Food_{}/ImageSets/{}.txt".format(ct,dataset)
+            all_xml_dir = "/home/lixi/data/FoodDataset/Food_{}/Annotations".format(ct)
+            all_stats = get_xml_from_file(all_trainval_set, all_xml_dir)
+            #printlist_of_tuples(all_stats)
+            class_file = './classes.txt'
+            with open(class_file,'a') as f:
+                f.write('{}_{}_classes = [\'__background__\''.format(ct,dataset), )
+                for k,v in all_stats:
+                    f.write("'{}',".format(k))
+                f.write("]\n")
+
+            category_file = './category.py'
+            with open(category_file,'a') as f:
+                f.write('if category == \'{}_{}\':\n    return [\'__background__\''.format(ct,dataset), )
+                for k,v in all_stats:
+                    f.write("'{}',".format(k))
+                f.write("]\n")
+
+            with open("{}_{}_static.txt".format(ct,dataset), 'w') as f:
+                for k,v in all_stats:
+                    f.write(str(k)+'\t'+str(v) + '\n')
+
+
+
+
+
 
     return
-    #plt.rcParams['font.sans-serif'] = ['simsum.ttc']
+    zhfont1 = FontProperties(fname='./simsun.ttc')
     plt.bar(list(range(len(stats))), [v for k, v in stats])
-    plt.xticks(list(range(len(stats))), [u"白饭 ", u"咸蛋 ", u"翻炒蛋 ", u"番茄蛋 ",
-                                         u"糙米 ", "瘦肉 ", "小白菜（绿） ", "包菜 ", "苦瓜 ", "芹菜 ", "番薯葉 ",
-                                         u"南瓜 ", "豆芽 ", "白萝卜 ", "长豆 ", "西兰花和菜花 ", "酸辣羊角豆/秋葵 ", "菜花 ",
-                                         u"炒豆腐 ", "猪肝 ", "土豆炒番茄酱豆 ", "茄子 ", "滷豆腐 ", "鸭肉 ", "咖喱鸡 ",
-                                         u"红酱。酸甜肉 ", "肉碎 ", "卤鸡 ", "猪脚 ", "排骨 ", "三层肉 ", "黑酱猪肉",
-                                         u"炸鱼。整只 ", "炸鱼片。红酱汁。看似炒蛋 ", "章鱼，鱿鱼。O型 ", "糖醋鱼", "炸鱼片，粉红酱汁 ",  "毛瓜丝"], fontproperties=zhfont1, rotation="vertical")
+    #plt.xticks(list(range(len(stats))), [u"白饭 ", u"咸蛋 ", u"翻炒蛋 ", u"番茄蛋 ",
+    #                                     u"糙米 ", "瘦肉 ", "小白菜（绿） ", "包菜 ", "苦瓜 ", "芹菜 ", "番薯葉 ",
+    #                                     u"南瓜 ", "豆芽 ", "白萝卜 ", "长豆 ", "西兰花和菜花 ", "酸辣羊角豆/秋葵 ", "菜花 ",
+    #                                     u"炒豆腐 ", "猪肝 ", "土豆炒番茄酱豆 ", "茄子 ", "滷豆腐 ", "鸭肉 ", "咖喱鸡 ",
+    #                                     u"红酱。酸甜肉 ", "肉碎 ", "卤鸡 ", "猪脚 ", "排骨 ", "三层肉 ", "黑酱猪肉",
+    #                                     u"炸鱼。整只 ", "炸鱼片。红酱汁。看似炒蛋 ", "章鱼，鱿鱼。O型 ", "糖醋鱼", "炸鱼片，粉红酱汁 ",  "毛瓜丝"], fontproperties=zhfont1, rotation="vertical")
     plt.show()
     print(stats)
     pass

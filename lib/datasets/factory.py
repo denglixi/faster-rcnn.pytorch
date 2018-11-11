@@ -19,6 +19,15 @@ from datasets.food_tech_mix import food_tech_mix
 
 __sets = {}
 
+
+for cantee in ['exclYIH', "All", "exclArts", "exclUTown", "exclTechChicken", "exclTechMixedVeg", "YIH", "Arts", "TechChicken", "TechMixedVeg", "UTown"]:
+    for split in ['train', 'val', "trainval"]:
+        for category in ['exclYIH', "All", "exclArts", "exclUTown", "exclTechChicken", "exclTechMixedVeg", "YIH", "Arts", "TechChicken", "TechMixedVeg", "UTown"]:
+            category = category + '_train'
+            name = 'food_{}_{}_{}'.format(cantee, split, category)
+            __sets[name] = (lambda split=split,
+                            cantee=cantee, category=category: food_tech_mix(split, cantee, category))
+
 # Set up Food_<carteen>_<split>
 for cantee in ['Tech', "YIH"]:
     for split in ['train', 'val', "occur_in_tech"]:
