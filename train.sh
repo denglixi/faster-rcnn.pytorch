@@ -1,12 +1,12 @@
 #!/bin/sh
 # GPU usage
-GPU_ID=0
+GPU_ID=1
 WORKER_NUMBER=1
 
 # basic set
-DATASET=foodAll
+DATASET=foodexclYIH
 NET=foodres50 #{foodres50, res101, vgg16}
-SESSION=1
+SESSION=3
 PRETRAIN=true
 MAXEPOCHS=100
 
