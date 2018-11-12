@@ -1,21 +1,21 @@
 #!/bin/sh
 # GPU usage
-GPU_ID=1
+GPU_ID=0
 WORKER_NUMBER=1
 
 # basic set
 DATASET=foodAll
 NET=foodres50 #{foodres50, res101, vgg16}
-SESSION=10
+SESSION=1
 PRETRAIN=true
 MAXEPOCHS=100
 
 # optimizer setting
-OPTIMIZER=sgd
+OPTIMIZER=adam
 LEARNING_RATE=0.001
 DECAY_STEP=7
 IS_WARMING_UP=false
-WARMING_UP_LR=0.000001
+WARMING_UP_LR=0.0000001
 BATCH_SIZE=1
 
 # resume from

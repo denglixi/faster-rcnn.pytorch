@@ -217,6 +217,36 @@ if __name__ == '__main__':
         args.imdbval_name = "food_All_val_All_train"
         args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
                          'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+    elif args.dataset == "foodexclArts":
+        args.imdb_name = "food_exclArts_train_exclArts_train"
+        args.imdbval_name = "food_exclArts_val_exclArts_train"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
+    elif args.dataset == "foodexclYIH":
+        args.imdb_name = "food_exclYIH_train_exclYIH_train"
+        args.imdbval_name = "food_exclYIH_val_exclYIH_train"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
+    elif args.dataset == "foodexclUTown":
+        args.imdb_name = "food_exclUTown_train_exclUTown_train"
+        args.imdbval_name = "food_exclUTown_val_exclUTown_train"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
+    elif args.dataset == "foodexclTechChicken":
+        args.imdb_name = "food_exclTechChicken_train_exclTechChicken_train"
+        args.imdbval_name = "food_exclTechChicken_val_exclTechChicken_train"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
+    elif args.dataset == "foodexclTechMixedVeg":
+        args.imdb_name = "food_exclTechMixedVeg_train_exclTechMixedVeg_train"
+        args.imdbval_name = "food_exclTechMixedVeg_val_exclTechMixedVeg_train"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
 
     args.cfg_file = "cfgs/{}_ls.yml".format(
         args.net) if args.large_scale else "cfgs/{}.yml".format(args.net)

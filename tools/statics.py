@@ -23,8 +23,6 @@ from xml_process import parse_rec
 
 def get_all_xml_files_from_dir(dir_path):
     """get_all_xml_files_from_dir
-
-
     :param dir_path:
     """
     allfiles = os.listdir(dir_path)
@@ -49,7 +47,7 @@ def get_all_xml_files_from_dir(dir_path):
 
 def get_all_xml_files_from_path(root_path):
     """get_all_xml_files_from_path
-    including sub dir
+    recursive get all xmlfile from
     uparam root_path:
     """
     stats = {}
