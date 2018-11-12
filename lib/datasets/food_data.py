@@ -240,8 +240,8 @@ class food_merge_imdb(imdb):
         for ix, obj in enumerate(objs):
             bbox = obj.find('bndbox')
             # Make pixel indexes 0-based
-            x1 = float(bbox.find('xmin').text) - 1
-            y1 = float(bbox.find('ymin').text) - 1
+            x1 = max(0.0, float(bbox.find('xmin').text) - 1) # the range of food label is (0, width) which may cause by bugs in labelimg 1.4
+            y1 = max(0.0, float(bbox.find('ymin').text) - 1)
             x2 = float(bbox.find('xmax').text) - 1
             y2 = float(bbox.find('ymax').text) - 1
 
