@@ -247,6 +247,12 @@ if __name__ == '__main__':
         args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
                          'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
+    elif args.dataset == "foodexclScience":
+        args.imdb_name = "food_exclScience_train_exclScience_train"
+        args.imdbval_name = "food_exclScience_val_exclScience_train"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
 
     args.cfg_file = "cfgs/{}_ls.yml".format(
         args.net) if args.large_scale else "cfgs/{}.yml".format(args.net)

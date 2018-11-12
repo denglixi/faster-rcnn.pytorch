@@ -9,8 +9,8 @@
 # 1. convert .JPG to .jpg
 # 2. create VOC format dataset
 
-RAW_DATA_PATH="/home/lixi/data/YIH"
-DATA_PATH="/home/lixi/data/FoodDataset/YIH"
+RAW_DATA_PATH="/home/lixi/data/Science"
+DATA_PATH="/home/lixi/data/FoodDataset/Food_Science"
 
 echo $RAW_DATA_PATH
 mkdir -p $DATA_PATH

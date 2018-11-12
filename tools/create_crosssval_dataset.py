@@ -12,7 +12,7 @@
 import os
 food_dataset_dir = "/home/lixi/data/FoodDataset/"
 
-canteens = ['Arts', 'TechChicken', 'TechMixedVeg', 'UTown', 'YIH']
+canteens = ['Arts', 'Science', 'TechChicken', 'TechMixedVeg', 'UTown', 'YIH']
 
 def create_dir(path):
     if not os.path.exists(path):

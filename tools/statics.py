@@ -199,7 +199,9 @@ def main():
     # for i in inner:
     #     print(stats_yih[i])
 
-    canttens = ['All', 'exclArts', 'exclYIH', 'exclTechChicken','exclTechMixedVeg', 'exclUTown']
+    # statistics and generate classes of each dataset
+    canttens = ['All', 'exclArts', 'exclYIH', 'exclTechChicken','exclTechMixedVeg', 'exclUTown', 'exclScience']
+    category_file = './category.py'
     for ct in canttens:
         datasets= ['trainval', 'train', 'val']
         for dataset in datasets:
@@ -214,12 +216,20 @@ def main():
                     f.write("'{}',".format(k))
                 f.write("]\n")
 
-            category_file = './category.py'
             with open(category_file,'a') as f:
-                f.write('if category == \'{}_{}\':\n    return [\'__background__\''.format(ct,dataset), )
+                f.write('if category == \'{}_{}\':\n    return [\'__background__\','.format(ct,dataset), )
                 for k,v in all_stats:
                     f.write("'{}',".format(k))
                 f.write("]\n")
+
+            with open(category_file,'a') as f:
+                # only add the category whose number is more than 10
+                f.write('if category == \'{}_{}_mt10\':\n    return [\'__background__\','.format(ct,dataset), )
+                for k,v in all_stats:
+                    if v > 10:
+                        f.write("'{}',".format(k))
+                f.write("]\n")
+
 
             with open("{}_{}_static.txt".format(ct,dataset), 'w') as f:
                 for k,v in all_stats:

@@ -27,6 +27,10 @@ for cantee in ['exclYIH', "All", "exclArts", "exclUTown", "exclTechChicken", "ex
             name = 'food_{}_{}_{}'.format(cantee, split, category)
             __sets[name] = (lambda split=split,
                             cantee=cantee, category=category: food_merge_imdb(split, cantee, category))
+            category = category + '_train_mt10'
+            name = 'food_{}_{}_{}'.format(cantee, split, category)
+            __sets[name] = (lambda split=split,
+                            cantee=cantee, category=category: food_merge_imdb(split, cantee, category))
 
 # Set up Food_<carteen>_<split>
 for cantee in ['Tech', "YIH"]:
