@@ -15,6 +15,8 @@
 import os
 from xml_process import parse_rec
 
+from food_category import get_categories
+
 
 def process_all_xml_files_from_dir(dir_path, call_back_func):
     """process_all_xml_files_from_dir
@@ -70,37 +72,36 @@ def clo(reserver_class):
 
 
 def main():
-    tech_classes = ("__background__",
-                    "2", "3", "4", "6", "11", "12",
-                    "13", "14", "15",
-                         "111", "21", "22", "23", "24", "25", "26", "31",
-                         "32", "33", "34", "35", "36", "41", "42",
-                         "43", "44", "45", "46", "47", "48", "51",
-                         "52", "53", "54", "55", "67")
-    path = "../data/Food/Food_YIH/Annotations/"
-    # 3种方法实现通过回调函数，对xml进行筛选
-    # 1. save extra info of callback with class
-    # fx = filter_xml(tech_classes)
-    # process_all_xml_files_from_dir(path, fx.process)
-    # print(len(fx.reserver_xmls))
+    cantten = ['Arts', 'Science', 'TechMixedVeg',
+               'TechChicken', 'UTown', 'YIH']
 
-    # 2. save extra info of callback with closet
-    fx_clo = clo(tech_classes)
-    process_all_xml_files_from_dir(path, fx_clo)
-    print(len(fx_clo.__closure__))  # __closure__ 有cell对象的元祖构成
-    filter_xmls = fx_clo.__closure__[
-        0].cell_contents  # cell 对象有cell_contents的内容
+    for ct in cantten:
+        imgsets_path = "../data/Food/Food_{}/ImageSets".format(ct)
+        anno_path = "../data/Food/Food_{}/Annotations".format(ct)
+        excl_class = get_categories("excl"+ct+"_train")
+        # 3种方法实现通过回调函数，对xml进行筛选
+        # 1. save extra info of callback with class
+        # fx = filter_xml(tech_classes)
+        # process_all_xml_files_from_dir(path, fx.process)
+        # print(len(fx.reserver_xmls))
 
-    # 3. 通过协程
-    # how to implement??
-    # NotImplemented
+        # 2. save extra info of callback with closet
+        fx_clo = clo(excl_class)
+        process_all_xml_files_from_dir(anno_path, fx_clo)
+        # print(len(fx_clo.__closure__))  # __closure__ 有cell对象的元祖构成
+        filter_xmls = fx_clo.__closure__[
+            0].cell_contents  # cell 对象有cell_contents的内容
 
-    # 保存筛选信息
-    with open("filter_xml.txt", 'w') as f:
-        for i in filter_xmls:
-            x_name = os.path.split(i)[1]
-            x_name = os.path.splitext(x_name)[0]
-            f.write(x_name + '\n')
+        # 3. 通过协程
+        # how to implement??
+        # NotImplemented
+
+        # 保存筛选信息
+        with open(os.path.join(imgsets_path, "inner.txt"), 'w') as f:
+            for i in filter_xmls:
+                x_name = os.path.split(i)[1]
+                x_name = os.path.splitext(x_name)[0]
+                f.write(x_name + '\n')
 
 
 if __name__ == '__main__':

@@ -21,7 +21,7 @@ __sets = {}
 
 
 for cantee in ['exclYIH', "All", "exclArts", "exclUTown", "exclTechChicken", "exclTechMixedVeg", "YIH", "Arts", "TechChicken", "TechMixedVeg", "UTown"]:
-    for split in ['train', 'val', "trainval"]:
+    for split in ['train', 'val', "trainval", "inner"]:
         for category in ['exclYIH', "All", "exclArts", "exclUTown", "exclTechChicken", "exclTechMixedVeg", "YIH", "Arts", "TechChicken", "TechMixedVeg", "UTown"]:
             category = category + '_train'
             name = 'food_{}_{}_{}'.format(cantee, split, category)

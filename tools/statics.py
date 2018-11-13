@@ -142,30 +142,33 @@ def statics_all_raw_data():
     techchicken_root = '/home/next/Big/data/Techno Edge/ChickenRice'
     techchicken_statis = get_all_xml_files_from_path(techchicken_root)
     print("-----------tech chicken----------")
-    #printlist_of_tuples(techchicken_statis)
-    print( test_can(techchicken_statis, read_original_id('./unified_id/techchicken_original_id.txt')) )
+    # printlist_of_tuples(techchicken_statis)
+    print(test_can(techchicken_statis, read_original_id(
+        './unified_id/techchicken_original_id.txt')))
 
     # Utown
     utown_root = '/home/next/Big/data/UTown_NoAC/MixedVeg/'
     utown_statis = get_all_xml_files_from_path(utown_root)
     print("-----------utown----------")
-    #printlist_of_tuples(utown_statis)
-    print( test_can(utown_statis, read_original_id('./unified_id/utown_original_id.txt')) )
+    # printlist_of_tuples(utown_statis)
+    print(test_can(utown_statis, read_original_id(
+        './unified_id/utown_original_id.txt')))
 
     # science
     science_root = '/home/next/Big/data/Science'
     science_statis = get_all_xml_files_from_path(science_root)
     print("-----------sciecce----------")
-    #printlist_of_tuples(science_statis)
+    # printlist_of_tuples(science_statis)
     #print( test_can(utown_statis, read_original_id('./unified_id/utown_original_id.txt')) )
 
     # arts
     arts_root = '/home/next/Big/data/Arts/'
     arts_statis = get_all_xml_files_from_path(arts_root)
     print("-----------arts----------")
-    #printlist_of_tuples(arts_statis)
+    # printlist_of_tuples(arts_statis)
     print(sum([x[1] for x in arts_statis]))
-    print( test_can(arts_statis, read_original_id('./unified_id/arts_original_id.txt')) )
+    print(test_can(arts_statis, read_original_id(
+        './unified_id/arts_original_id.txt')))
 
     # YIH
     xmlset = "/home/d/denglixi/data/Food/Food_YIH/ImageSets/occur_in_tech.txt"
@@ -200,50 +203,53 @@ def main():
     #     print(stats_yih[i])
 
     # statistics and generate classes of each dataset
-    canttens = ['All', 'exclArts', 'exclYIH', 'exclTechChicken','exclTechMixedVeg', 'exclUTown', 'exclScience']
+    canttens = ['All', 'exclArts', 'exclYIH', 'exclTechChicken',
+                'exclTechMixedVeg', 'exclUTown', 'exclScience',
+                'YIH', 'Arts', 'Science', 'UTown',
+                'TechChicken', 'TechMixedVeg']
     category_file = './category.py'
+    food_dataset_root = "/home/d/denglixi/faster-rcnn.pytorch/data/Food/"
     for ct in canttens:
-        datasets= ['trainval', 'train', 'val']
+        datasets = ['trainval', 'train', 'val']
         for dataset in datasets:
-            all_trainval_set = "/home/lixi/data/FoodDataset/Food_{}/ImageSets/{}.txt".format(ct,dataset)
-            all_xml_dir = "/home/lixi/data/FoodDataset/Food_{}/Annotations".format(ct)
+            all_trainval_set = food_dataset_root + "Food_{}/ImageSets/{}.txt".format(
+                ct, dataset)
+            all_xml_dir = food_dataset_root + "Food_{}/Annotations".format(
+                ct)
             all_stats = get_xml_from_file(all_trainval_set, all_xml_dir)
-            #printlist_of_tuples(all_stats)
+            # printlist_of_tuples(all_stats)
             class_file = './classes.txt'
-            with open(class_file,'a') as f:
-                f.write('{}_{}_classes = [\'__background__\','.format(ct,dataset), )
-                for k,v in all_stats:
-                    f.write("'{}',".format(k))
+            with open(class_file, 'a') as f:
+                f.write('{}_{}_classes = [\'__background__\', '.format(
+                    ct, dataset), )
+                for k, v in all_stats:
+                    f.write("'{}', ".format(k))
                 f.write("]\n")
 
-            with open(category_file,'a') as f:
-                f.write('if category == \'{}_{}\':\n    return [\'__background__\','.format(ct,dataset), )
-                for k,v in all_stats:
-                    f.write("'{}',".format(k))
+            with open(category_file, 'a') as f:
+                f.write('if category == \'{}_{}\':\n    return [\'__background__\', '.format(
+                    ct, dataset), )
+                for k, v in all_stats:
+                    f.write("'{}', ".format(k))
                 f.write("]\n")
 
-            with open(category_file,'a') as f:
+            with open(category_file, 'a') as f:
                 # only add the category whose number is more than 10
-                f.write('if category == \'{}_{}_mt10\':\n    return [\'__background__\','.format(ct,dataset), )
-                for k,v in all_stats:
+                f.write('if category == \'{}_{}_mt10\':\n    return [\'__background__\', '.format(
+                    ct, dataset), )
+                for k, v in all_stats:
                     if v > 10:
-                        f.write("'{}',".format(k))
+                        f.write("'{}', ".format(k))
                 f.write("]\n")
 
-
-            with open("{}_{}_static.txt".format(ct,dataset), 'w') as f:
-                for k,v in all_stats:
+            with open("{}_{}_static.txt".format(ct, dataset), 'w') as f:
+                for k, v in all_stats:
                     f.write(str(k)+'\t'+str(v) + '\n')
-
-
-
-
-
 
     return
     zhfont1 = FontProperties(fname='./simsun.ttc')
     plt.bar(list(range(len(stats))), [v for k, v in stats])
-    #plt.xticks(list(range(len(stats))), [u"白饭 ", u"咸蛋 ", u"翻炒蛋 ", u"番茄蛋 ",
+    # plt.xticks(list(range(len(stats))), [u"白饭 ", u"咸蛋 ", u"翻炒蛋 ", u"番茄蛋 ",
     #                                     u"糙米 ", "瘦肉 ", "小白菜（绿） ", "包菜 ", "苦瓜 ", "芹菜 ", "番薯葉 ",
     #                                     u"南瓜 ", "豆芽 ", "白萝卜 ", "长豆 ", "西兰花和菜花 ", "酸辣羊角豆/秋葵 ", "菜花 ",
     #                                     u"炒豆腐 ", "猪肝 ", "土豆炒番茄酱豆 ", "茄子 ", "滷豆腐 ", "鸭肉 ", "咖喱鸡 ",

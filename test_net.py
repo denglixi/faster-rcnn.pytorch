@@ -144,6 +144,81 @@ if __name__ == '__main__':
         args.imdbval_name = "food_YIH_occur_in_tech"
         args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
                          'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+    elif args.dataset == "foodAll":
+        args.imdb_name = "food_All_train_All_train"
+        args.imdbval_name = "food_All_val_All_train"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+    elif args.dataset == "foodexclArts":
+        args.imdb_name = "food_exclArts_train_exclArts_train"
+        args.imdbval_name = "food_exclArts_val_exclArts_train"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
+    elif args.dataset == "foodexclYIH":
+        args.imdb_name = "food_exclYIH_train_exclYIH_train"
+        args.imdbval_name = "food_exclYIH_val_exclYIH_train"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
+    elif args.dataset == "foodexclUTown":
+        args.imdb_name = "food_exclUTown_train_exclUTown_train"
+        args.imdbval_name = "food_exclUTown_val_exclUTown_train"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
+    elif args.dataset == "foodexclTechChicken":
+        args.imdb_name = "food_exclTechChicken_train_exclTechChicken_train"
+        args.imdbval_name = "food_exclTechChicken_val_exclTechChicken_train"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
+    elif args.dataset == "foodexclTechMixedVeg":
+        args.imdb_name = "food_exclTechMixedVeg_train_exclTechMixedVeg_train"
+        args.imdbval_name = "food_exclTechMixedVeg_val_exclTechMixedVeg_train"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
+    elif args.dataset == "foodexclScience":
+        args.imdb_name = "food_exclScience_train_exclScience_train"
+        args.imdbval_name = "food_exclScience_val_exclScience_train"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+    elif args.dataset == "foodexclArts_testArts":
+        args.imdb_name = "food_exclArts_train_exclArts_train"
+        args.imdbval_name = "food_Arts_inner_exclArts_train"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
+    elif args.dataset == "foodexclYIH_testYIH":
+        args.imdb_name = "food_exclYIH_train_exclYIH_train"
+        args.imdbval_name = "food_YIH_inner_exclYIH_train"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
+    elif args.dataset == "foodexclUTown_testUTown":
+        args.imdb_name = "food_exclUTown_train_exclUTown_train"
+        args.imdbval_name = "food_UTown_inner_exclUTown_train"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
+    elif args.dataset == "foodexclTechChicken_testTechChicken":
+        args.imdb_name = "food_exclTechChicken_train_exclTechChicken_train"
+        args.imdbval_name = "food_TechChicken_inner_exclTechChicken_train"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
+    elif args.dataset == "foodexclTechMixedVeg_testTechMixedVeg":
+        args.imdb_name = "food_exclTechMixedVeg_train_exclTechMixedVeg_train"
+        args.imdbval_name = "food_TechMixedVeg_inner_exclTechMixedVeg_train"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
+    elif args.dataset == "foodexclScience_testScience":
+        args.imdb_name = "food_exclScience_train_exclScience_train"
+        args.imdbval_name = "food_Science_inner_exclScience_train"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
     args.cfg_file = "cfgs/{}_ls.yml".format(
         args.net) if args.large_scale else "cfgs/{}.yml".format(args.net)
@@ -163,7 +238,8 @@ if __name__ == '__main__':
 
     print('{:d} roidb entries'.format(len(roidb)))
 
-    input_dir = args.load_dir + "/" + args.net + "/" + args.dataset
+    input_dir = args.load_dir + "/" + args.net + \
+        "/" + args.dataset.split('_')[0]
     if not os.path.exists(input_dir):
         raise Exception(
             'There is no input directory for loading network from ' + input_dir)
@@ -244,7 +320,7 @@ if __name__ == '__main__':
     dataset = roibatchLoader(roidb, ratio_list, ratio_index, 1,
                              imdb.num_classes, training=False, normalize=False)
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=1,
-                                             shuffle=False, num_workers=0,
+                                             shuffle=False, num_workers=5,
                                              pin_memory=True)
 
     data_iter = iter(dataloader)
@@ -269,17 +345,14 @@ if __name__ == '__main__':
     fasterRCNN.eval()
     empty_array = np.transpose(np.array([[], [], [], [], []]), (1, 0))
     for i in range(num_images):
-
         data_tic = time.time()
-
         data = next(data_iter)
+        data_toc = time.time()
+        data_load_time = data_toc - data_tic
         im_data.data.resize_(data[0].size()).copy_(data[0])
         im_info.data.resize_(data[1].size()).copy_(data[1])
         gt_boxes.data.resize_(data[2].size()).copy_(data[2])
         num_boxes.data.resize_(data[3].size()).copy_(data[3])
-
-        data_toc = time.time()
-        data_load_time = data_toc - data_tic
 
         det_tic = time.time()
         rois, cls_prob, bbox_pred, \
@@ -439,7 +512,17 @@ if __name__ == '__main__':
         pickle.dump(all_boxes, f, pickle.HIGHEST_PROTOCOL)
 
     print('Evaluating detections')
-    imdb.evaluate_detections(all_boxes, output_dir)
+    cls_ap_zip, dataset_map = imdb.evaluate_detections(all_boxes, output_dir)
+    results_filename = args.imdbval_name + \
+        time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    results_save_dir = "test_result/"
+    if not os.path.exists(results_save_dir):
+        os.makedirs(results_save_dir)
+
+    with open(os.path.join(results_save_dir, results_filename), 'w') as f:
+        for cls, ap in cls_ap_zip:
+            f.write(str(cls) + '\t' + str(ap) + '\n')
+        f.write(str(dataset_map))
 
     end = time.time()
     print("test time: %0.4fs" % (end - start))

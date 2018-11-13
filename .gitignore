@@ -203,6 +203,7 @@ lib/model/utils/bbox.c
 lib/pycocotools/_mask.c
 
 #
+tools/*.txt
 *.log
 #dir
 models
@@ -212,6 +213,6 @@ images
 logs
 Experiments
 savevis
-
+test_result
 #pyenv-
 .python-version

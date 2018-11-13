@@ -75,3 +75,12 @@ for exclude_ct in canteens + ['All']:
     with open(os.path.join(exclude_food_ImSet_dir, 'val.txt'), 'w') as f:
         print("len of val set", len(val_content))
         f.writelines(val_content)
+
+
+def split_train_val(imgsets_path):
+    trainval_file = os.path.join(imgsets_path, "trainval.txt")
+    train_file = os.path.join(imgsets_path, "train.txt")
+    val_file = os.path.join(imgsets_path, "val.txt")
+    trainval_content = []
+    with open(trainval_file) as f:
+        pass

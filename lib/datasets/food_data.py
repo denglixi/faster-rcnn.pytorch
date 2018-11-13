@@ -38,8 +38,6 @@ except NameError:
 # <<<< obsolete
 
 
-
-
 class food_merge_imdb(imdb):
     def __init__(self, image_set, cantee, categories, devkit_path=None):
         """
@@ -53,13 +51,13 @@ class food_merge_imdb(imdb):
         self._data_path = os.path.join(
             self._devkit_path, 'Food_' + self._cantee)
         self._classes = get_categories(categories)
-                       # ("__background__",  # always index 0
-                       #  "1", "2", "3", "4", "5", "6", "11", "12",
-                       #  "13", "14", "15",
-                       #  "111", "21", "22", "23", "24", "25", "26", "31",
-                       #  "32", "33", "34", "35", "36", "41", "42",
-                       #  "43", "44", "45", "46", "47", "48", "51",
-                       #  "52", "53", "54", "55", "67")
+        # ("__background__",  # always index 0
+        #  "1", "2", "3", "4", "5", "6", "11", "12",
+        #  "13", "14", "15",
+        #  "111", "21", "22", "23", "24", "25", "26", "31",
+        #  "32", "33", "34", "35", "36", "41", "42",
+        #  "43", "44", "45", "46", "47", "48", "51",
+        #  "52", "53", "54", "55", "67")
         self._class_to_ind = dict(zip(self.classes, xrange(self.num_classes)))
         self._image_ext = '.jpg'
         self._image_index = self._load_image_set_index()
@@ -240,7 +238,8 @@ class food_merge_imdb(imdb):
         for ix, obj in enumerate(objs):
             bbox = obj.find('bndbox')
             # Make pixel indexes 0-based
-            x1 = max(0.0, float(bbox.find('xmin').text) - 1) # the range of food label is (0, width) which may cause by bugs in labelimg 1.4
+            # the range of food label is (0, width) which may cause by bugs in labelimg 1.4
+            x1 = max(0.0, float(bbox.find('xmin').text) - 1)
             y1 = max(0.0, float(bbox.find('ymin').text) - 1)
             x2 = float(bbox.find('xmax').text) - 1
             y2 = float(bbox.find('ymax').text) - 1
@@ -374,7 +373,7 @@ class food_merge_imdb(imdb):
 
     def evaluate_detections(self, all_boxes, output_dir):
         self._write_voc_results_file(all_boxes)
-        self._do_python_eval(output_dir)
+        result = self._do_python_eval(output_dir)
         if self.config['matlab_eval']:
             self._do_matlab_eval(output_dir)
         if self.config['cleanup']:
@@ -383,6 +382,7 @@ class food_merge_imdb(imdb):
                     continue
                 filename = self._get_voc_results_file_template().format(cls)
                 os.remove(filename)
+        return result
 
     def competition_mode(self, on):
         if on:

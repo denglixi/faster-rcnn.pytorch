@@ -63,7 +63,9 @@ class roibatchLoader(data.Dataset):
         # get the anchor index for current sample index
         # here we set the anchor index to the last one
         # sample in this group
+
         minibatch_db = [self._roidb[index_ratio]]
+
         blobs = get_minibatch(minibatch_db, self._num_classes)
         data = torch.from_numpy(blobs['data'])
         im_info = torch.from_numpy(blobs['im_info'])
@@ -212,11 +214,15 @@ class roibatchLoader(data.Dataset):
                 3, data_height, data_width)
             im_info = im_info.view(3)
 
-            #gt_boxes = torch.FloatTensor([1, 1, 1, 1, 1])
+            # gt_boxes = torch.FloatTensor([1, 1, 1, 1, 1])
             # for visualization of test dataset, read the gt_boxes
 
             gt_boxes = torch.from_numpy(blobs['gt_boxes'])
             num_boxes = 0
+
+            # Since some image may have no bbox (ignored by class), we need set the gt bxoes to [[]] to avoid the  error :Cannot Unsqueeze Empty Tensor
+            # if len(gt_boxes) == 0:  # gt_boxes == []
+            #    gt_boxes=torch.from_num[[]]
 
             return data, im_info, gt_boxes, num_boxes
 
