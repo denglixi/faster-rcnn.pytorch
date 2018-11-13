@@ -4,15 +4,16 @@ GPU_ID=1
 WORKER_NUMBER=1
 
 # basic set
-DATASET=foodexclYIH
+DATASET=foodexclTechMixedVeg
 NET=foodres50 #{foodres50, res101, vgg16}
-SESSION=3
+SESSION=41
 PRETRAIN=true
+WEIGHT_FILE=imagenet #{ prefood, imagenet } only for res50
 MAXEPOCHS=100
 
 # optimizer setting
 OPTIMIZER=adam
-LEARNING_RATE=0.01
+LEARNING_RATE=0.001
 DECAY_STEP=7
 IS_WARMING_UP=false
 WARMING_UP_LR=0.0000001
@@ -64,7 +65,7 @@ if $IS_WARMING_UP ; then
                    --s $SESSION \
                    --o $OPTIMIZER \
                    --r=$RESUME --resume_opt=$RESUME_OPT\
-                   --pretrain=$PRETRAIN \
+                   --pretrain=$PRETRAIN  --weight_file=$WEIGHT_FILE \
                    --checksession $CHECKSESSION --checkepoch $CHECKEPOCH --checkpoint $CHECKPOINT \
                    --bs $BATCH_SIZE --nw $WORKER_NUMBER \
                    --lr $LEARNING_RATE --lr_decay_step $DECAY_STEP \
@@ -78,7 +79,7 @@ else
                    --s $SESSION \
                    --o $OPTIMIZER \
                    --r=$RESUME --resume_opt=$RESUME_OPT\
-                   --pretrain=$PRETRAIN \
+                   --pretrain=$PRETRAIN --weight_file=$WEIGHT_FILE \
                    --checksession $CHECKSESSION --checkepoch $CHECKEPOCH --checkpoint $CHECKPOINT \
                    --bs $BATCH_SIZE --nw $WORKER_NUMBER \
                    --lr $LEARNING_RATE --lr_decay_step $DECAY_STEP \

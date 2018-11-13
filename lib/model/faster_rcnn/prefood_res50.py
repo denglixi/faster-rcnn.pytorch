@@ -553,9 +553,14 @@ class res50_top(KitModule):
 
 class PreResNet50(_fasterRCNN):
 
-    def __init__(self, classes, pretrained=False, class_agnostic=False):
+    def __init__(self, classes, pretrained=False, class_agnostic=False, weight_file=None):
 
-        self.model_path = "data/pretrained_model/prefood_res50.pth"
+        if weight_file == 'imagenet':
+            self.model_path = "data/pretrained_model/resnet50_caffe.pth"
+        elif weight_file == 'prefood':
+            self.model_path = "data/pretrained_model/prefood_res50.pth"
+        else:
+            self.model_path = "data/pretrained_model/prefood_res50.pth"
         if not pretrained:
             self.model_path = None
         self.dout_base_model = 1024

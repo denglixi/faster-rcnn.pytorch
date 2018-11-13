@@ -44,7 +44,7 @@ def parse_args():
                         help='training dataset',
                         default='pascal_voc', type=str)
     parser.add_argument('--net', dest='net',
-                        help='vgg16, res101',
+                        help='vgg16, res101, prefood_res50',
                         default='vgg16', type=str)
     parser.add_argument('--start_epoch', dest='start_epoch',
                         help='starting epoch',
@@ -110,6 +110,9 @@ def parse_args():
     parser.add_argument('--pretrained', dest='pretrained',
                         help='use pretrained model or not',
                         default=True, type=bool)
+    parser.add_argument('--weight_file', dest='weight_file',
+                        help='imagenet, prefood',
+                        default='vgg16', type=str)
     parser.add_argument('--r', dest='resume',
                         help='resume checkpoint or not',
                         default=False, type=bool)
@@ -253,7 +256,6 @@ if __name__ == '__main__':
         args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
                          'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
-
     args.cfg_file = "cfgs/{}_ls.yml".format(
         args.net) if args.large_scale else "cfgs/{}.yml".format(args.net)
 
@@ -328,7 +330,7 @@ if __name__ == '__main__':
                             class_agnostic=args.class_agnostic)
     elif args.net == 'foodres50':
         fasterRCNN = PreResNet50(imdb.classes, pretrained=args.pretrained,
-                                 class_agnostic=args.class_agnostic )
+                                 class_agnostic=args.class_agnostic, weight_file=args.weight_file)
     else:
         print("network is not defined")
         pdb.set_trace()
