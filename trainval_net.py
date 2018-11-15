@@ -353,7 +353,7 @@ if __name__ == '__main__':
                             'weight_decay': cfg.TRAIN.WEIGHT_DECAY}]
 
     if args.optimizer == "adam":
-        lr = lr * 0.1
+        # lr = lr * 0.1
         optimizer = torch.optim.Adam(params)
 
     elif args.optimizer == "sgd":

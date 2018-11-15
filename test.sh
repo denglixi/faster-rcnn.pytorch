@@ -4,12 +4,13 @@
 GPU_ID=1
 
 # basic set
-DATASET=foodexclArts_testArts
+# DATASET=foodexclTechMixedVeg_testTechMixedVeg
+DATASET=foodexclUTown_testUTown
 NET=foodres50 #{foodres50, res101, vgg16}
 # load weight
-SESSION=21
-EPOCH=4
-CHECKPOINT=12965
+SESSION=5
+EPOCH=35
+CHECKPOINT=11109
 
 # whether visulazation the results during testing
 IS_VIS=false

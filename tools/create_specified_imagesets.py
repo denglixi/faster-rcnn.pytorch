@@ -76,6 +76,7 @@ def main():
                'TechChicken', 'UTown', 'YIH']
 
     for ct in cantten:
+        print("------processing {}-----------".format(ct))
         imgsets_path = "../data/Food/Food_{}/ImageSets".format(ct)
         anno_path = "../data/Food/Food_{}/Annotations".format(ct)
         excl_class = get_categories("excl"+ct+"_train")
@@ -97,6 +98,8 @@ def main():
         # NotImplemented
 
         # 保存筛选信息
+        print("saving inner sets:{}".format(len(filter_xmls)))
+        print(imgsets_path)
         with open(os.path.join(imgsets_path, "inner.txt"), 'w') as f:
             for i in filter_xmls:
                 x_name = os.path.split(i)[1]

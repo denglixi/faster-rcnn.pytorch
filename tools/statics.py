@@ -210,7 +210,8 @@ def main():
     category_file = './category.py'
     food_dataset_root = "/home/d/denglixi/faster-rcnn.pytorch/data/Food/"
     for ct in canttens:
-        datasets = ['trainval', 'train', 'val']
+        #datasets = ['trainval', 'train', 'val']
+        datasets = ['trainval']
         for dataset in datasets:
             all_trainval_set = food_dataset_root + "Food_{}/ImageSets/{}.txt".format(
                 ct, dataset)

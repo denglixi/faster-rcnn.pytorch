@@ -6,25 +6,25 @@ WORKER_NUMBER=5
 # basic set
 DATASET=foodexclArts
 NET=foodres50 #{foodres50, res101, vgg16}
-SESSION=2
+SESSION=51
 PRETRAIN=true
 WEIGHT_FILE=imagenet #{ prefood, imagenet } only for res50
 MAXEPOCHS=100
 
 # optimizer setting
 OPTIMIZER=adam
-LEARNING_RATE=0.00001
-DECAY_STEP=5
+LEARNING_RATE=0.001
+DECAY_STEP=2
 IS_WARMING_UP=false
 WARMING_UP_LR=0.0000001
 BATCH_SIZE=1
 
 # resume from
 RESUME=true # null is for false
-RESUME_OPT=  # null for false
-CHECKSESSION=2
-CHECKEPOCH=3
-CHECKPOINT=12965
+RESUME_OPT=true # null for false
+CHECKSESSION=5
+CHECKEPOCH=35
+CHECKPOINT=11109
 
 
 # writing the experiment detail to file

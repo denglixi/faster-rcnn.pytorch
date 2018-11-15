@@ -412,7 +412,7 @@ if __name__ == '__main__':
                 cls_dets = cls_dets[keep.view(-1).long()]
                 if vis or args.save_for_vis:
                     im2show = vis_detections(
-                        im2show, imdb.classes[j], cls_dets.cpu().numpy(), 0.1)
+                        im2show, imdb.classes[j], cls_dets.cpu().numpy(), 0.5)
                 all_boxes[j][i] = cls_dets.cpu().numpy()
             else:
                 all_boxes[j][i] = empty_array
@@ -513,16 +513,18 @@ if __name__ == '__main__':
 
     print('Evaluating detections')
     cls_ap_zip, dataset_map = imdb.evaluate_detections(all_boxes, output_dir)
-    results_filename = args.imdbval_name + \
-        time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    # results_filename = args.imdbval_name + \
+    #    time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    results_filename = args.imdbval_name + "_session" + \
+        str(args.checksession) + "_epoch" + str(args.checkepoch)
     results_save_dir = "test_result/"
     if not os.path.exists(results_save_dir):
         os.makedirs(results_save_dir)
 
     with open(os.path.join(results_save_dir, results_filename), 'w') as f:
+        f.write(str(dataset_map) + '\n')
         for cls, ap in cls_ap_zip:
             f.write(str(cls) + '\t' + str(ap) + '\n')
-        f.write(str(dataset_map))
 
     end = time.time()
     print("test time: %0.4fs" % (end - start))
