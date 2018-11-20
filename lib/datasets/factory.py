@@ -20,30 +20,27 @@ from datasets.food_data import food_merge_imdb
 __sets = {}
 
 
+# Set up food_<canteen>_<split>_<trainingcategories>
+splits = ['train', 'val', 'trainval']
+mt_splits = []
+for n in [10, 30, 50, 100]:
+    for s in splits:
+        mt_splits += [s+"mt{}".format(n)]
+splits += mt_splits
+splits += ["inner"]
+
 for cantee in ['exclYIH', "All", "exclArts", "exclUTown", "exclTechChicken", "exclTechMixedVeg", "YIH", "Arts", "TechChicken", "TechMixedVeg", "UTown"]:
-    for split in ['train', 'val', "trainval", "inner"]:
+    for split in splits:
         for category in ['exclYIH', "All", "exclArts", "exclUTown", "exclTechChicken", "exclTechMixedVeg", "YIH", "Arts", "TechChicken", "TechMixedVeg", "UTown"]:
-            category = category + '_train'
-            name = 'food_{}_{}_{}'.format(cantee, split, category)
+            category_train = category + '_train'
+            name = 'food_{}_{}_{}'.format(cantee, split, category_train)
             __sets[name] = (lambda split=split,
-                            cantee=cantee, category=category: food_merge_imdb(split, cantee, category))
-            category = category + '_train_mt10'
-            name = 'food_{}_{}_{}'.format(cantee, split, category)
-            __sets[name] = (lambda split=split,
-                            cantee=cantee, category=category: food_merge_imdb(split, cantee, category))
-
-# Set up Food_<carteen>_<split>
-for cantee in ['Tech', "YIH"]:
-    for split in ['train', 'val', "occur_in_tech"]:
-        name = 'food_{}_{}'.format(cantee, split)
-        __sets[name] = (lambda split=split,
-                        cantee=cantee: food_tech_mix(split, cantee))
-
-# Set up Food_<carteen>_<split>
-# for cantee in ['YIH', ]:
-#     for split in ['train', 'val', 'trainval', 'test']:
-#         name = 'food_{}_{}'.format(cantee, split)
-#         __sets[name] = (lambda split=split, cantee=cantee: food(split, cantee))
+                            cantee=cantee, category_train=category_train: food_merge_imdb(split, cantee, category_train))
+            for n in [10, 30, 50, 100]:
+                category_mt10 = category + '_train_mt{}'.format(n)
+                name = 'food_{}_{}_{}'.format(cantee, split, category_mt10)
+                __sets[name] = (lambda split=split,
+                                cantee=cantee, category_mt10=category_mt10: food_merge_imdb(split, cantee, category_mt10))
 
 # Set up voc_<year>_<split>
 for year in ['2007', '2012']:

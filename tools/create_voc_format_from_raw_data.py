@@ -32,8 +32,8 @@ def parseargs():
 
 def main():
     args = parseargs()
-    #RAW_DATA_PATH = './YIH'
-    #DATA_PATH = "./Food_YIH/"
+    # RAW_DATA_PATH = './YIH'
+    # DATA_PATH = "./Food_YIH/"
     RAW_DATA_PATH = args.raw_path
     DATA_PATH = args.save_path
     anno_path = os.path.join(DATA_PATH, 'Annotations')
@@ -66,12 +66,20 @@ def main():
     imageset_path = os.path.join(DATA_PATH, 'ImageSets')
     if not os.path.exists(imageset_path):
         os.makedirs(imageset_path)
+    count = 0
+    train_file = open(os.path.join(imageset_path, "train.txt"), "w")
+    val_file = open(os.path.join(imageset_path, "val.txt"), "w")
     with open(os.path.join(imageset_path, "trainval.txt"), "w") as f:
         for f_name in os.listdir(anno_path):
             split_f_name = os.path.splitext(f_name)
             ext = split_f_name[1]
             if ext == '.xml':
+                count += 1
                 f.write(split_f_name[0] + '\n')
+                if count % 8 == 0 or count % 9 == 0:
+                    val_file.write(split_f_name[0] + '\n')
+                else:
+                    train_file.write(split_f_name[0] + '\n')
 
 
 if __name__ == '__main__':

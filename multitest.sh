@@ -5,12 +5,12 @@ GPU_ID=1
 
 # basic set
 # DATASET=foodexclTechMixedVeg_testTechMixedVeg
-DATASET=foodexclTechMixedVeg
+DATASET=foodAll
 NET=foodres50 #{foodres50, res101, vgg16}
 # load weight
-SESSION=4
-EPOCH=15
-CHECKPOINT=10451
+SESSION=1
+EPOCH=1
+CHECKPOINT=14393
 
 # whether visulazation the results during testing
 IS_VIS=false
@@ -22,7 +22,7 @@ IS_TEST_CACHE=false
 # whether save all detection results in images
 SAVE_FOR_VIS=
 
-for i in `seq 1 15`
+for i in `seq 31 40 `
 do
     EPOCH=$i
     if $IS_VIS ;then

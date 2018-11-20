@@ -17,11 +17,12 @@ from tqdm import tqdm
 
 from xml_process import parse_rec, read_xml, write_xml
 '''
-Since PIL do not rotate the image with oritation flag in exif infor, the annotation we labeled with labelimg was not in 
-the right position if we load the image with oritation flag (i.e. using cv2). 
-These function can convert the bounding boxes with oritation flag. 
-After rotating the bounding box, please use exiftran to rotate the coresponding images.  
+Since PIL do not rotate the image with oritation flag in exif infor, the annotation we labeled with labelimg was not in
+the right position if we load the image with oritation flag (i.e. using cv2).
+These function can convert the bounding boxes with oritation flag.
+After rotating the bounding box, please use exiftran to rotate the coresponding images.
 '''
+
 
 def rotate_bbox(im_shape, bbox, exif_flag):
     """
@@ -54,19 +55,23 @@ def rotate_bbox(im_shape, bbox, exif_flag):
         y2 = y - bbox[1]
     else:
         assert "not right flag"
-    return [x1,y1,x2,y2]
+    return [x1, y1, x2, y2]
+
 
 def drawRectangles(xml, im):
     objects = parse_rec(xml)
     for o in objects:
         bbox = o['bbox']
-        cv2.rectangle(im, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color=(0, 255, 0), thickness=10)
+        cv2.rectangle(im, (bbox[0], bbox[1]), (bbox[2],
+                                               bbox[3]), color=(0, 255, 0), thickness=10)
+
 
 def drawBoxWithPIL(im, xml):
     im = np.asarray(im)
     drawRectangles(xml, im)
     plt.imshow(im)
     plt.show()
+
 
 def drawBoxWithCv2(im, xml):
     cv2.namedWindow('image', cv2.WINDOW_NORMAL)
@@ -75,14 +80,15 @@ def drawBoxWithCv2(im, xml):
     cv2.imshow("image", im)
     cv2.waitKey()
 
+
 def rotate_bbox_in_xml(im_shape, exif_flag, xml_path):
     tree = read_xml(xml_path)
     for obj in tree.findall('object'):
         bbox = obj.find('bndbox')
         bbox_list = [int(bbox.find('xmin').text),
-                             int(bbox.find('ymin').text),
-                             int(bbox.find('xmax').text),
-                             int(bbox.find('ymax').text)]
+                     int(bbox.find('ymin').text),
+                     int(bbox.find('xmax').text),
+                     int(bbox.find('ymax').text)]
         rotated_bbox = rotate_bbox(im_shape, bbox_list, exif_flag)
 
         bbox.find('xmin').text = str(rotated_bbox[0])
@@ -91,8 +97,9 @@ def rotate_bbox_in_xml(im_shape, exif_flag, xml_path):
         bbox.find('ymax').text = str(rotated_bbox[3])
     write_xml(tree, xml_path)
 
+
 def test_rotate():
-    #1. read img and xml
+    # 1. read img and xml
     image_path = "./IMG_9613.JPG"
     xml_file = "./IMG_9613.xml"
     im = Image.open("./IMG_9613.JPG")
@@ -124,9 +131,9 @@ def test_rotate():
 
 def rotate_annotation_with_exif(root_dir):
     ori_flag_dict = {}
-    ori_dir_dict = {6:{}, 8:{}, 1:{}, 0:{}, 3:{}}
+    ori_dir_dict = {6: {}, 8: {}, 1: {}, 0: {}, 3: {}}
     count = 0
-    for _,_,fs in os.walk(root_dir):
+    for _, _, fs in os.walk(root_dir):
         count += len(fs)
     pbar = tqdm(total=count)
     count = 0
@@ -134,7 +141,7 @@ def rotate_annotation_with_exif(root_dir):
         for root, _, files in os.walk(root_dir):
             for file_i in files:
                 count += 1
-                if count % 100 == 0 :
+                if count % 100 == 0:
                     pbar.update(100)
                 f_path = os.path.join(root, file_i)
                 file_name, ex_name = os.path.splitext(f_path)
@@ -150,7 +157,8 @@ def rotate_annotation_with_exif(root_dir):
                                 dict_exif = im._getexif()
                                 orientation_flag = dict_exif[274]
                                 if orientation_flag not in [0, 1]:
-                                    ori_img_log_f.write(str(orientation_flag)+'\t' + f_path + '\n')
+                                    ori_img_log_f.write(
+                                        str(orientation_flag)+'\t' + f_path + '\n')
                                 #rotate_bbox_in_xml(im.size, orientation_flag,xml_path)
                                 # statistics
                                 if orientation_flag not in ori_flag_dict:
@@ -159,11 +167,11 @@ def rotate_annotation_with_exif(root_dir):
                                     ori_flag_dict[orientation_flag] += 1
                                 if root not in ori_dir_dict[orientation_flag]:
                                     ori_dir_dict[orientation_flag][root] = 1
-                        except (KeyError, TypeError) :
+                        except (KeyError, TypeError):
                             with open("no_oritation_flag.log", 'a') as f:
                                 f.write(f_path+'\n')
 
-                            #break
+                            # break
                         else:
                             continue
                     else:
@@ -172,10 +180,11 @@ def rotate_annotation_with_exif(root_dir):
     print(ori_dir_dict)
     print(ori_flag_dict)
 
+
 def test_oritation_of_dataset():
     root_dir = "/home/next/Big/SG"
     root_dir = "/home/next/Big/data"
-    #rotate_annotation_with_exif(root_dir)
+    # rotate_annotation_with_exif(root_dir)
     test_dir = "/home/next/Big/test_oritation/11oct_DONE328"
     for f in os.listdir(test_dir):
         f = os.path.join(test_dir, f)
@@ -194,16 +203,12 @@ def test_oritation_of_dataset():
                     orientation_flag = dict_exif[274]
 
 
-
 if __name__ == '__main__':
     root_dir = "/home/next/Big/data/"
-    #rotate_annotation_with_exif(root_dir)
+    # rotate_annotation_with_exif(root_dir)
 
     img = '/home/next/Big/data/YIH/17oct_YUNAN_DONE140/IMG_20181017_121015.jpg'
     xml = '/home/next/Big/data/YIH/17oct_YUNAN_DONE140/IMG_20181017_121015.xml'
 
-
-
     # drawBoxWithPIL(Image.open(img), xml)
     # drawBoxWithCv2(cv2.imread(img), xml)
-

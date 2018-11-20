@@ -225,7 +225,22 @@ class food_merge_imdb(imdb):
         #     #     print 'Removed {} difficult objects'.format(
         #     #         len(objs) - len(non_diff_objs))
         #     objs = non_diff_objs
-        num_objs = len(objs)
+        # exlcude unused cls
+
+        ori_num_objs = len(objs)
+        num_objs = 0
+        for obj in objs:
+            try:
+                cls = self._class_to_ind[obj.find('name').text.lower().strip()]
+                num_objs += 1
+            except:
+                continue
+        #assert num_objs == 0
+        if num_objs == 0:
+            import pdb
+            pdb.set_trace()
+
+        num_objs = num_objs  # len(objs)
 
         boxes = np.zeros((num_objs, 4), dtype=np.uint16)
         gt_classes = np.zeros((num_objs), dtype=np.int32)
@@ -235,7 +250,8 @@ class food_merge_imdb(imdb):
         ishards = np.zeros((num_objs), dtype=np.int32)
 
         # Load object bounding boxes into a data frame.
-        for ix, obj in enumerate(objs):
+        ix = 0
+        for obj in objs:
             bbox = obj.find('bndbox')
             # Make pixel indexes 0-based
             # the range of food label is (0, width) which may cause by bugs in labelimg 1.4
@@ -246,7 +262,6 @@ class food_merge_imdb(imdb):
 
             diffc = obj.find('difficult')
             difficult = 0 if diffc == None else int(diffc.text)
-            ishards[ix] = difficult
 
             try:
                 cls = self._class_to_ind[obj.find('name').text.lower().strip()]
@@ -257,6 +272,7 @@ class food_merge_imdb(imdb):
                 continue
 
                 raise
+            ishards[ix] = difficult
             boxes[ix, :] = [x1, y1, x2, y2]
             gt_classes[ix] = cls
             try:
@@ -265,6 +281,7 @@ class food_merge_imdb(imdb):
                 print(filename)
                 raise
             seg_areas[ix] = (x2 - x1 + 1) * (y2 - y1 + 1)
+            ix += 1
 
         overlaps = scipy.sparse.csr_matrix(overlaps)
 

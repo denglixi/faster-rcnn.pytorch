@@ -27,7 +27,6 @@ def process_all_xml_files_from_dir(dir_path, call_back_func):
                                 xml_path, objs, **kwargs
     """
     allfiles = os.listdir(dir_path)
-    stats = {}
     for i in allfiles:
         xml_path = os.path.join(dir_path, i)
         objs = parse_rec(xml_path)
@@ -71,7 +70,7 @@ def clo(reserver_class):
     return filter_xml1
 
 
-def main():
+def create_inner_imagesets():
     cantten = ['Arts', 'Science', 'TechMixedVeg',
                'TechChicken', 'UTown', 'YIH']
 
@@ -107,5 +106,108 @@ def main():
                 f.write(x_name + '\n')
 
 
+def create_train_and_val_imagesets():
+    """
+    create train.txt and val.txt for the origin 6 canteens (Arts, science, techmix, techchicken , utown and yih)
+
+    """
+    cantten = ['Arts', 'Science', 'TechMixedVeg',
+               'TechChicken', 'UTown', 'YIH']
+    excl_canteen = ["excl"+x for x in cantten]
+    cantten += excl_canteen
+    cantten += ["All"]
+
+    for ct in cantten:
+        print("------processing {}-----------".format(ct))
+        imgsets_path = "../data/Food/Food_{}/ImageSets".format(ct)
+        anno_path = "../data/Food/Food_{}/Annotations".format(ct)
+
+        with open(os.path.join(imgsets_path, "trainval.txt")) as f:
+            trainval_content = f.readlines()
+        train_content = []
+        val_content = []
+
+        for i, sample in enumerate(trainval_content):
+            if i % 8 == 0 or i % 9 == 0:
+                val_content.append(sample)
+            else:
+                train_content.append(sample)
+
+        print("saving train sets:{}".format(len(train_content)))
+        with open(os.path.join(imgsets_path, "train.txt"), 'w') as f:
+            f.writelines(train_content)
+        print("saving val sets:{}".format(len(val_content)))
+        with open(os.path.join(imgsets_path, "val.txt"), 'w') as f:
+            f.writelines(val_content)
+
+
+def create_mtN_imagesets(N: int):
+    """get_mtN_imagesets
+
+    :param N: the least number of sample in each category
+    :type N: int
+
+    """
+    cantten = ['Arts', 'Science', 'TechMixedVeg',
+               'TechChicken', 'UTown', 'YIH']
+    excl_canteen = ["excl"+x for x in cantten]
+    cantten += excl_canteen
+    cantten += ["All"]
+
+    for ct in cantten:
+        print("------processing {}-mt{}----------".format(ct, N))
+        imgsets_path = "../data/Food/Food_{}/ImageSets".format(ct)
+        anno_path = "../data/Food/Food_{}/Annotations".format(ct)
+        imagesets = ['trainval', 'train', 'val']
+       # imagesets = ['val']
+
+        for imset in imagesets:
+            with open(os.path.join(imgsets_path, imset+".txt"), 'r') as f:
+                xml_files = [x.strip("\n")+'.xml' for x in f.readlines()]
+
+            content = []
+            for xf in xml_files:
+                objects = parse_rec(os.path.join(anno_path, xf))
+                for obj in objects:
+                    if obj['name'] in get_categories(ct+"_{}_mt{}".format(imset, N)):
+                        content.append(xf.split(".")[0] + '\n')
+                        break
+
+            print("saving {} sets:{}".format(imset, len(content)))
+            with open(os.path.join(imgsets_path, "{}mt{}.txt".format(imset, N)), 'w') as f:
+                f.writelines(content)
+        #train_content = []
+        #val_content = []
+
+        # for i, sample in enumerate(trainval_content):
+        #    if i % 8 == 0 or i % 9 == 0:
+        #        val_content.append(sample)
+        #    else:
+        #        train_content.append(sample)
+
+        #print("saving train sets:{}".format(len(train_content)))
+        # with open(os.path.join(imgsets_path, "trainmt{}.txt".format(N)), 'w') as f:
+        #    f.writelines(train_content)
+        #print("saving val sets:{}".format(len(val_content)))
+        # with open(os.path.join(imgsets_path, "valmt{}.txt".format(N)), 'w') as f:
+        #    f.writelines(val_content)
+
+
+def create_trainval_imagesets(path: str):
+    """create_trainval_imagesets
+
+    :param path: path of dataset
+    :type path: str
+
+    """
+    anno_path = os.path.join(path, "Annotations")
+    imsets_path = os.path.join(path, "ImageSets")
+    xml_files = os.listdir(anno_path)
+    with open(os.path.join(imsets_path, "trainval.txt"), 'w') as f:
+        f.writelines([x.split(".")[0]+'\n' for x in xml_files])
+
+
 if __name__ == '__main__':
-    main()
+    create_train_and_val_imagesets()
+    for n in [10, 30, 50, 100]:
+        create_mtN_imagesets(n)

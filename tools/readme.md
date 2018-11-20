@@ -8,10 +8,20 @@ These codes are mainly written for constructing food detecion dataset with voc f
    convert_xml_with_oritation.py *
 
 2. build splited canteen dataset
+
    create_voc_format_from_raw_data.sh *
+   create_spicified_imageset.py -> train_and_val
 
 3. build merged canteen dataset
+
    create_crosssval_dataset.py *
 
 4. create categories of different dataset.
-   statics.py *
+
+   create_food_categories.py
+
+5. create_spicified__imageset.
+
+    mt10...
+
+

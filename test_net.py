@@ -31,6 +31,7 @@ from model.utils.net_utils import save_net, load_net, vis_detections
 from model.faster_rcnn.vgg16 import vgg16
 from model.faster_rcnn.resnet import resnet
 from model.faster_rcnn.prefood_res50 import PreResNet50
+from datasets.food_category import get_categories
 
 
 try:
@@ -220,6 +221,36 @@ if __name__ == '__main__':
         args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
                          'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
+    elif args.dataset == "foodAllmt10":
+        args.imdb_name = "food_All_trainmt10_All_train_mt10"
+        args.imdbval_name = "food_All_valmt10_All_train_mt10"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
+    elif args.dataset == "foodAllmt100":
+        args.imdb_name = "food_All_trainmt10_All_train_mt10"
+        args.imdbval_name = "food_All_valmt100_All_train_mt100"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
+    elif args.dataset == "foodAllmt50":
+        args.imdb_name = "food_All_trainmt10_All_train_mt10"
+        args.imdbval_name = "food_All_valmt50_All_train_mt50"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
+    elif args.dataset == "foodexclYIHmt10":
+        args.imdb_name = "food_All_trainmt10_All_train_mt10"
+        args.imdbval_name = "food_exclYIH_valmt10_exclYIH_train_mt10"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
+    elif args.dataset == "foodexclYIHmt10_testYIH":
+        args.imdb_name = "food_All_trainmt10_All_train_mt10"
+        args.imdbval_name = "food_YIH_inner_exclYIH_train_mt10"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
     args.cfg_file = "cfgs/{}_ls.yml".format(
         args.net) if args.large_scale else "cfgs/{}.yml".format(args.net)
 
@@ -331,200 +362,221 @@ if __name__ == '__main__':
     if(args.test_cache):
         with open(det_file, 'rb') as f:
             all_boxes = pickle.load(f)
-        imdb.evaluate_detections(all_boxes, output_dir)
-        exit()
-        if args.save_for_vis:
-            gt_roidb = imdb.gt_roidb()
-            for im_idx in len(imdb.image_index):
-                pass
-                # Not Implement
-                # TODO 1. save cls that was not been detected or was wrong classified
-                # TODO 1. save cls that wrong detected
-                #
+        #imdb.evaluate_detections(all_boxes, output_dir)
+        #exit()
+        #if args.save_for_vis:
+        #    gt_roidb = imdb.gt_roidb()
+        #    for im_idx in len(imdb.image_index):
+        #        pass
+        #        # Not Implement
+        #        # TODO 1. save cls that was not been detected or was wrong classified
+        #        # TODO 1. save cls that wrong detected
+        #        #
 
-    fasterRCNN.eval()
-    empty_array = np.transpose(np.array([[], [], [], [], []]), (1, 0))
-    for i in range(num_images):
-        data_tic = time.time()
-        data = next(data_iter)
-        data_toc = time.time()
-        data_load_time = data_toc - data_tic
-        im_data.data.resize_(data[0].size()).copy_(data[0])
-        im_info.data.resize_(data[1].size()).copy_(data[1])
-        gt_boxes.data.resize_(data[2].size()).copy_(data[2])
-        num_boxes.data.resize_(data[3].size()).copy_(data[3])
+    else:
+        fasterRCNN.eval()
+        empty_array = np.transpose(np.array([[], [], [], [], []]), (1, 0))
+        for i in range(num_images):
+            data_tic = time.time()
+            data = next(data_iter)
+            data_toc = time.time()
+            data_load_time = data_toc - data_tic
+            im_data.data.resize_(data[0].size()).copy_(data[0])
+            im_info.data.resize_(data[1].size()).copy_(data[1])
+            gt_boxes.data.resize_(data[2].size()).copy_(data[2])
+            num_boxes.data.resize_(data[3].size()).copy_(data[3])
 
-        det_tic = time.time()
-        rois, cls_prob, bbox_pred, \
-            rpn_loss_cls, rpn_loss_box, \
-            RCNN_loss_cls, RCNN_loss_bbox, \
-            rois_label = fasterRCNN(im_data, im_info, gt_boxes, num_boxes)
+            det_tic = time.time()
+            rois, cls_prob, bbox_pred, \
+                rpn_loss_cls, rpn_loss_box, \
+                RCNN_loss_cls, RCNN_loss_bbox, \
+                rois_label = fasterRCNN(im_data, im_info, gt_boxes, num_boxes)
 
-        scores = cls_prob.data
-        boxes = rois.data[:, :, 1:5]
+            scores = cls_prob.data
+            boxes = rois.data[:, :, 1:5]
 
-        if cfg.TEST.BBOX_REG:
-            # Apply bounding-box regression deltas
-            box_deltas = bbox_pred.data
-            if cfg.TRAIN.BBOX_NORMALIZE_TARGETS_PRECOMPUTED:
-                # Optionally normalize targets by a precomputed mean and stdev
-                if args.class_agnostic:
-                    box_deltas = box_deltas.view(-1, 4) * torch.FloatTensor(cfg.TRAIN.BBOX_NORMALIZE_STDS).cuda() \
-                        + torch.FloatTensor(cfg.TRAIN.BBOX_NORMALIZE_MEANS).cuda()
-                    box_deltas = box_deltas.view(1, -1, 4)
-                else:
-                    box_deltas = box_deltas.view(-1, 4) * torch.FloatTensor(cfg.TRAIN.BBOX_NORMALIZE_STDS).cuda() \
-                        + torch.FloatTensor(cfg.TRAIN.BBOX_NORMALIZE_MEANS).cuda()
-                    box_deltas = box_deltas.view(1, -1, 4 * len(imdb.classes))
+            if cfg.TEST.BBOX_REG:
+                # Apply bounding-box regression deltas
+                box_deltas = bbox_pred.data
+                if cfg.TRAIN.BBOX_NORMALIZE_TARGETS_PRECOMPUTED:
+                    # Optionally normalize targets by a precomputed mean and stdev
+                    if args.class_agnostic:
+                        box_deltas = box_deltas.view(-1, 4) * torch.FloatTensor(cfg.TRAIN.BBOX_NORMALIZE_STDS).cuda() \
+                            + torch.FloatTensor(cfg.TRAIN.BBOX_NORMALIZE_MEANS).cuda()
+                        box_deltas = box_deltas.view(1, -1, 4)
+                    else:
+                        box_deltas = box_deltas.view(-1, 4) * torch.FloatTensor(cfg.TRAIN.BBOX_NORMALIZE_STDS).cuda() \
+                            + torch.FloatTensor(cfg.TRAIN.BBOX_NORMALIZE_MEANS).cuda()
+                        box_deltas = box_deltas.view(1, -1, 4 * len(imdb.classes))
 
-            pred_boxes = bbox_transform_inv(boxes, box_deltas, 1)
-            pred_boxes = clip_boxes(pred_boxes, im_info.data, 1)
-        else:
-            # Simply repeat the boxes, once for each class
-            pred_boxes = np.tile(boxes, (1, scores.shape[1]))
-
-        pred_boxes /= data[1][0][2].item()
-
-        scores = scores.squeeze()
-        pred_boxes = pred_boxes.squeeze()
-        det_toc = time.time()
-
-        detect_time = det_toc - det_tic
-        misc_tic = time.time()
-        if vis or args.save_for_vis:
-            im = cv2.imread(imdb.image_path_at(i))
-            im2show = np.copy(im)
-        for j in xrange(1, imdb.num_classes):
-            inds = torch.nonzero(scores[:, j] > thresh).view(-1)
-            # if there is det
-            if inds.numel() > 0:
-                cls_scores = scores[:, j][inds]
-                _, order = torch.sort(cls_scores, 0, True)
-                if args.class_agnostic:
-                    cls_boxes = pred_boxes[inds, :]
-                else:
-                    cls_boxes = pred_boxes[inds][:, j * 4:(j + 1) * 4]
-
-                cls_dets = torch.cat((cls_boxes, cls_scores.unsqueeze(1)), 1)
-                # cls_dets = torch.cat((cls_boxes, cls_scores), 1)
-                cls_dets = cls_dets[order]
-                keep = nms(cls_dets, cfg.TEST.NMS)
-                cls_dets = cls_dets[keep.view(-1).long()]
-                if vis or args.save_for_vis:
-                    im2show = vis_detections(
-                        im2show, imdb.classes[j], cls_dets.cpu().numpy(), 0.5)
-                all_boxes[j][i] = cls_dets.cpu().numpy()
+                pred_boxes = bbox_transform_inv(boxes, box_deltas, 1)
+                pred_boxes = clip_boxes(pred_boxes, im_info.data, 1)
             else:
-                all_boxes[j][i] = empty_array
+                # Simply repeat the boxes, once for each class
+                pred_boxes = torch.from_numpy(
+                    np.tile(boxes, (1, scores.shape[2]))).cuda()
 
-        # Limit to max_per_image detections *over all classes*
-        if max_per_image > 0:
-            image_scores = np.hstack([all_boxes[j][i][:, -1]
-                                      for j in xrange(1, imdb.num_classes)])
-            if len(image_scores) > max_per_image:
-                image_thresh = np.sort(image_scores)[-max_per_image]
+            pred_boxes /= data[1][0][2].item()
+
+            scores = scores.squeeze()
+            pred_boxes = pred_boxes.squeeze()
+            det_toc = time.time()
+
+            detect_time = det_toc - det_tic
+            misc_tic = time.time()
+            if vis or args.save_for_vis:
+                im = cv2.imread(imdb.image_path_at(i))
+                im2show = np.copy(im)
+            for j in xrange(1, imdb.num_classes):
+                inds = torch.nonzero(scores[:, j] > thresh).view(-1)
+                # if there is det
+                if inds.numel() > 0:
+                    cls_scores = scores[:, j][inds]
+                    _, order = torch.sort(cls_scores, 0, True)
+                    if args.class_agnostic:
+                        cls_boxes = pred_boxes[inds, :]
+                    else:
+                        cls_boxes = pred_boxes[inds][:, j * 4:(j + 1) * 4]
+
+                    cls_dets = torch.cat((cls_boxes, cls_scores.unsqueeze(1)), 1)
+                    # cls_dets = torch.cat((cls_boxes, cls_scores), 1)
+                    cls_dets = cls_dets[order]
+                    keep = nms(cls_dets, cfg.TEST.NMS)
+                    cls_dets = cls_dets[keep.view(-1).long()]
+                    if vis or args.save_for_vis:
+                        im2show = vis_detections(
+                            im2show, imdb.classes[j], np.array([cls_dets.cpu().numpy()[0, :]]), 0.5)
+                    all_boxes[j][i] = cls_dets.cpu().numpy()
+                else:
+                    all_boxes[j][i] = empty_array
+            # Limit to max_per_image detections *over all classes*
+            #max_per_image = 1
+            if max_per_image > 0:
+                image_scores = np.hstack([all_boxes[j][i][:, -1]
+                                          for j in xrange(1, imdb.num_classes)])
+                if len(image_scores) > max_per_image:
+                    image_thresh = np.sort(image_scores)[-max_per_image]
+                    for j in xrange(1, imdb.num_classes):
+                        keep = np.where(all_boxes[j][i][:, -1] >= image_thresh)[0]
+                        all_boxes[j][i] = all_boxes[j][i][keep, :]
+
+            # save images by gt for analysis
+            misc_toc = time.time()
+            nms_time = misc_toc - misc_tic
+
+            sys.stdout.write('im_detect: {:d}/{:d} dataload:{:.3f}s det:{:.3f}s nms:{:.3f}s  \r'
+                             .format(i + 1, num_images, data_load_time,  detect_time, nms_time))
+            sys.stdout.flush()
+
+            if vis:
+                # cv2.imwrite('result.png', im2show)
+                # pdb.set_trace()
+                cv2.namedWindow("frame", 0)
+                cv2.resizeWindow("frame", 800, 800)
+                cv2.imshow('frame', im2show)
+                cv2.waitKey(0)
+
+            # To save image for analysis
+            # Limit to threshhold detections *over all classes*
+            threshold_of_vis = 0.1
+            if max_per_image > 0:
+                image_scores = np.hstack([all_boxes[j][i][:, -1]
+                                          for j in xrange(1, imdb.num_classes)])
+                image_thresh = threshold_of_vis # np.sort(image_scores)[-max_per_image]
                 for j in xrange(1, imdb.num_classes):
                     keep = np.where(all_boxes[j][i][:, -1] >= image_thresh)[0]
                     all_boxes[j][i] = all_boxes[j][i][keep, :]
 
-        # save images by gt for analysis
-        misc_toc = time.time()
-        nms_time = misc_toc - misc_tic
+            boxes_of_i = [_[i] for _ in all_boxes]
 
-        sys.stdout.write('im_detect: {:d}/{:d} dataload:{:.3f}s det:{:.3f}s nms:{:.3f}s  \r'
-                         .format(i + 1, num_images, data_load_time,  detect_time, nms_time))
-        sys.stdout.flush()
+            # filter boxes with lower score
+            gt_boxes_cpu = gt_boxes.cpu().numpy()[0]  # It is 0 for batch size is 1
+            gt_boxes_cpu[:, 0:4] /= float(im_info[0][2].cpu().numpy())
 
-        if vis:
-            # cv2.imwrite('result.png', im2show)
-            # pdb.set_trace()
-            cv2.namedWindow("frame", 0)
-            cv2.resizeWindow("frame", 800, 800)
-            cv2.imshow('frame', im2show)
-            cv2.waitKey(0)
+            if args.save_for_vis:
+                save_vis_root_path = './savevis/{}_{}_{}/'.format(
+                    args.checksession, args.checkepoch, args.checkpoint)
 
-        # To save image for analysis
-        # Limit to threshhold detections *over all classes*
-        threshhold_of_vis = 0.1
-        if max_per_image > 0:
-            image_scores = np.hstack([all_boxes[j][i][:, -1]
-                                      for j in xrange(1, imdb.num_classes)])
-            image_thresh = 0.1  # np.sort(image_scores)[-max_per_image]
-            for j in xrange(1, imdb.num_classes):
-                keep = np.where(all_boxes[j][i][:, -1] >= image_thresh)[0]
-                all_boxes[j][i] = all_boxes[j][i][keep, :]
+                # islink not working
+                # if os.path.islink(save_vis_root_path):
+                #    linkpath = os.readlink(save_vis_root_path)
+                #    if not os.path.exists(linkpath):
+                #        os.makedirs(linkpath)
+                # else:
+                #    if not os.path.exists(save_vis_root_path):
+                #        os.makedirs(save_vis_root_path)
 
-        # boxes_of_i = [ _[i] if _[i][4] > 0.1 for _ in all_boxes]
-        boxes_of_i = [_[i] for _ in all_boxes]
-        # filter boxes with lower score
-        gt_boxes_cpu = gt_boxes.cpu().numpy()[0]  # It is 0 for batch size is 1
-        gt_boxes_cpu[:, 0:4] /= float(im_info[0][2].cpu().numpy())
+                # show ground-truth
+                for gt_b in gt_boxes_cpu:
+                    im2show = vis_detections(
+                        im2show, imdb.classes[int(gt_b[-1])], gt_b[np.newaxis, :], 0.1, (204, 0, 0))
 
-        if args.save_for_vis:
-            save_vis_root_path = './savevis/{}_{}_{}/'.format(
-                args.checksession, args.checkepoch, args.checkpoint)
+                i_row, i_c, _ = im2show.shape
+                im2show = cv2.resize(im2show, (int(i_c/2), int(i_row/2)))
 
-            # islink not working
-            # if os.path.islink(save_vis_root_path):
-            #    linkpath = os.readlink(save_vis_root_path)
-            #    if not os.path.exists(linkpath):
-            #        os.makedirs(linkpath)
-            # else:
-            #    if not os.path.exists(save_vis_root_path):
-            #        os.makedirs(save_vis_root_path)
-
-            # show ground-truth
-            for gt_b in gt_boxes_cpu:
-                im2show = vis_detections(
-                    im2show, imdb.classes[int(gt_b[-1])], gt_b[np.newaxis, :], 0.1, (204, 0, 0))
-
-            i_row, i_c, _ = im2show.shape
-            im2show = cv2.resize(im2show, (int(i_c/2), int(i_row/2)))
-
-            # 1. gt未检测到
-            # 2. gt类别错误(TODO)
-            for gt_b in gt_boxes_cpu:
-                gt_cls_idx = int(gt_b[4])
-                # 1 && 2
-                if len(boxes_of_i[gt_cls_idx]) == 0:
-                    save_vis_path = save_vis_root_path + \
-                        'FN/' + imdb.classes[int(gt_cls_idx)]
-                    if not os.path.exists(save_vis_path):
-                        os.makedirs(save_vis_path)
-                    # im2vis_analysis = vis_detections(
-                    #    im2show, imdb.classes[int(gt_b[-1])], gt_b[np.newaxis,:], 0.1, (204, 0, 0))
-                    cv2.imwrite(os.path.join(save_vis_path,
-                                             imdb.image_index[i]+'.jpg'), im2show)
-
-            gt_classes = [int(_[-1]) for _ in gt_boxes_cpu]
-            # 3. FP
-            for i, det_b_cls in enumerate(boxes_of_i):
-                if len(det_b_cls) > 0:
-                    if i not in gt_classes:
+                # 1. gt未检测到
+                # 2. gt类别错误(TODO)
+                for gt_b in gt_boxes_cpu:
+                    gt_cls_idx = int(gt_b[4])
+                    # 1 && 2
+                    if len(boxes_of_i[gt_cls_idx]) == 0:
                         save_vis_path = save_vis_root_path + \
-                            'FP/' + str(imdb.classes[i])
+                            'FN/' + imdb.classes[int(gt_cls_idx)]
                         if not os.path.exists(save_vis_path):
                             os.makedirs(save_vis_path)
+                        # im2vis_analysis = vis_detections(
+                        #    im2show, imdb.classes[int(gt_b[-1])], gt_b[np.newaxis,:], 0.1, (204, 0, 0))
                         cv2.imwrite(os.path.join(save_vis_path,
                                                  imdb.image_index[i]+'.jpg'), im2show)
 
-    with open(det_file, 'wb') as f:
-        pickle.dump(all_boxes, f, pickle.HIGHEST_PROTOCOL)
+                gt_classes = [int(_[-1]) for _ in gt_boxes_cpu]
+                # 3. FP
+                for i, det_b_cls in enumerate(boxes_of_i):
+                    if len(det_b_cls) > 0:
+                        if i not in gt_classes:
+                            save_vis_path = save_vis_root_path + \
+                                'FP/' + str(imdb.classes[i])
+                            if not os.path.exists(save_vis_path):
+                                os.makedirs(save_vis_path)
+                            cv2.imwrite(os.path.join(save_vis_path,
+                                                     imdb.image_index[i]+'.jpg'), im2show)
+
+        with open(det_file, 'wb') as f:
+            pickle.dump(all_boxes, f, pickle.HIGHEST_PROTOCOL)
 
     print('Evaluating detections')
     cls_ap_zip, dataset_map = imdb.evaluate_detections(all_boxes, output_dir)
     # results_filename = args.imdbval_name + \
     #    time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+
     results_filename = args.imdbval_name + "_session" + \
         str(args.checksession) + "_epoch" + str(args.checkepoch)
     results_save_dir = "test_result/"
     if not os.path.exists(results_save_dir):
         os.makedirs(results_save_dir)
 
+    # filter results
+    val_names = args.imdbval_name.split("_")
+    val_canteen = val_names[1]  # YIH
+    val_split = val_names[2]  # valmt10 -> val_mt10
+    if val_split == 'inner':
+        val_categories = get_categories(val_canteen+"_"+val_split)
+    else:
+        val_categories, val_ap = zip(*cls_ap_zip)
+        cls_ap_zip = zip(val_categories, val_ap)
+
+
+    #f.write(str(dataset_map) + '\n')
+
+    map_exist_cls = []
     with open(os.path.join(results_save_dir, results_filename), 'w') as f:
-        f.write(str(dataset_map) + '\n')
         for cls, ap in cls_ap_zip:
-            f.write(str(cls) + '\t' + str(ap) + '\n')
+            if str(cls) in val_categories:
+                f.write(str(cls) + '\t' + str(ap) + '\n')
+                map_exist_cls.append(ap)
+        map_exist_cls = sum(map_exist_cls) / len(map_exist_cls)
+        print("exist cls map:{}".format(map_exist_cls))
+        f.write(str(map_exist_cls))
 
     end = time.time()
     print("test time: %0.4fs" % (end - start))

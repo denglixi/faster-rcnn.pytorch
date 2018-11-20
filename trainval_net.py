@@ -256,6 +256,36 @@ if __name__ == '__main__':
         args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
                          'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
+    elif args.dataset == "foodAllmt10":
+        args.imdb_name = "food_All_trainmt10_All_train_mt10"
+        args.imdbval_name = "food_All_val_All_train"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
+    elif args.dataset == "foodAllmt50":
+        args.imdb_name = "food_All_trainmt50_All_train_mt50"
+        args.imdbval_name = "food_All_val_All_train"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
+    elif args.dataset == "foodAllmt100":
+        args.imdb_name = "food_All_trainmt100_All_train_mt100"
+        args.imdbval_name = "food_All_val_All_train"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
+    elif args.dataset == "foodexclYIHmt10":
+        args.imdb_name = "food_exclYIH_trainmt10_exclYIH_train_mt10"
+        args.imdbval_name = "food_All_val_All_train"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
+    elif args.dataset == "foodexclUTownmt10":
+        args.imdb_name = "food_exclUTown_trainmt10_exclUTown_train_mt10"
+        args.imdbval_name = "food_All_val_All_train"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
     args.cfg_file = "cfgs/{}_ls.yml".format(
         args.net) if args.large_scale else "cfgs/{}.yml".format(args.net)
 
@@ -290,8 +320,11 @@ if __name__ == '__main__':
     dataset = roibatchLoader(roidb, ratio_list, ratio_index, args.batch_size,
                              imdb.num_classes, training=True)
 
-    dataloader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size,
-                                             sampler=sampler_batch, num_workers=args.num_workers)
+    dataloader = torch.utils.data.DataLoader(dataset,
+                                             batch_size=args.batch_size,
+                                             sampler=sampler_batch,
+                                             num_workers=args.num_workers,
+                                             pin_memory=True)
 
     # initilize the tensor holder here.
     im_data = torch.FloatTensor(1)

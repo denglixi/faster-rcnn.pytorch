@@ -35,6 +35,7 @@ def parseargs():
     args = parser.parse_args()
     return args
 
+
 def unifiedID(carteen_dir, origin_ID_file_path, unified_ID_file_path):
     path = carteen_dir
     convert_dict = construct_dict(origin_ID_file_path, unified_ID_file_path)
@@ -45,14 +46,18 @@ def unifiedID(carteen_dir, origin_ID_file_path, unified_ID_file_path):
                 tree = read_xml(os.path.join(root, x_f))
                 objects = tree.findall('object')
                 for obj in objects:
-                    obj.find('name').text = convert_dict[obj.find('name').text]
+                    try:
+                        obj.find(
+                            'name').text = convert_dict[obj.find('name').text]
+                    except KeyError:
+                        continue
                 write_xml(tree, os.path.join(root, x_f))
 
 
 if __name__ == "__main__":
     args = parseargs()
     cantten = "YIH"
-    carteen_dir= "YIH"
+    carteen_dir = "../../data/Food/"
     origin_ID_file_path = 'key.txt'
     unified_ID_file_path = 'val.txt'
     unifiedID(carteen_dir, origin_ID_file_path, unified_ID_file_path)

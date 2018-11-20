@@ -35,6 +35,7 @@ from model.utils.blob import im_list_to_blob
 from model.faster_rcnn.vgg16 import vgg16
 from model.faster_rcnn.resnet import resnet
 from model.faster_rcnn.prefood_res50 import PreResNet50
+from datasets.food_category import get_categories
 
 try:
     xrange          # Python 2
@@ -168,8 +169,11 @@ if __name__ == '__main__':
     load_name = os.path.join(input_dir,
                              'faster_rcnn_{}_{}_{}.pth'.format(args.checksession, args.checkepoch, args.checkpoint))
 
-    pascal_classes = np.asarray(['__background__',  # always index 0
-                                 "白饭 ", "咸蛋 ", "翻炒蛋 ", "番茄蛋 ", "糙米 ", "瘦肉 ", "小白菜（绿） ", "包菜 ", "苦瓜 ", "芹菜 ", "番薯葉 ", "南瓜 ", "豆芽 ", "白萝卜 ", "长豆 ", "西兰花和菜花 ", "酸辣羊角豆/秋葵 ", "菜花 ", "炒豆腐 ", "猪肝 ", "土豆炒番茄酱豆 ", "茄子 ", "滷豆腐 ", "鸭肉 ", "咖喱鸡 ", "红酱。酸甜肉 ", "肉碎 ", "卤鸡 ", "猪脚 ", "排骨 ", "三层肉 ", "黑酱猪肉", "炸鱼。整只 ", "炸鱼片。红酱汁。看似炒蛋 ", "章鱼，鱿鱼。O型 ", "糖醋鱼", "炸鱼片，粉红酱汁 ",  "毛瓜丝"])
+    pascal_classes = np.asarray(get_categories("All_train"))
+
+    import pdb
+
+    pdb.set_trace()
     # initilize the network here.
     if args.net == 'vgg16':
         fasterRCNN = vgg16(pascal_classes, pretrained=False,

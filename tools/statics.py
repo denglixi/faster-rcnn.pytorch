@@ -11,13 +11,11 @@
 """
 
 import xml.etree.ElementTree as ET
-
 import os
-
 from collections import OrderedDict
 import matplotlib.pyplot as plt
-
 from matplotlib.font_manager import FontProperties
+from id2name import id2chn, id2eng
 from xml_process import parse_rec
 
 
@@ -210,8 +208,8 @@ def main():
     category_file = './category.py'
     food_dataset_root = "/home/d/denglixi/faster-rcnn.pytorch/data/Food/"
     for ct in canttens:
-        #datasets = ['trainval', 'train', 'val']
-        datasets = ['trainval']
+        datasets = ['trainval', 'train', 'val']
+        #datasets = ['trainval']
         for dataset in datasets:
             all_trainval_set = food_dataset_root + "Food_{}/ImageSets/{}.txt".format(
                 ct, dataset)
@@ -245,7 +243,8 @@ def main():
 
             with open("{}_{}_static.txt".format(ct, dataset), 'w') as f:
                 for k, v in all_stats:
-                    f.write(str(k)+'\t'+str(v) + '\n')
+                    f.write(str(k)+'\t'+str(v) + '\t' +
+                            id2chn[str(k)] + '\t' + id2eng[str(k)] + '\n')
 
     return
     zhfont1 = FontProperties(fname='./simsun.ttc')

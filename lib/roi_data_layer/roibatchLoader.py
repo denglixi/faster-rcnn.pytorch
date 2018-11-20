@@ -191,8 +191,13 @@ class roibatchLoader(data.Dataset):
                 im_info[0, 1] = trim_size
 
             # check the bounding box:
-            not_keep = (gt_boxes[:, 0] == gt_boxes[:, 2]) | (
-                gt_boxes[:, 1] == gt_boxes[:, 3])
+            try:
+                not_keep = (gt_boxes[:, 0] == gt_boxes[:, 2]) | (
+                    gt_boxes[:, 1] == gt_boxes[:, 3])
+            except:
+                print(gt_boxes)
+                import pdb
+                pdb.set_trace()
             keep = torch.nonzero(not_keep == 0).view(-1)
 
             gt_boxes_padding = torch.FloatTensor(
