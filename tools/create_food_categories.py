@@ -18,19 +18,21 @@ from matplotlib.font_manager import FontProperties
 from statics import get_xml_from_file
 
 
-def main():
 
+def create_category(imageset):
     canttens = ['All', 'exclArts', 'exclYIH', 'exclTechChicken',
                 'exclTechMixedVeg', 'exclUTown', 'exclScience',
                 'YIH', 'Arts', 'Science', 'UTown',
                 'TechChicken', 'TechMixedVeg']
     category_file = './food_category.py'
     food_dataset_root = "/home/d/denglixi/faster-rcnn.pytorch/data/Food/"
-    datasets = ['trainval', 'train', 'val']
+    datasets = imageset #['trainval', 'train', 'val'] #, 'inner']
     with open(category_file, 'w') as f:
         f.write("def get_categories(category):\n")
         for ct in canttens:
             for dataset in datasets:
+                if dataset == "inner" and ct not in ["Arts", "YIH", "UTown", "Science", "TechChicken", "TechMixedVeg"]:
+                    continue
                 all_trainval_set = food_dataset_root + "Food_{}/ImageSets/{}.txt".format(
                     ct, dataset)
                 all_xml_dir = food_dataset_root + "Food_{}/Annotations".format(
@@ -64,6 +66,11 @@ def main():
                             f.write("'{}', ".format(k))
                     f.write("]\n")
     return
+
+def main():
+    #create_category(["trainval", "train", "val"])
+    #create_category(["inner"])
+    create_category(["trainval", "train", "val", "inner"])
 
 
 if __name__ == '__main__':

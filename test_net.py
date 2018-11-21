@@ -247,9 +247,24 @@ if __name__ == '__main__':
 
     elif args.dataset == "foodexclYIHmt10_testYIH":
         args.imdb_name = "food_All_trainmt10_All_train_mt10"
-        args.imdbval_name = "food_YIH_inner_exclYIH_train_mt10"
+        args.imdbval_name = "food_YIH_innermt10_exclYIH_train_mt10"
         args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
                          'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
+    elif args.dataset == "foodexclUTownmt10_testUTown":
+        args.imdb_name = "food_All_trainmt10_All_train_mt10"
+        args.imdbval_name = "food_UTown_innermt10_exclUTown_train_mt10"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
+    elif args.dataset == "foodexclUTownmt10":
+        args.imdb_name = "food_All_trainmt10_All_train_mt10"
+        args.imdbval_name = "food_exclUTown_val_exclUTown_train_mt10"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
+
+
 
     args.cfg_file = "cfgs/{}_ls.yml".format(
         args.net) if args.large_scale else "cfgs/{}.yml".format(args.net)
@@ -559,12 +574,14 @@ if __name__ == '__main__':
     val_names = args.imdbval_name.split("_")
     val_canteen = val_names[1]  # YIH
     val_split = val_names[2]  # valmt10 -> val_mt10
-    if val_split == 'inner':
+    if 'inner' in val_split:
         val_categories = get_categories(val_canteen+"_"+val_split)
     else:
         val_categories, val_ap = zip(*cls_ap_zip)
         cls_ap_zip = zip(val_categories, val_ap)
 
+    import pdb
+    pdb.set_trace()
 
     #f.write(str(dataset_map) + '\n')
 

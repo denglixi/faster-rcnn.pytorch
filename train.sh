@@ -1,14 +1,14 @@
 #!/bin/sh
 # GPU usage
-GPU_ID=0
+GPU_ID=1
 WORKER_NUMBER=5
 
 # basic set
 DATASET=foodexclUTownmt10
 NET=foodres50 #{foodres50, res101, vgg16}
-SESSION=3
+SESSION=31
 PRETRAIN=true
-WEIGHT_FILE=prefood #{ prefood, imagenet } only for res50
+WEIGHT_FILE=imagenet #{ prefood, imagenet } only for res50
 MAXEPOCHS=100
 
 # optimizer setting

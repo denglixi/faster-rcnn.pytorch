@@ -1,24 +1,26 @@
 #!/bin/sh
 
 
-IMAGEDIR=./userimage/
+IMAGEDIR=./images/userimage/
 MODELDIR=./models/
+CFG_FILE=./cfgs/demo.yml
 
 #webcam_num -2 show image online -1 saveimage
 
 # load weight
-SESSION=1
-EPOCH=10
-CHECKPOINT=14393
+SESSION=12
+EPOCH=24
+CHECKPOINT=14389
 
 
 # basic set
-DATASET=foodAll
+DATASET=foodAllmt50
 NET=foodres50 #{foodres50, res101, vgg16}
 
 WEB_NUM=-2
 
 python demo.py --net $NET \
+               --cfg $CFG_FILE \
                --dataset $DATASET \
                --image_dir $IMAGEDIR \
                --load_dir $MODELDIR \

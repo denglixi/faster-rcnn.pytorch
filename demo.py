@@ -36,6 +36,7 @@ from model.faster_rcnn.vgg16 import vgg16
 from model.faster_rcnn.resnet import resnet
 from model.faster_rcnn.prefood_res50 import PreResNet50
 from datasets.food_category import get_categories
+from datasets.id2name import id2eng, id2chn
 
 try:
     xrange          # Python 2
@@ -169,11 +170,8 @@ if __name__ == '__main__':
     load_name = os.path.join(input_dir,
                              'faster_rcnn_{}_{}_{}.pth'.format(args.checksession, args.checkepoch, args.checkpoint))
 
-    pascal_classes = np.asarray(get_categories("All_train"))
+    pascal_classes = np.asarray(get_categories("All_trainmt50"))
 
-    import pdb
-
-    pdb.set_trace()
     # initilize the network here.
     if args.net == 'vgg16':
         fasterRCNN = vgg16(pascal_classes, pretrained=False,
@@ -362,7 +360,7 @@ if __name__ == '__main__':
                 cls_dets = cls_dets[keep.view(-1).long()]
                 if vis:
                     im2show = vis_detections(
-                        im2show, pascal_classes[j], cls_dets.cpu().numpy(), 0.5)
+                        im2show, id2chn[pascal_classes[j]], cls_dets.cpu().numpy(), 0.5)
 
         misc_toc = time.time()
         nms_time = misc_toc - misc_tic

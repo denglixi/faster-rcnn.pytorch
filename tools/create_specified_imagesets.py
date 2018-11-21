@@ -71,39 +71,51 @@ def clo(reserver_class):
 
 
 def create_inner_imagesets():
+    '''
+    inner is the inner set between train of excl{dataset} and trainval of {dataset}
+    '''
     cantten = ['Arts', 'Science', 'TechMixedVeg',
                'TechChicken', 'UTown', 'YIH']
+
 
     for ct in cantten:
         print("------processing {}-----------".format(ct))
         imgsets_path = "../data/Food/Food_{}/ImageSets".format(ct)
         anno_path = "../data/Food/Food_{}/Annotations".format(ct)
-        excl_class = get_categories("excl"+ct+"_train")
-        # 3种方法实现通过回调函数，对xml进行筛选
-        # 1. save extra info of callback with class
-        # fx = filter_xml(tech_classes)
-        # process_all_xml_files_from_dir(path, fx.process)
-        # print(len(fx.reserver_xmls))
+        for N in [0, 10, 30, 50, 100]:
+            if N == 0:
+                excl_class = get_categories("excl"+ct+"_train")
+            else:
+                excl_class = get_categories("excl"+ct+"_trainmt{}".format(N))
+            # 3种方法实现通过回调函数，对xml进行筛选
+            # 1. save extra info of callback with class
+            # fx = filter_xml(tech_classes)
+            # process_all_xml_files_from_dir(path, fx.process)
+            # print(len(fx.reserver_xmls))
 
-        # 2. save extra info of callback with closet
-        fx_clo = clo(excl_class)
-        process_all_xml_files_from_dir(anno_path, fx_clo)
-        # print(len(fx_clo.__closure__))  # __closure__ 有cell对象的元祖构成
-        filter_xmls = fx_clo.__closure__[
-            0].cell_contents  # cell 对象有cell_contents的内容
+            # 2. save extra info of callback with closet
+            fx_clo = clo(excl_class)
+            process_all_xml_files_from_dir(anno_path, fx_clo)
+            # print(len(fx_clo.__closure__))  # __closure__ 有cell对象的元祖构成
+            filter_xmls = fx_clo.__closure__[
+                0].cell_contents  # cell 对象有cell_contents的内容
 
-        # 3. 通过协程
-        # how to implement??
-        # NotImplemented
+            # 3. 通过协程
+            # how to implement??
+            # NotImplemented
 
-        # 保存筛选信息
-        print("saving inner sets:{}".format(len(filter_xmls)))
-        print(imgsets_path)
-        with open(os.path.join(imgsets_path, "inner.txt"), 'w') as f:
-            for i in filter_xmls:
-                x_name = os.path.split(i)[1]
-                x_name = os.path.splitext(x_name)[0]
-                f.write(x_name + '\n')
+            # 保存筛选信息
+            print("saving inner mt {} sets:{}".format(N,len(filter_xmls)))
+            print(imgsets_path)
+            if N == 0:
+                saving_file = "inner.txt"
+            else:
+                saving_file = "innermt{}.txt".format(N)
+            with open(os.path.join(imgsets_path, saving_file), 'w') as f:
+                for i in filter_xmls:
+                    x_name = os.path.split(i)[1]
+                    x_name = os.path.splitext(x_name)[0]
+                    f.write(x_name + '\n')
 
 
 def create_train_and_val_imagesets():
@@ -173,7 +185,7 @@ def create_mtN_imagesets(N: int):
                         content.append(xf.split(".")[0] + '\n')
                         break
 
-            print("saving {} sets:{}".format(imset, len(content)))
+            print("saving {} sets:{}_mt{}".format(imset, len(content), N))
             with open(os.path.join(imgsets_path, "{}mt{}.txt".format(imset, N)), 'w') as f:
                 f.writelines(content)
         #train_content = []
@@ -208,6 +220,7 @@ def create_trainval_imagesets(path: str):
 
 
 if __name__ == '__main__':
-    create_train_and_val_imagesets()
-    for n in [10, 30, 50, 100]:
-        create_mtN_imagesets(n)
+    #create_train_and_val_imagesets()
+    #for n in [10, 30, 50, 100]:
+    #    create_mtN_imagesets(n)
+    create_inner_imagesets()

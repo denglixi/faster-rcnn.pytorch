@@ -21,13 +21,12 @@ __sets = {}
 
 
 # Set up food_<canteen>_<split>_<trainingcategories>
-splits = ['train', 'val', 'trainval']
+splits = ['train', 'val', 'trainval','inner']
 mt_splits = []
 for n in [10, 30, 50, 100]:
     for s in splits:
         mt_splits += [s+"mt{}".format(n)]
 splits += mt_splits
-splits += ["inner"]
 
 for cantee in ['exclYIH', "All", "exclArts", "exclUTown", "exclTechChicken", "exclTechMixedVeg", "YIH", "Arts", "TechChicken", "TechMixedVeg", "UTown"]:
     for split in splits:
