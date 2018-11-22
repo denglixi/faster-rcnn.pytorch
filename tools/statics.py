@@ -18,6 +18,7 @@ from matplotlib.font_manager import FontProperties
 from id2name import id2chn, id2eng
 from xml_process import parse_rec
 
+from food_category import get_categories
 
 def get_all_xml_files_from_dir(dir_path):
     """get_all_xml_files_from_dir
@@ -185,78 +186,49 @@ def statics_all_raw_data():
 
 def main():
     """main"""
-    # stats = get_all_xml_files_from_path(
-    #    "/home/d/denglixi/data/Food/YIH/19sept")
-    # stats = get_all_xml_files_from_path(
-    #    "/home/d/denglixi/data/Food/YIH/20sept")
 
-    # inter = dict.fromkeys([x for x in stats_yih if x in stats_tech])
-    # printdict(inter)
+    #canttens = ['All', 'exclArts', 'exclYIH', 'exclTechChicken',
+    #            'exclTechMixedVeg', 'exclUTown', 'exclScience',
+    #            'YIH', 'Arts', 'Science', 'UTown',
+    #            'TechChicken', 'TechMixedVeg']
 
-    print("inner of YIH & tech")
-    # inner = [k for k in stats_yih if k in stats_tech]
-    # inner = sorted(inner)
-    # print(inner)
-    # for i in inner:
-    #     print(stats_yih[i])
-
-    # statistics and generate classes of each dataset
-    canttens = ['All', 'exclArts', 'exclYIH', 'exclTechChicken',
-                'exclTechMixedVeg', 'exclUTown', 'exclScience',
-                'YIH', 'Arts', 'Science', 'UTown',
-                'TechChicken', 'TechMixedVeg']
-    category_file = './category.py'
+    canttens = ['All', 'exclYIH',
+                'exclUTown',
+                'YIH', 'UTown',
+                ]
     food_dataset_root = "/home/d/denglixi/faster-rcnn.pytorch/data/Food/"
     for ct in canttens:
-        datasets = ['trainval', 'train', 'val']
+        datasets = ['trainval', 'train', 'val', 'inner']
+        dataset_mt = []
+        for N in [10, 30, 50, 100]:
+            dataset_mt += [x+"mt{}".format(N) for x in datasets]
+        datasets += dataset_mt
         #datasets = ['trainval']
         for dataset in datasets:
+            if "inner" in dataset and ct not in ["Arts", "YIH", "UTown", "Science", "TechChicken", "TechMixedVeg"]:
+                continue
+
             all_trainval_set = food_dataset_root + "Food_{}/ImageSets/{}.txt".format(
                 ct, dataset)
             all_xml_dir = food_dataset_root + "Food_{}/Annotations".format(
                 ct)
             all_stats = get_xml_from_file(all_trainval_set, all_xml_dir)
             # printlist_of_tuples(all_stats)
-            class_file = './classes.txt'
-            with open(class_file, 'a') as f:
-                f.write('{}_{}_classes = [\'__background__\', '.format(
-                    ct, dataset), )
-                for k, v in all_stats:
-                    f.write("'{}', ".format(k))
-                f.write("]\n")
+            print("-------processing {} {}-----------".format(ct, dataset))
 
-            with open(category_file, 'a') as f:
-                f.write('if category == \'{}_{}\':\n    return [\'__background__\', '.format(
-                    ct, dataset), )
+            with open("./statistics/{}_{}_static.txt".format(ct, dataset), 'w') as f:
                 for k, v in all_stats:
-                    f.write("'{}', ".format(k))
-                f.write("]\n")
-
-            with open(category_file, 'a') as f:
-                # only add the category whose number is more than 10
-                f.write('if category == \'{}_{}_mt10\':\n    return [\'__background__\', '.format(
-                    ct, dataset), )
-                for k, v in all_stats:
-                    if v > 10:
-                        f.write("'{}', ".format(k))
-                f.write("]\n")
-
-            with open("{}_{}_static.txt".format(ct, dataset), 'w') as f:
-                for k, v in all_stats:
-                    f.write(str(k)+'\t'+str(v) + '\t' +
-                            id2chn[str(k)] + '\t' + id2eng[str(k)] + '\n')
+                    if str(k) in get_categories(ct+'_'+dataset):
+                        f.write(str(k)+'\t'+str(v) + '\t' +
+                                id2chn[str(k)] + '\t' + id2eng[str(k)] + '\n')
 
     return
-    zhfont1 = FontProperties(fname='./simsun.ttc')
-    plt.bar(list(range(len(stats))), [v for k, v in stats])
-    # plt.xticks(list(range(len(stats))), [u"白饭 ", u"咸蛋 ", u"翻炒蛋 ", u"番茄蛋 ",
-    #                                     u"糙米 ", "瘦肉 ", "小白菜（绿） ", "包菜 ", "苦瓜 ", "芹菜 ", "番薯葉 ",
-    #                                     u"南瓜 ", "豆芽 ", "白萝卜 ", "长豆 ", "西兰花和菜花 ", "酸辣羊角豆/秋葵 ", "菜花 ",
-    #                                     u"炒豆腐 ", "猪肝 ", "土豆炒番茄酱豆 ", "茄子 ", "滷豆腐 ", "鸭肉 ", "咖喱鸡 ",
-    #                                     u"红酱。酸甜肉 ", "肉碎 ", "卤鸡 ", "猪脚 ", "排骨 ", "三层肉 ", "黑酱猪肉",
-    #                                     u"炸鱼。整只 ", "炸鱼片。红酱汁。看似炒蛋 ", "章鱼，鱿鱼。O型 ", "糖醋鱼", "炸鱼片，粉红酱汁 ",  "毛瓜丝"], fontproperties=zhfont1, rotation="vertical")
-    plt.show()
-    print(stats)
+    #chn_font = FontProperties(fname='./simsun.ttc')
+    #plt.bar(list(range(len(stats))), [v for k, v in stats])
+    #plt.xticks(list(range(len(stats))), [u"白饭 ", u"咸蛋 ", u"翻炒蛋 ", u"番茄蛋 ",
+    #                                     u"炸鱼。整只 ", "炸鱼片。红酱汁。看似炒蛋 ", "章鱼，鱿鱼。O型 ", "糖醋鱼", "炸鱼片，粉红酱汁 ",  "毛瓜丝"], fontproperties=chn_font, rotation="vertical")
+    #plt.show()
+    #print(stats)
     pass
 
 

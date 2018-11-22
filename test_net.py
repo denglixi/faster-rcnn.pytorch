@@ -32,6 +32,7 @@ from model.faster_rcnn.vgg16 import vgg16
 from model.faster_rcnn.resnet import resnet
 from model.faster_rcnn.prefood_res50 import PreResNet50
 from datasets.food_category import get_categories
+from datasets.id2name import id2chn, id2eng
 
 
 try:
@@ -229,13 +230,13 @@ if __name__ == '__main__':
 
     elif args.dataset == "foodAllmt100":
         args.imdb_name = "food_All_trainmt10_All_train_mt10"
-        args.imdbval_name = "food_All_valmt100_All_train_mt100"
+        args.imdbval_name = "food_All_valmt10_All_train_mt100"
         args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
                          'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
     elif args.dataset == "foodAllmt50":
         args.imdb_name = "food_All_trainmt10_All_train_mt10"
-        args.imdbval_name = "food_All_valmt50_All_train_mt50"
+        args.imdbval_name = "food_All_valmt10_All_train_mt50"
         args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
                          'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
@@ -394,12 +395,36 @@ if __name__ == '__main__':
         for i in range(num_images):
             data_tic = time.time()
             data = next(data_iter)
+            #if imdb.image_index[i] == '11oct_DONE328IMG_20181011_115438':
+            #    pass
+            #    #import pdb
+            #    #pdb.set_trace()
+            #else:
+            #    continue
             data_toc = time.time()
             data_load_time = data_toc - data_tic
             im_data.data.resize_(data[0].size()).copy_(data[0])
             im_info.data.resize_(data[1].size()).copy_(data[1])
             gt_boxes.data.resize_(data[2].size()).copy_(data[2])
             num_boxes.data.resize_(data[3].size()).copy_(data[3])
+
+            # filter boxes with lower score
+            gt_boxes_cpu = gt_boxes.cpu().numpy()[0]  # It is 0 for batch size is 1
+            gt_boxes_cpu[:, 0:4] /= float(im_info[0][2].cpu().numpy())
+
+            if args.save_for_vis:
+                save_vis_root_path = './savevis/{}_{}_{}/'.format(
+                    args.checksession, args.checkepoch, args.checkpoint)
+
+                #if vis or args.save_for_vis:
+                #    im = cv2.imread(imdb.image_path_at(i))
+                #    im2show = np.copy(im)
+
+                ## show ground-truth
+                #for gt_b in gt_boxes_cpu:
+                #    im2show = vis_detections(
+                #        im2show, id2chn[imdb.classes[int(gt_b[-1])]], gt_b[np.newaxis, :], 0.1, (204, 0, 0))
+
 
             det_tic = time.time()
             rois, cls_prob, bbox_pred, \
@@ -440,7 +465,7 @@ if __name__ == '__main__':
             detect_time = det_toc - det_tic
             misc_tic = time.time()
             if vis or args.save_for_vis:
-                im = cv2.imread(imdb.image_path_at(i))
+                im = cv2.imread(imdb.image_path_at(i))  # bugs here ?? while num_workers > 1, whether i  is same as  data(index)
                 im2show = np.copy(im)
             for j in xrange(1, imdb.num_classes):
                 inds = torch.nonzero(scores[:, j] > thresh).view(-1)
@@ -460,7 +485,7 @@ if __name__ == '__main__':
                     cls_dets = cls_dets[keep.view(-1).long()]
                     if vis or args.save_for_vis:
                         im2show = vis_detections(
-                            im2show, imdb.classes[j], np.array([cls_dets.cpu().numpy()[0, :]]), 0.5)
+                            im2show, id2chn[imdb.classes[j]], np.array([cls_dets.cpu().numpy()[0, :]]), 0.5)
                     all_boxes[j][i] = cls_dets.cpu().numpy()
                 else:
                     all_boxes[j][i] = empty_array
@@ -502,7 +527,8 @@ if __name__ == '__main__':
                     keep = np.where(all_boxes[j][i][:, -1] >= image_thresh)[0]
                     all_boxes[j][i] = all_boxes[j][i][keep, :]
 
-            boxes_of_i = [_[i] for _ in all_boxes]
+
+            boxes_of_i = np.array([_[i] for _ in all_boxes])
 
             # filter boxes with lower score
             gt_boxes_cpu = gt_boxes.cpu().numpy()[0]  # It is 0 for batch size is 1
@@ -512,19 +538,10 @@ if __name__ == '__main__':
                 save_vis_root_path = './savevis/{}_{}_{}/'.format(
                     args.checksession, args.checkepoch, args.checkpoint)
 
-                # islink not working
-                # if os.path.islink(save_vis_root_path):
-                #    linkpath = os.readlink(save_vis_root_path)
-                #    if not os.path.exists(linkpath):
-                #        os.makedirs(linkpath)
-                # else:
-                #    if not os.path.exists(save_vis_root_path):
-                #        os.makedirs(save_vis_root_path)
-
                 # show ground-truth
                 for gt_b in gt_boxes_cpu:
                     im2show = vis_detections(
-                        im2show, imdb.classes[int(gt_b[-1])], gt_b[np.newaxis, :], 0.1, (204, 0, 0))
+                        im2show, id2chn[imdb.classes[int(gt_b[-1])]], gt_b[np.newaxis, :], 0.1, (204, 0, 0))
 
                 i_row, i_c, _ = im2show.shape
                 im2show = cv2.resize(im2show, (int(i_c/2), int(i_row/2)))
@@ -536,7 +553,7 @@ if __name__ == '__main__':
                     # 1 && 2
                     if len(boxes_of_i[gt_cls_idx]) == 0:
                         save_vis_path = save_vis_root_path + \
-                            'FN/' + imdb.classes[int(gt_cls_idx)]
+                            'FN/' + id2chn[imdb.classes[int(gt_cls_idx)]]
                         if not os.path.exists(save_vis_path):
                             os.makedirs(save_vis_path)
                         # im2vis_analysis = vis_detections(
@@ -546,11 +563,11 @@ if __name__ == '__main__':
 
                 gt_classes = [int(_[-1]) for _ in gt_boxes_cpu]
                 # 3. FP
-                for i, det_b_cls in enumerate(boxes_of_i):
-                    if len(det_b_cls) > 0:
-                        if i not in gt_classes:
+                for bi, det_b_cls in enumerate(boxes_of_i):
+                    if len(det_b_cls) > 0 and any(det_b_cls[:,4] > 0.5):
+                        if bi not in gt_classes:
                             save_vis_path = save_vis_root_path + \
-                                'FP/' + str(imdb.classes[i])
+                                'FP/' + id2chn[str(imdb.classes[bi])]
                             if not os.path.exists(save_vis_path):
                                 os.makedirs(save_vis_path)
                             cv2.imwrite(os.path.join(save_vis_path,
@@ -580,8 +597,6 @@ if __name__ == '__main__':
         val_categories, val_ap = zip(*cls_ap_zip)
         cls_ap_zip = zip(val_categories, val_ap)
 
-    import pdb
-    pdb.set_trace()
 
     #f.write(str(dataset_map) + '\n')
 

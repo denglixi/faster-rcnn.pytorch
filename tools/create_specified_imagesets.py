@@ -221,6 +221,6 @@ def create_trainval_imagesets(path: str):
 
 if __name__ == '__main__':
     #create_train_and_val_imagesets()
-    #for n in [10, 30, 50, 100]:
-    #    create_mtN_imagesets(n)
+    for n in [10, 30, 50, 100]:
+        create_mtN_imagesets(n)
     create_inner_imagesets()

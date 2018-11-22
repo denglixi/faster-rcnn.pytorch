@@ -8,13 +8,13 @@ CFG_FILE=./cfgs/demo.yml
 #webcam_num -2 show image online -1 saveimage
 
 # load weight
-SESSION=12
-EPOCH=24
-CHECKPOINT=14389
+SESSION=11
+EPOCH=27
+CHECKPOINT=14391
 
 
 # basic set
-DATASET=foodAllmt50
+DATASET=foodAllmt10
 NET=foodres50 #{foodres50, res101, vgg16}
 
 WEB_NUM=-2

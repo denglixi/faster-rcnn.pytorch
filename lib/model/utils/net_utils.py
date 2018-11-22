@@ -61,7 +61,7 @@ def vis_detections(im, class_name, dets, thresh=0.8, color=(0, 204, 0)):
         bbox = tuple(int(np.round(x)) for x in dets[i, :4])
         score = dets[i, -1]
         if score > thresh:
-            cv2.rectangle(im, bbox[0:2], bbox[2:4], color, 10)
+            cv2.rectangle(im, bbox[0:2], bbox[2:4], color, 5)
             im = cv2ImgAddText(im, class_name + ":" + "{:.2f}".format(score),
                                bbox[0], bbox[1] + 100, textColor=color)
             # cv2.putText(im, '%s: %.3f' %
@@ -70,7 +70,7 @@ def vis_detections(im, class_name, dets, thresh=0.8, color=(0, 204, 0)):
     return im
 
 
-def cv2ImgAddText(img, text, left, top, textColor=(0, 255, 0), textSize=100):
+def cv2ImgAddText(img, text, left, top, textColor=(0, 255, 0), textSize=50):
     if (isinstance(img, numpy.ndarray)):  # 判断是否OpenCV图片类型
         img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
     draw = ImageDraw.Draw(img)

@@ -227,6 +227,9 @@ class food_merge_imdb(imdb):
         #     objs = non_diff_objs
         # exlcude unused cls
 
+        if index == '11oct_DONE328IMG_20181011_115438':
+            import pdb
+            pdb.set_trace()
         ori_num_objs = len(objs)
         num_objs = 0
         for obj in objs:

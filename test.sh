@@ -11,14 +11,14 @@ Test=
 #DATASET=foodexclYIHmt10_testYIH
 #DATASET=food$Train$mt$Test
 
-DATASET=foodAllmt10
+DATASET=foodexclYIHmt10_testYIH
 
 NET=foodres50 #{foodres50, res101, vgg16}
 # load weight
-SESSION=1
-EPOCH=25
-# YIH 11277 #UTown 11105
-CHECKPOINT=14391
+SESSION=21
+EPOCH=33
+# YIH 11277 #UTown 11105 #All 14389
+CHECKPOINT=11277
 
 # whether visulazation the results during testing
 IS_VIS=false
@@ -27,7 +27,7 @@ IS_VIS=false
 IS_TEST_CACHE=false
 
 # whether save all detection results in images
-SAVE_FOR_VIS=
+SAVE_FOR_VIS=1
 
 
 if $IS_VIS ;then

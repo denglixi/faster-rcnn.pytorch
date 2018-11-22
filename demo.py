@@ -170,7 +170,7 @@ if __name__ == '__main__':
     load_name = os.path.join(input_dir,
                              'faster_rcnn_{}_{}_{}.pth'.format(args.checksession, args.checkepoch, args.checkpoint))
 
-    pascal_classes = np.asarray(get_categories("All_trainmt50"))
+    pascal_classes = np.asarray(get_categories("All_trainmt10"))
 
     # initilize the network here.
     if args.net == 'vgg16':
