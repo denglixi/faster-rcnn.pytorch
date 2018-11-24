@@ -18,7 +18,6 @@ from matplotlib.font_manager import FontProperties
 from statics import get_xml_from_file
 
 
-
 def create_category(imageset):
     canttens = ['All', 'exclArts', 'exclYIH', 'exclTechChicken',
                 'exclTechMixedVeg', 'exclUTown', 'exclScience',
@@ -26,7 +25,7 @@ def create_category(imageset):
                 'TechChicken', 'TechMixedVeg']
     category_file = './food_category.py'
     food_dataset_root = "/home/d/denglixi/faster-rcnn.pytorch/data/Food/"
-    datasets = imageset #['trainval', 'train', 'val'] #, 'inner']
+    datasets = imageset  # ['trainval', 'train', 'val'] #, 'inner']
     with open(category_file, 'w') as f:
         f.write("def get_categories(category):\n")
         for ct in canttens:
@@ -67,9 +66,10 @@ def create_category(imageset):
                     f.write("]\n")
     return
 
+
 def main():
     #create_category(["trainval", "train", "val"])
-    #create_category(["inner"])
+    # create_category(["inner"])
     create_category(["trainval", "train", "val", "inner"])
 
 

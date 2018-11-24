@@ -5,7 +5,7 @@ GPU_ID=0
 
 # basic set
 # DATASET=foodexclTechMixedVeg_testTechMixedVeg
-DATASET=foodexclYIHmt10
+DATASET=foodexclYIHmt10_testYIH
 NET=foodres50 #{foodres50, res101, vgg16}
 # load weight
 SESSION=21

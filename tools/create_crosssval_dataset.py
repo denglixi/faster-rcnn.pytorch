@@ -20,6 +20,11 @@ def create_dir(path):
         os.makedirs(path)
 
 
+
+def create_excl_ct__softlink():
+    """
+    build softlink of excl canteens from original canteens which we collect
+    """
 for exclude_ct in canteens + ['All']:
     print("canteens: exclude ", exclude_ct)
     # create
@@ -60,21 +65,21 @@ for exclude_ct in canteens + ['All']:
     with open(exclude_trainval_path, 'w') as f:
         f.writelines(trainval_content)
 
-    train_content = []
-    val_content = []
+    #train_content = []
+    #val_content = []
     # TODO: the images of one same dish which were taken from different angles should be splited.
-    for i, sample in enumerate(trainval_content):
-        if i % 8 == 0 or i % 9 == 0:
-            val_content.append(sample)
-        else:
-            train_content.append(sample)
+    # for i, sample in enumerate(trainval_content):
+    #    if i % 8 == 0 or i % 9 == 0:
+    #        val_content.append(sample)
+    #    else:
+    #        train_content.append(sample)
 
-    with open(os.path.join(exclude_food_ImSet_dir, 'train.txt'), 'w') as f:
-        print("len of training set", len(train_content))
-        f.writelines(train_content)
-    with open(os.path.join(exclude_food_ImSet_dir, 'val.txt'), 'w') as f:
-        print("len of val set", len(val_content))
-        f.writelines(val_content)
+    # with open(os.path.join(exclude_food_ImSet_dir, 'train.txt'), 'w') as f:
+    #    print("len of training set", len(train_content))
+    #    f.writelines(train_content)
+    # with open(os.path.join(exclude_food_ImSet_dir, 'val.txt'), 'w') as f:
+    #    print("len of val set", len(val_content))
+    #    f.writelines(val_content)
 
 
 def split_train_val(imgsets_path):

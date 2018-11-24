@@ -12,6 +12,7 @@ import os
 import pickle
 import numpy as np
 
+import matplotlib.pyplot as plt
 
 def parse_rec(filename):
     """ Parse a PASCAL VOC xml file """
@@ -33,7 +34,7 @@ def parse_rec(filename):
     return objects
 
 
-def voc_ap(rec, prec, use_07_metric=False):
+def voc_ap(rec, prec, use_07_metric=False, classname="object", draw_pic=False):
     """ ap = voc_ap(rec, prec, [use_07_metric])
     Compute VOC AP given precision and recall.
     If use_07_metric is true, uses the
@@ -55,12 +56,15 @@ def voc_ap(rec, prec, use_07_metric=False):
         mpre = np.concatenate(([0.], prec, [0.]))
 
         # compute the precision envelope
+        # TODO why calculate the envelope
         for i in range(mpre.size - 1, 0, -1):
             mpre[i - 1] = np.maximum(mpre[i - 1], mpre[i])
+
 
         # to calculate area under PR curve, look for points
         # where X axis (recall) changes value
         i = np.where(mrec[1:] != mrec[:-1])[0]
+
 
         # and sum (\Delta recall) * prec
         ap = np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1])
@@ -206,6 +210,6 @@ def food_eval(detpath,
     # avoid divide by zero in case the first detection matches a difficult
     # ground truth
     prec = tp / np.maximum(tp + fp, np.finfo(np.float64).eps)
-    ap = voc_ap(rec, prec, use_07_metric)
+    ap = voc_ap(rec, prec, use_07_metric, classname, True)
 
     return rec, prec, ap

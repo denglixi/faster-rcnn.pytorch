@@ -465,7 +465,7 @@ if __name__ == '__main__':
             detect_time = det_toc - det_tic
             misc_tic = time.time()
             if vis or args.save_for_vis:
-                im = cv2.imread(imdb.image_path_at(i))  # bugs here ?? while num_workers > 1, whether i  is same as  data(index)
+                im = cv2.imread(imdb.image_path_at(i))
                 im2show = np.copy(im)
             for j in xrange(1, imdb.num_classes):
                 inds = torch.nonzero(scores[:, j] > thresh).view(-1)

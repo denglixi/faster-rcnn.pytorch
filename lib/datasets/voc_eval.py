@@ -11,7 +11,9 @@ import xml.etree.ElementTree as ET
 import os
 import pickle
 import numpy as np
-
+import matplotlib.pyplot as plt
+from matplotlib.font_manager import FontProperties
+from .id2name import id2chn
 
 def parse_rec(filename):
     """ Parse a PASCAL VOC xml file """
@@ -33,7 +35,7 @@ def parse_rec(filename):
     return objects
 
 
-def voc_ap(rec, prec, use_07_metric=False):
+def voc_ap(rec, prec, use_07_metric=False,classname="Object AP", draw_ap=False):
     """ ap = voc_ap(rec, prec, [use_07_metric])
     Compute VOC AP given precision and recall.
     If use_07_metric is true, uses the
@@ -56,11 +58,20 @@ def voc_ap(rec, prec, use_07_metric=False):
 
         # compute the precision envelope
         for i in range(mpre.size - 1, 0, -1):
-            mpre[i - 1] = np.maximum(mpre[i - 1], mpre[i])
+           mpre[i - 1] = np.maximum(mpre[i - 1], mpre[i])
 
         # to calculate area under PR curve, look for points
         # where X axis (recall) changes value
         i = np.where(mrec[1:] != mrec[:-1])[0]
+
+        if draw_ap:
+            zh_font = FontProperties(fname='./simsun.ttc')
+            mrec_i = np.concatenate((mrec[i] , [1.]))
+            mpre_i = np.concatenate((mpre[i], [0.]))
+            plt.figure()
+            plt.title(id2chn[classname], fontproperties=zh_font)
+            plt.plot(mrec_i, mpre_i)
+            plt.show()
 
         # and sum (\Delta recall) * prec
         ap = np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1])
@@ -206,6 +217,6 @@ def voc_eval(detpath,
     # avoid divide by zero in case the first detection matches a difficult
     # ground truth
     prec = tp / np.maximum(tp + fp, np.finfo(np.float64).eps)
-    ap = voc_ap(rec, prec, use_07_metric)
+    ap = voc_ap(rec, prec, use_07_metric, classname)
 
     return rec, prec, ap

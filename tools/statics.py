@@ -20,6 +20,7 @@ from xml_process import parse_rec
 
 from food_category import get_categories
 
+
 def get_all_xml_files_from_dir(dir_path):
     """get_all_xml_files_from_dir
     :param dir_path:
@@ -184,51 +185,73 @@ def statics_all_raw_data():
     printlist_of_tuples(stats_tech)
 
 
+def get_statis(food_dataset_root, ct, img_set, cls_img_set):
+    """get_statis
+
+    :param food_dataset_root:
+    :param ct: cantten name
+    :param img_set: statistics the xml files whose name occur in img_set set
+    :param cls_img_set: only statistic the categories occured in cls_img_set
+    set
+    """
+
+    all_trainval_set = food_dataset_root + "Food_{}/ImageSets/{}.txt".format(
+        ct, img_set)
+    all_xml_dir = food_dataset_root + "Food_{}/Annotations".format(
+        ct)
+    all_stats = get_xml_from_file(all_trainval_set, all_xml_dir)
+    all_stats = dict(all_stats)
+    import pdb
+    pdb.set_trace()
+    print("-------processing {} {}-----------".format(ct, img_set))
+    with open("./statistics/{}_{}_static.txt".format(ct, img_set), 'w') as f:
+        for cls in get_categories(ct+'_' + cls_img_set)[1:]:
+            if int(cls) in all_stats:
+                k = int(cls)
+                v = all_stats[k]
+                f.write(str(k)+'\t'+str(v) + '\t' +
+                        id2chn[str(k)] + '\t' + id2eng[str(k)] + '\n')
+            else:
+                f.write("\n")
+
+
+
+       # for k, v in all_stats:
+       #     if str(k) in get_categories(ct+'_'+cls_img_set):
+
+
 def main():
     """main"""
 
-    #canttens = ['All', 'exclArts', 'exclYIH', 'exclTechChicken',
+    # canttens = ['All', 'exclArts', 'exclYIH', 'exclTechChicken',
     #            'exclTechMixedVeg', 'exclUTown', 'exclScience',
     #            'YIH', 'Arts', 'Science', 'UTown',
     #            'TechChicken', 'TechMixedVeg']
+
+    food_dataset_root = "/home/d/denglixi/faster-rcnn.pytorch/data/Food/"
+
+    get_statis(food_dataset_root, 'All', 'valmt10', 'trainmt10')
+    return
 
     canttens = ['All', 'exclYIH',
                 'exclUTown',
                 'YIH', 'UTown',
                 ]
-    food_dataset_root = "/home/d/denglixi/faster-rcnn.pytorch/data/Food/"
     for ct in canttens:
-        datasets = ['trainval', 'train', 'val', 'inner']
-        dataset_mt = []
+        # construct imagesets
+        imagesets = ['trainval', 'train', 'val', 'inner']
+        imagesets_mt = []
         for N in [10, 30, 50, 100]:
-            dataset_mt += [x+"mt{}".format(N) for x in datasets]
-        datasets += dataset_mt
-        #datasets = ['trainval']
-        for dataset in datasets:
-            if "inner" in dataset and ct not in ["Arts", "YIH", "UTown", "Science", "TechChicken", "TechMixedVeg"]:
+            imagesets_mt += [x+"mt{}".format(N) for x in imagesets]
+        imagesets += imagesets_mt
+
+        # statistics
+        for img_set in imagesets:
+            if "inner" in img_set and ct not in ["Arts", "YIH", "UTown", "Science", "TechChicken", "TechMixedVeg"]:
                 continue
-
-            all_trainval_set = food_dataset_root + "Food_{}/ImageSets/{}.txt".format(
-                ct, dataset)
-            all_xml_dir = food_dataset_root + "Food_{}/Annotations".format(
-                ct)
-            all_stats = get_xml_from_file(all_trainval_set, all_xml_dir)
-            # printlist_of_tuples(all_stats)
-            print("-------processing {} {}-----------".format(ct, dataset))
-
-            with open("./statistics/{}_{}_static.txt".format(ct, dataset), 'w') as f:
-                for k, v in all_stats:
-                    if str(k) in get_categories(ct+'_'+dataset):
-                        f.write(str(k)+'\t'+str(v) + '\t' +
-                                id2chn[str(k)] + '\t' + id2eng[str(k)] + '\n')
+            get_statis(food_dataset_root, ct, img_set)
 
     return
-    #chn_font = FontProperties(fname='./simsun.ttc')
-    #plt.bar(list(range(len(stats))), [v for k, v in stats])
-    #plt.xticks(list(range(len(stats))), [u"白饭 ", u"咸蛋 ", u"翻炒蛋 ", u"番茄蛋 ",
-    #                                     u"炸鱼。整只 ", "炸鱼片。红酱汁。看似炒蛋 ", "章鱼，鱿鱼。O型 ", "糖醋鱼", "炸鱼片，粉红酱汁 ",  "毛瓜丝"], fontproperties=chn_font, rotation="vertical")
-    #plt.show()
-    #print(stats)
     pass
 
 
