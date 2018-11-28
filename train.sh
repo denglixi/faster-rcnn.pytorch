@@ -4,9 +4,9 @@ GPU_ID=1
 WORKER_NUMBER=5
 
 # basic set
-DATASET=foodexclUTownmt10
+DATASET=foodexclYIH_fineYIHfew5
 NET=foodres50 #{foodres50, res101, vgg16}
-SESSION=31
+SESSION=111
 PRETRAIN=true
 WEIGHT_FILE=imagenet #{ prefood, imagenet } only for res50
 MAXEPOCHS=100
@@ -20,11 +20,12 @@ WARMING_UP_LR=0.0000001
 BATCH_SIZE=1
 
 # resume from
-RESUME= # null is for false
+RESUME=1 # null is for false
 RESUME_OPT= # null for false
-CHECKSESSION=12
-CHECKEPOCH=21
-CHECKPOINT=14389
+RESUME_SESS_EPOCH= #null for false
+CHECKSESSION=1
+CHECKEPOCH=40
+CHECKPOINT=11545
 
 
 # writing the experiment detail to file
@@ -64,7 +65,7 @@ if $IS_WARMING_UP ; then
                    --epochs $MAXEPOCHS \
                    --s $SESSION \
                    --o $OPTIMIZER \
-                   --r=$RESUME --resume_opt=$RESUME_OPT\
+                   --r=$RESUME --resume_opt=$RESUME_OPT --resume_session_epoch=$RESUME_SESS_EPOCH \
                    --pretrain=$PRETRAIN  --weight_file=$WEIGHT_FILE \
                    --checksession $CHECKSESSION --checkepoch $CHECKEPOCH --checkpoint $CHECKPOINT \
                    --bs $BATCH_SIZE --nw $WORKER_NUMBER \
@@ -78,7 +79,7 @@ else
                    --epochs $MAXEPOCHS \
                    --s $SESSION \
                    --o $OPTIMIZER \
-                   --r=$RESUME --resume_opt=$RESUME_OPT\
+                   --r=$RESUME --resume_opt=$RESUME_OPT --resume_session_epoch=$RESUME_SESS_EPOCH \
                    --pretrain=$PRETRAIN --weight_file=$WEIGHT_FILE \
                    --checksession $CHECKSESSION --checkepoch $CHECKEPOCH --checkpoint $CHECKPOINT \
                    --bs $BATCH_SIZE --nw $WORKER_NUMBER \

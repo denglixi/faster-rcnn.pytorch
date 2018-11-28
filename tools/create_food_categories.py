@@ -25,7 +25,7 @@ def create_category(imageset):
                 'TechChicken', 'TechMixedVeg']
     category_file = './food_category.py'
     food_dataset_root = "/home/d/denglixi/faster-rcnn.pytorch/data/Food/"
-    datasets = imageset  # ['trainval', 'train', 'val'] #, 'inner']
+    datasets = imageset
     with open(category_file, 'w') as f:
         f.write("def get_categories(category):\n")
         for ct in canttens:

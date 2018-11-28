@@ -225,12 +225,14 @@ if __name__ == '__main__':
     elif args.dataset == "foodAllmt10":
         args.imdb_name = "food_All_trainmt10_All_train_mt10"
         args.imdbval_name = "food_All_valmt10_All_train_mt10"
+        args.train_cls = "All_train_mt10"
         args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
                          'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
     elif args.dataset == "foodAllmt100":
         args.imdb_name = "food_All_trainmt10_All_train_mt10"
         args.imdbval_name = "food_All_valmt10_All_train_mt100"
+        args.train_cls = "All_train_mt100"
         args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
                          'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
@@ -264,11 +266,34 @@ if __name__ == '__main__':
         args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
                          'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
+    elif args.dataset == "foodexclYIHmt10_testYIHfew1":
+        args.imdb_name = "food_All_trainfew10mt10_All_train_mt10"
+        args.imdbval_name = "food_YIH_innerfew1mt10val_exclYIH_train_mt10"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
+    elif args.dataset == "foodexclYIH_fineYIH_testYIHfew1":
+        args.imdb_name = "food_All_trainfew10mt10_All_train_mt10"
+        args.imdbval_name = "food_YIH_innerfew1mt10val_exclYIH_train_mt10"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
+    elif args.dataset == "foodexclYIH_fineYIHfew5_testYIHfew5":
+        args.imdb_name = "food_All_trainfew10mt10_All_train_mt10"
+        args.imdbval_name = "food_YIH_innerfew5mt10val_exclYIH_train_mt10"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
+    elif args.dataset == "foodexclYIH_testYIHfew1":
+        args.imdb_name = "food_All_trainfew10mt10_All_train_mt10"
+        args.imdbval_name = "food_YIH_innerfew1mt10val_exclYIH_train_mt10"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
     args.cfg_file = "cfgs/{}_ls.yml".format(
         args.net) if args.large_scale else "cfgs/{}.yml".format(args.net)
+
+    #args = construct_dataset(args)
 
     if args.cfg_file is not None:
         cfg_from_file(args.cfg_file)
@@ -284,9 +309,12 @@ if __name__ == '__main__':
     imdb.competition_mode(on=True)
 
     print('{:d} roidb entries'.format(len(roidb)))
-
+    if len(args.dataset.split('_')) > 1:
+        model_name = "_".join(args.dataset.split('_')[0:-1])
+    else:
+        model_name = args.dataset
     input_dir = args.load_dir + "/" + args.net + \
-        "/" + args.dataset.split('_')[0]
+        "/" + model_name
     if not os.path.exists(input_dir):
         raise Exception(
             'There is no input directory for loading network from ' + input_dir)
@@ -379,8 +407,8 @@ if __name__ == '__main__':
         with open(det_file, 'rb') as f:
             all_boxes = pickle.load(f)
         #imdb.evaluate_detections(all_boxes, output_dir)
-        #exit()
-        #if args.save_for_vis:
+        # exit()
+        # if args.save_for_vis:
         #    gt_roidb = imdb.gt_roidb()
         #    for im_idx in len(imdb.image_index):
         #        pass
@@ -395,11 +423,11 @@ if __name__ == '__main__':
         for i in range(num_images):
             data_tic = time.time()
             data = next(data_iter)
-            #if imdb.image_index[i] == '11oct_DONE328IMG_20181011_115438':
+            # if imdb.image_index[i] == '11oct_DONE328IMG_20181011_115438':
             #    pass
             #    #import pdb
             #    #pdb.set_trace()
-            #else:
+            # else:
             #    continue
             data_toc = time.time()
             data_load_time = data_toc - data_tic
@@ -409,22 +437,22 @@ if __name__ == '__main__':
             num_boxes.data.resize_(data[3].size()).copy_(data[3])
 
             # filter boxes with lower score
-            gt_boxes_cpu = gt_boxes.cpu().numpy()[0]  # It is 0 for batch size is 1
+            # It is 0 for batch size is 1
+            gt_boxes_cpu = gt_boxes.cpu().numpy()[0]
             gt_boxes_cpu[:, 0:4] /= float(im_info[0][2].cpu().numpy())
 
             if args.save_for_vis:
                 save_vis_root_path = './savevis/{}_{}_{}/'.format(
                     args.checksession, args.checkepoch, args.checkpoint)
 
-                #if vis or args.save_for_vis:
+                # if vis or args.save_for_vis:
                 #    im = cv2.imread(imdb.image_path_at(i))
                 #    im2show = np.copy(im)
 
-                ## show ground-truth
-                #for gt_b in gt_boxes_cpu:
+                # show ground-truth
+                # for gt_b in gt_boxes_cpu:
                 #    im2show = vis_detections(
                 #        im2show, id2chn[imdb.classes[int(gt_b[-1])]], gt_b[np.newaxis, :], 0.1, (204, 0, 0))
-
 
             det_tic = time.time()
             rois, cls_prob, bbox_pred, \
@@ -447,7 +475,8 @@ if __name__ == '__main__':
                     else:
                         box_deltas = box_deltas.view(-1, 4) * torch.FloatTensor(cfg.TRAIN.BBOX_NORMALIZE_STDS).cuda() \
                             + torch.FloatTensor(cfg.TRAIN.BBOX_NORMALIZE_MEANS).cuda()
-                        box_deltas = box_deltas.view(1, -1, 4 * len(imdb.classes))
+                        box_deltas = box_deltas.view(
+                            1, -1, 4 * len(imdb.classes))
 
                 pred_boxes = bbox_transform_inv(boxes, box_deltas, 1)
                 pred_boxes = clip_boxes(pred_boxes, im_info.data, 1)
@@ -478,7 +507,8 @@ if __name__ == '__main__':
                     else:
                         cls_boxes = pred_boxes[inds][:, j * 4:(j + 1) * 4]
 
-                    cls_dets = torch.cat((cls_boxes, cls_scores.unsqueeze(1)), 1)
+                    cls_dets = torch.cat(
+                        (cls_boxes, cls_scores.unsqueeze(1)), 1)
                     # cls_dets = torch.cat((cls_boxes, cls_scores), 1)
                     cls_dets = cls_dets[order]
                     keep = nms(cls_dets, cfg.TEST.NMS)
@@ -497,7 +527,8 @@ if __name__ == '__main__':
                 if len(image_scores) > max_per_image:
                     image_thresh = np.sort(image_scores)[-max_per_image]
                     for j in xrange(1, imdb.num_classes):
-                        keep = np.where(all_boxes[j][i][:, -1] >= image_thresh)[0]
+                        keep = np.where(
+                            all_boxes[j][i][:, -1] >= image_thresh)[0]
                         all_boxes[j][i] = all_boxes[j][i][keep, :]
 
             # save images by gt for analysis
@@ -522,19 +553,20 @@ if __name__ == '__main__':
             if max_per_image > 0:
                 image_scores = np.hstack([all_boxes[j][i][:, -1]
                                           for j in xrange(1, imdb.num_classes)])
-                image_thresh = threshold_of_vis # np.sort(image_scores)[-max_per_image]
+                # np.sort(image_scores)[-max_per_image]
+                image_thresh = threshold_of_vis
                 for j in xrange(1, imdb.num_classes):
                     keep = np.where(all_boxes[j][i][:, -1] >= image_thresh)[0]
                     all_boxes[j][i] = all_boxes[j][i][keep, :]
 
-
-            boxes_of_i = np.array([_[i] for _ in all_boxes])
-
-            # filter boxes with lower score
-            gt_boxes_cpu = gt_boxes.cpu().numpy()[0]  # It is 0 for batch size is 1
-            gt_boxes_cpu[:, 0:4] /= float(im_info[0][2].cpu().numpy())
-
             if args.save_for_vis:
+                boxes_of_i = np.array([_[i] for _ in all_boxes])
+
+                # filter boxes with lower score
+                # It is 0 for batch size is 1
+                gt_boxes_cpu = gt_boxes.cpu().numpy()[0]
+                gt_boxes_cpu[:, 0:4] /= float(im_info[0][2].cpu().numpy())
+
                 save_vis_root_path = './savevis/{}_{}_{}/'.format(
                     args.checksession, args.checkepoch, args.checkpoint)
 
@@ -546,7 +578,7 @@ if __name__ == '__main__':
                 i_row, i_c, _ = im2show.shape
                 im2show = cv2.resize(im2show, (int(i_c/2), int(i_row/2)))
 
-                # 1. gt未检测到
+                # 1.gt未检测到
                 # 2. gt类别错误(TODO)
                 for gt_b in gt_boxes_cpu:
                     gt_cls_idx = int(gt_b[4])
@@ -564,7 +596,7 @@ if __name__ == '__main__':
                 gt_classes = [int(_[-1]) for _ in gt_boxes_cpu]
                 # 3. FP
                 for bi, det_b_cls in enumerate(boxes_of_i):
-                    if len(det_b_cls) > 0 and any(det_b_cls[:,4] > 0.5):
+                    if len(det_b_cls) > 0 and any(det_b_cls[:, 4] > 0.5):
                         if bi not in gt_classes:
                             save_vis_path = save_vis_root_path + \
                                 'FP/' + id2chn[str(imdb.classes[bi])]
@@ -577,38 +609,106 @@ if __name__ == '__main__':
             pickle.dump(all_boxes, f, pickle.HIGHEST_PROTOCOL)
 
     print('Evaluating detections')
-    cls_ap_zip, dataset_map = imdb.evaluate_detections(all_boxes, output_dir)
-    # results_filename = args.imdbval_name + \
-    #    time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
-    results_filename = args.imdbval_name + "_session" + \
-        str(args.checksession) + "_epoch" + str(args.checkepoch)
-    results_save_dir = "test_result/"
-    if not os.path.exists(results_save_dir):
-        os.makedirs(results_save_dir)
+    # save_map_result(imdb, all_boxes, output_dir, args):
+    test_map_results = True
+    if test_map_results:
+        cls_ap_zip, dataset_map = imdb.evaluate_detections(
+            all_boxes, output_dir)
+        # results_filename = args.imdbval_name + \
+        #    time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+        results_filename = args.imdbval_name + "_session" + \
+            str(args.checksession) + "_epoch" + str(args.checkepoch)
+        results_save_dir = "test_result/"
+        if not os.path.exists(results_save_dir):
+            os.makedirs(results_save_dir)
 
-    # filter results
-    val_names = args.imdbval_name.split("_")
-    val_canteen = val_names[1]  # YIH
-    val_split = val_names[2]  # valmt10 -> val_mt10
-    if 'inner' in val_split:
-        val_categories = get_categories(val_canteen+"_"+val_split)
-    else:
-        val_categories, val_ap = zip(*cls_ap_zip)
-        cls_ap_zip = zip(val_categories, val_ap)
+        # filter results
+        #train_cls = get_categories(args.train_cls)
+        val_names = args.imdbval_name.split("_")
+        val_canteen = val_names[1]  # YIH
+        val_split = val_names[2]  # valmt10 -> val_mt10
+        if 'inner' in val_split:
+            val_categories = get_categories(val_canteen+"_"+"inner")
+        else:
+            val_categories, val_ap = zip(*cls_ap_zip)
+            cls_ap_zip = zip(val_categories, val_ap)
 
+        # f.write(str(dataset_map) + '\n')
 
-    #f.write(str(dataset_map) + '\n')
+        map_exist_cls = []
+        with open(os.path.join(results_save_dir, results_filename), 'w') as f:
+            for cls, ap in cls_ap_zip:
+                if str(cls) in val_categories:
+                    if np.isnan(ap):
+                        f.write(str(cls) + '\n')
+                    else:
+                        f.write(str(cls) + '\t' + str(ap) + '\n')
+                        map_exist_cls.append(ap)
+            map_exist_cls = sum(map_exist_cls) / len(map_exist_cls)
+            print("exist cls map:{}".format(map_exist_cls))
+            f.write(str(map_exist_cls))
 
-    map_exist_cls = []
-    with open(os.path.join(results_save_dir, results_filename), 'w') as f:
-        for cls, ap in cls_ap_zip:
-            if str(cls) in val_categories:
-                f.write(str(cls) + '\t' + str(ap) + '\n')
-                map_exist_cls.append(ap)
-        map_exist_cls = sum(map_exist_cls) / len(map_exist_cls)
-        print("exist cls map:{}".format(map_exist_cls))
-        f.write(str(map_exist_cls))
+        end = time.time()
+        print("test time: %0.4fs" % (end - start))
 
-    end = time.time()
-    print("test time: %0.4fs" % (end - start))
+    test_cls_loc = True
+    threshold = 0.9
+    if test_cls_loc:
+        loc_accuracy, clsify_accuracy = imdb.evaluate_cls_loc(
+            all_boxes, threshold)
+        #acs = []
+        # for cls, ac in loc_accuracy:
+        #    if not np.isnan(ac):
+        #        acs.append(ac)
+        # print('loc_accuracy')
+        # print(loc_accuracy)
+        # print(np.mean(acs))
+        # for cls, ac in clsify_accuracy:
+        #    if not np.isnan(ac):
+        #        acs.append(ac)
+        # print('clsify_accuracy')
+        # print(clsify_accuracy)
+        # print(np.mean(acs))
+
+        #
+        for metrics in ['loc', 'cls']:
+            if metrics == 'loc':
+                itertor = loc_accuracy
+            elif metrics == 'cls':
+                itertor = clsify_accuracy
+
+            results_filename = args.imdbval_name + "_session" + \
+                str(args.checksession) + "_epoch" + \
+                str(args.checkepoch) + "{}".format(metrics)
+            results_save_dir = "test_result/"
+            if not os.path.exists(results_save_dir):
+                os.makedirs(results_save_dir)
+
+            # filter results
+            # train_cls = get_categories(args.train_cls)
+            val_names = args.imdbval_name.split("_")
+            val_canteen = val_names[1]  # YIH
+            val_split = val_names[2]  # valmt10 -> val_mt10
+            if 'inner' in val_split:
+                val_categories = get_categories(val_canteen+"_"+"inner")
+            else:
+                val_categories = [x[0] for x in itertor]
+
+            # f.write(str(dataset_map) + '\n')
+
+            map_exist_cls = []
+            with open(os.path.join(results_save_dir, results_filename), 'w') as f:
+                for cls, ap in itertor:
+                    if str(cls) in val_categories:
+                        if np.isnan(ap):
+                            f.write(str(cls) + '\n')
+                        else:
+                            f.write(str(cls) + '\t' + str(ap) + '\n')
+                            map_exist_cls.append(ap)
+                map_exist_cls = sum(map_exist_cls) / len(map_exist_cls)
+                print("exist cls map:{}".format(map_exist_cls))
+                f.write(str(map_exist_cls))
+
+            end = time.time()
+            print("test time: %0.4fs" % (end - start))

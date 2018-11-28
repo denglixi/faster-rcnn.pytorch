@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 from .id2name import id2chn
 
+
 def parse_rec(filename):
     """ Parse a PASCAL VOC xml file """
     tree = ET.parse(filename)
@@ -35,7 +36,7 @@ def parse_rec(filename):
     return objects
 
 
-def voc_ap(rec, prec, use_07_metric=False,classname="Object AP", draw_ap=False):
+def voc_ap(rec, prec, use_07_metric=False, classname="Object AP", draw_ap=False):
     """ ap = voc_ap(rec, prec, [use_07_metric])
     Compute VOC AP given precision and recall.
     If use_07_metric is true, uses the
@@ -58,7 +59,7 @@ def voc_ap(rec, prec, use_07_metric=False,classname="Object AP", draw_ap=False):
 
         # compute the precision envelope
         for i in range(mpre.size - 1, 0, -1):
-           mpre[i - 1] = np.maximum(mpre[i - 1], mpre[i])
+            mpre[i - 1] = np.maximum(mpre[i - 1], mpre[i])
 
         # to calculate area under PR curve, look for points
         # where X axis (recall) changes value
@@ -66,7 +67,7 @@ def voc_ap(rec, prec, use_07_metric=False,classname="Object AP", draw_ap=False):
 
         if draw_ap:
             zh_font = FontProperties(fname='./simsun.ttc')
-            mrec_i = np.concatenate((mrec[i] , [1.]))
+            mrec_i = np.concatenate((mrec[i], [1.]))
             mpre_i = np.concatenate((mpre[i], [0.]))
             plt.figure()
             plt.title(id2chn[classname], fontproperties=zh_font)
@@ -76,6 +77,139 @@ def voc_ap(rec, prec, use_07_metric=False,classname="Object AP", draw_ap=False):
         # and sum (\Delta recall) * prec
         ap = np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1])
     return ap
+
+
+def cal_overlap(boxes_array, box):
+    ixmin = np.maximum(boxes_array[:, 0], box[0])
+    iymin = np.maximum(boxes_array[:, 1], box[1])
+    ixmax = np.minimum(boxes_array[:, 2], box[2])
+    iymax = np.minimum(boxes_array[:, 3], box[3])
+    iw = np.maximum(ixmax - ixmin + 1., 0.)
+    ih = np.maximum(iymax - iymin + 1., 0.)
+    inters = iw * ih
+
+    uni = ((box[2] - box[0] + 1.) * (box[3] - box[1] + 1.) +
+           (boxes_array[:, 2] - boxes_array[:, 0] + 1.) *
+           (boxes_array[:, 3] - boxes_array[:, 1] + 1.) - inters)
+
+    overlaps = inters / uni
+    ovmax = np.max(overlaps)
+    jmax = np.argmax(overlaps)
+    return ovmax
+
+
+def loc_cls_eval(all_boxes,
+                 annopath,
+                 imagesetfile,
+                 cls_idx,
+                 classname,
+                 cachedir,
+                 threshold=0.5,
+                 ovthresh=0.5,
+                 ):
+    """rec, prec, ap = voc_eval(detpath,
+                                annopath,
+                                imagesetfile,
+                                classname,
+                                [ovthresh],
+                                [use_07_metric])
+
+    Top level function that does the PASCAL VOC evaluation.
+
+    detpath: Path to detections
+        detpath.format(classname) should produce the detection results file.
+    annopath: Path to annotations
+        annopath.format(imagename) should be the xml annotations file.
+    imagesetfile: Text file containing the list of images, one image per line.
+    classname: Category name (duh)
+    cachedir: Directory for caching the annotations
+    [ovthresh]: Overlap threshold (default = 0.5)
+    [use_07_metric]: Whether to use VOC07's 11 point AP computation
+        (default False)
+    """
+    # assumes detections are in detpath.format(classname)
+    # assumes annotations are in annopath.format(imagename)
+    # assumes imagesetfile is a text file with each line an image name
+    # cachedir caches the annotations in a pickle file
+
+    # first load gt
+    if not os.path.isdir(cachedir):
+        os.mkdir(cachedir)
+    cachefile = os.path.join(cachedir, '%s_annots.pkl' % imagesetfile)
+    # read list of images
+    with open(imagesetfile, 'r') as f:
+        lines = f.readlines()
+    imagenames = [x.strip() for x in lines]
+
+    if not os.path.isfile(cachefile):
+        # load annotations
+        recs = {}
+        for i, imagename in enumerate(imagenames):
+            recs[imagename] = parse_rec(annopath.format(imagename))
+            if i % 100 == 0:
+                print('Reading annotation for {:d}/{:d}'.format(
+                    i + 1, len(imagenames)))
+        # save
+        print('Saving cached annotations to {:s}'.format(cachefile))
+        with open(cachefile, 'wb') as f:
+            pickle.dump(recs, f)
+    else:
+        # load
+        with open(cachefile, 'rb') as f:
+            try:
+                recs = pickle.load(f)
+            except Exception:
+                recs = pickle.load(f, encoding='bytes')
+
+    # extract gt objects for this class
+    class_recs = {}
+    cls_idx_recs = {}
+    npos = 0
+    for img_idx, imagename in enumerate(imagenames):
+        R = [obj for obj in recs[imagename] if obj['name'] == classname]
+        bbox = np.array([x['bbox'] for x in R])
+        difficult = np.array([x['difficult'] for x in R]).astype(np.bool)
+        det = [False] * len(R)
+        npos = npos + sum(~difficult)
+        class_recs[imagename] = {'bbox': bbox,
+                                 'difficult': difficult,
+                                 'det': det}
+        cls_idx_recs[img_idx] = {'bbox': bbox,
+                                 'difficult': difficult,
+                                 'det': det}
+
+    loc_TP = 0
+    cls_TP = 0
+
+    for img_idx in cls_idx_recs:
+
+        img_i_cls_boxes = all_boxes[cls_idx][img_idx]
+        img_all_boxes = [b[img_idx] for b in all_boxes if len(b[img_idx]) > 0]
+        if len(img_all_boxes) > 0:
+            img_i_boxes = np.concatenate(
+                np.array(img_all_boxes))
+        else:
+            continue
+
+        # filter by threshold
+        img_i_boxes = img_i_boxes[np.where(img_i_boxes[:, 4] > threshold)]
+        img_i_cls_boxes = img_i_cls_boxes[
+            np.where(img_i_cls_boxes[:, 4] > threshold)]
+        # correct loc
+        BBGT = cls_idx_recs[img_idx]['bbox'].astype(float)
+        if BBGT.size > 0:
+            for bgt in BBGT:
+                if img_i_boxes.size > 0:
+                    if cal_overlap(img_i_boxes, bgt) > ovthresh:
+                        loc_TP += 1
+                if img_i_cls_boxes.size > 0:
+                    if cal_overlap(img_i_cls_boxes, bgt) > ovthresh:
+                        cls_TP += 1
+
+    # use np to return nan while the npos is zero
+    loc_accuracy = loc_TP / np.float32(npos)
+    cls_accuracy = cls_TP / np.float32(npos)
+    return loc_accuracy, cls_accuracy
 
 
 def voc_eval(detpath,

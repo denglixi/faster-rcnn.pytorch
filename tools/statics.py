@@ -201,11 +201,12 @@ def get_statis(food_dataset_root, ct, img_set, cls_img_set):
         ct)
     all_stats = get_xml_from_file(all_trainval_set, all_xml_dir)
     all_stats = dict(all_stats)
-    import pdb
-    pdb.set_trace()
     print("-------processing {} {}-----------".format(ct, img_set))
-    with open("./statistics/{}_{}_static.txt".format(ct, img_set), 'w') as f:
-        for cls in get_categories(ct+'_' + cls_img_set)[1:]:
+    imgset_category = get_categories(ct+'_'+img_set)
+    with open("./statistics/{}_{}_{}_static.txt".format(ct, img_set, cls_img_set), 'w') as f:
+        for cls in get_categories(cls_img_set)[1:]:
+            if imgset_category is not None and cls not in imgset_category:
+                continue
             if int(cls) in all_stats:
                 k = int(cls)
                 v = all_stats[k]
@@ -215,28 +216,13 @@ def get_statis(food_dataset_root, ct, img_set, cls_img_set):
                 f.write("\n")
 
 
-
-       # for k, v in all_stats:
-       #     if str(k) in get_categories(ct+'_'+cls_img_set):
-
-
-def main():
-    """main"""
-
-    # canttens = ['All', 'exclArts', 'exclYIH', 'exclTechChicken',
-    #            'exclTechMixedVeg', 'exclUTown', 'exclScience',
-    #            'YIH', 'Arts', 'Science', 'UTown',
-    #            'TechChicken', 'TechMixedVeg']
-
+def statistic_all():
     food_dataset_root = "/home/d/denglixi/faster-rcnn.pytorch/data/Food/"
+    canttens = ['All', 'exclArts', 'exclYIH', 'exclTechChicken',
+                'exclTechMixedVeg', 'exclUTown', 'exclScience',
+                'YIH', 'Arts', 'Science', 'UTown',
+                'TechChicken', 'TechMixedVeg']
 
-    get_statis(food_dataset_root, 'All', 'valmt10', 'trainmt10')
-    return
-
-    canttens = ['All', 'exclYIH',
-                'exclUTown',
-                'YIH', 'UTown',
-                ]
     for ct in canttens:
         # construct imagesets
         imagesets = ['trainval', 'train', 'val', 'inner']
@@ -251,8 +237,17 @@ def main():
                 continue
             get_statis(food_dataset_root, ct, img_set)
 
-    return
-    pass
+
+def main():
+    """main"""
+
+    food_dataset_root = "/home/d/denglixi/faster-rcnn.pytorch/data/Food/"
+    # for ct in ['YIH', 'exclYIH', 'All']:
+    #    for sp in ['trainmt10', 'valmt10']:
+    #        get_statis(food_dataset_root, ct, sp, ct+'_trainmt10')
+    #get_statis(food_dataset_root, 'YIH', 'innerfew1mt10train', 'trainmt10')
+
+    get_statis(food_dataset_root, 'YIH', 'innerfew5mt10train', 'exclYIH_trainmt10')
 
 
 if __name__ == '__main__':

@@ -8,9 +8,9 @@ CFG_FILE=./cfgs/demo.yml
 #webcam_num -2 show image online -1 saveimage
 
 # load weight
-SESSION=11
-EPOCH=27
-CHECKPOINT=14391
+SESSION=2
+EPOCH=50
+CHECKPOINT=14819
 
 
 # basic set

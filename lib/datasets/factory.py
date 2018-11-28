@@ -21,12 +21,20 @@ __sets = {}
 
 
 # Set up food_<canteen>_<split>_<trainingcategories>
-splits = ['train', 'val', 'trainval','inner']
+splits = ['train', 'val', 'trainval', 'inner']
 mt_splits = []
 for n in [10, 30, 50, 100]:
     for s in splits:
         mt_splits += [s+"mt{}".format(n)]
 splits += mt_splits
+
+# take few sample in inner between dataset of canteen and dataset of excl canteen as training data. And regard the lefts as validation.
+inner_few = []
+for fewN in [1 ,3,5, 10]:
+    for mtN in [10]:
+        for d in ['train', 'val']:
+            inner_few += ["innerfew{}mt{}{}".format(fewN, mtN, d)]
+splits += inner_few
 
 for cantee in ['exclYIH', "All", "exclArts", "exclUTown", "exclTechChicken", "exclTechMixedVeg", "YIH", "Arts", "TechChicken", "TechMixedVeg", "UTown"]:
     for split in splits:

@@ -112,6 +112,10 @@ class imdb(object):
         return [PIL.Image.open(self.image_path_at(i)).size[0]
                 for i in range(self.num_images)]
 
+    def _get_heights(self):
+        return [PIL.Image.open(self.image_path_at(i)).size[1]
+                for i in range(self.num_images)]
+
     def append_flipped_images(self):
         num_images = self.num_images
         widths = self._get_widths()
@@ -128,6 +132,23 @@ class imdb(object):
                      'flipped': True}
             self.roidb.append(entry)
         self._image_index = self._image_index * 2
+
+    def append_rotate_image(self, anchor: int):
+        """append_rotate_image
+
+        :param anchor: only support 90, 180, 270 degree, clockwised
+        :type anchor: int
+        """
+        num_images = self.num_images
+        widths = self._get_widths()
+        heights = self._get_heights()
+
+        for i in range(num_images):
+            boxes = self.roidb[i]['boxes'].copy()
+            oldx1 = boxes[:, 0].copy()
+            oldy1 = boxes[:, 1].copy()
+            oldx2 = boxes[:, 2].copy()
+            oldy2 = boxes[:, 3].copy()
 
     def evaluate_recall(self, candidate_boxes=None, thresholds=None,
                         area='all', limit=None):

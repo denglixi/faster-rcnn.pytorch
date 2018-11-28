@@ -24,6 +24,7 @@ from .imdb import imdb
 from .imdb import ROOT_DIR
 from . import ds_utils
 from .voc_eval import voc_eval
+from .voc_eval import loc_cls_eval
 from .food_category import get_categories
 
 # TODO: make fast_rcnn irrelevant
@@ -235,7 +236,7 @@ class food_merge_imdb(imdb):
                 num_objs += 1
             except:
                 continue
-        #assert num_objs == 0
+        # assert num_objs == 0
         if num_objs == 0:
             import pdb
             pdb.set_trace()
@@ -387,6 +388,33 @@ class food_merge_imdb(imdb):
                     self._image_set, output_dir)
         print('Running:\n{}'.format(cmd))
         status = subprocess.call(cmd, shell=True)
+
+    def evaluate_cls_loc(self, all_boxes, threshold=0.5):
+
+        # gt of cls
+        annopath = os.path.join(
+            self._devkit_path,
+            'Food_' + self._cantee,
+            'Annotations',
+            '{:s}.xml')
+        imagesetfile = os.path.join(
+            self._devkit_path,
+            'Food_' + self._cantee,
+            'ImageSets',
+            self._image_set + '.txt')
+
+        cachedir = os.path.join(self._devkit_path, 'annotations_cache')
+        all_loc = []
+        all_clsify = []
+        for i, cls in enumerate(self._classes):
+            if cls == '__background__':
+                continue
+            else:
+                loc_accuracy, cls_accuracy = loc_cls_eval(
+                    all_boxes, annopath, imagesetfile, i, cls, cachedir, threshold, 0.5)
+                all_loc.append(loc_accuracy)
+                all_clsify.append(cls_accuracy)
+        return list(zip(self._classes[1:], all_loc)), list(zip(self._classes[1:], all_clsify))
 
     def evaluate_detections(self, all_boxes, output_dir):
         self._write_voc_results_file(all_boxes)

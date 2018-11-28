@@ -116,6 +116,9 @@ def parse_args():
     parser.add_argument('--r', dest='resume',
                         help='resume checkpoint or not',
                         default=False, type=bool)
+    parser.add_argument('--resume_session_epoch', dest='resume_session_epoch',
+                        help='resume session and epoch or not',
+                        default=False, type=bool)
     parser.add_argument('--resume_opt', dest='resume_opt',
                         help='resume optimizer or not',
                         default=False, type=bool)
@@ -286,6 +289,18 @@ if __name__ == '__main__':
         args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
                          'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
+    elif args.dataset == "foodexclYIH_fineYIH":
+        args.imdb_name = "food_YIH_innerfew1mt10train_exclYIH_train_mt10"
+        args.imdbval_name = "food_All_val_All_train"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
+    elif args.dataset == "foodexclYIH_fineYIHfew5":
+        args.imdb_name = "food_YIH_innerfew5mt10train_exclYIH_train_mt10"
+        args.imdbval_name = "food_All_val_All_train"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
     args.cfg_file = "cfgs/{}_ls.yml".format(
         args.net) if args.large_scale else "cfgs/{}.yml".format(args.net)
 
@@ -401,8 +416,9 @@ if __name__ == '__main__':
                                                                    args.checkepoch, args.checkpoint))
         print("loading checkpoint %s" % (load_name))
         checkpoint = torch.load(load_name)
-        args.session = checkpoint['session']
-        args.start_epoch = checkpoint['epoch']
+        if args.resume_session_epoch:
+            args.session = checkpoint['session']
+            args.start_epoch = checkpoint['epoch']
         fasterRCNN.load_state_dict(checkpoint['model'])
         if args.resume_opt:
             optimizer.load_state_dict(checkpoint['optimizer'])
