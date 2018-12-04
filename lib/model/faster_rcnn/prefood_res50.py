@@ -120,15 +120,26 @@ class res50_layer1(KitModule):
     def __init__(self, weight_file=None):
         super(res50_layer1, self).__init__(weight_file)
 
-
-class res50_base(KitModule):
-    def __init__(self, weight_file=None):
-        super(res50_base, self).__init__(weight_file)
-
         self.conv1 = self.conv(2, name='conv1', in_channels=3, out_channels=64, kernel_size=(
             7, 7), stride=(2, 2), groups=1, bias=True)
         self.bn_conv1 = self.batch_normalization(
             2, 'bn_conv1', num_features=64, eps=9.999999747378752e-06, momentum=0.0)
+
+    def forward(self, x):
+        conv1_pad = F.pad(x, (3, 3, 3, 3))
+        conv1 = self.conv1(conv1_pad)
+        bn_conv1 = self.bn_conv1(conv1)
+        conv1_relu = F.relu(bn_conv1)
+        pool1_pad = F.pad(conv1_relu, (0, 1, 0, 1), value=float('-inf'))
+        pool1 = F.max_pool2d(pool1_pad, kernel_size=(
+            3, 3), stride=(2, 2), padding=0, ceil_mode=False)
+        return pool1
+
+
+class res50_layer2(KitModule):
+    def __init__(self, weight_file=None):
+        super(res50_layer2, self).__init__(weight_file)
+
         self.res2a_branch1 = self.conv(2, name='res2a_branch1', in_channels=64, out_channels=256, kernel_size=(
             1, 1), stride=(1, 1), groups=1, bias=False)
         self.res2a_branch2a = self.conv(2, name='res2a_branch2a', in_channels=64, out_channels=64, kernel_size=(
@@ -169,6 +180,50 @@ class res50_base(KitModule):
             1, 1), stride=(1, 1), groups=1, bias=False)
         self.bn2c_branch2c = self.batch_normalization(
             2, 'bn2c_branch2c', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
+
+    def forward(self, x):
+        res2a_branch1 = self.res2a_branch1(x)
+        res2a_branch2a = self.res2a_branch2a(x)
+        bn2a_branch1 = self.bn2a_branch1(res2a_branch1)
+        bn2a_branch2a = self.bn2a_branch2a(res2a_branch2a)
+        res2a_branch2a_relu = F.relu(bn2a_branch2a)
+        res2a_branch2b_pad = F.pad(res2a_branch2a_relu, (1, 1, 1, 1))
+        res2a_branch2b = self.res2a_branch2b(res2a_branch2b_pad)
+        bn2a_branch2b = self.bn2a_branch2b(res2a_branch2b)
+        res2a_branch2b_relu = F.relu(bn2a_branch2b)
+        res2a_branch2c = self.res2a_branch2c(res2a_branch2b_relu)
+        bn2a_branch2c = self.bn2a_branch2c(res2a_branch2c)
+        res2a = bn2a_branch1 + bn2a_branch2c
+        res2a_relu = F.relu(res2a)
+        res2b_branch2a = self.res2b_branch2a(res2a_relu)
+        bn2b_branch2a = self.bn2b_branch2a(res2b_branch2a)
+        res2b_branch2a_relu = F.relu(bn2b_branch2a)
+        res2b_branch2b_pad = F.pad(res2b_branch2a_relu, (1, 1, 1, 1))
+        res2b_branch2b = self.res2b_branch2b(res2b_branch2b_pad)
+        bn2b_branch2b = self.bn2b_branch2b(res2b_branch2b)
+        res2b_branch2b_relu = F.relu(bn2b_branch2b)
+        res2b_branch2c = self.res2b_branch2c(res2b_branch2b_relu)
+        bn2b_branch2c = self.bn2b_branch2c(res2b_branch2c)
+        res2b = res2a_relu + bn2b_branch2c
+        res2b_relu = F.relu(res2b)
+        res2c_branch2a = self.res2c_branch2a(res2b_relu)
+        bn2c_branch2a = self.bn2c_branch2a(res2c_branch2a)
+        res2c_branch2a_relu = F.relu(bn2c_branch2a)
+        res2c_branch2b_pad = F.pad(res2c_branch2a_relu, (1, 1, 1, 1))
+        res2c_branch2b = self.res2c_branch2b(res2c_branch2b_pad)
+        bn2c_branch2b = self.bn2c_branch2b(res2c_branch2b)
+        res2c_branch2b_relu = F.relu(bn2c_branch2b)
+        res2c_branch2c = self.res2c_branch2c(res2c_branch2b_relu)
+        bn2c_branch2c = self.bn2c_branch2c(res2c_branch2c)
+        res2c = res2b_relu + bn2c_branch2c
+        res2c_relu = F.relu(res2c)
+        return res2c_relu
+
+
+class res50_layer3(KitModule):
+    def __init__(self, weight_file=None):
+        super(res50_layer3, self).__init__(weight_file)
+
         self.res3a_branch1 = self.conv(2, name='res3a_branch1', in_channels=256, out_channels=512, kernel_size=(
             1, 1), stride=(2, 2), groups=1, bias=False)
         self.res3a_branch2a = self.conv(2, name='res3a_branch2a', in_channels=256, out_channels=128, kernel_size=(
@@ -221,6 +276,312 @@ class res50_base(KitModule):
             1, 1), stride=(1, 1), groups=1, bias=False)
         self.bn3d_branch2c = self.batch_normalization(
             2, 'bn3d_branch2c', num_features=512, eps=9.999999747378752e-06, momentum=0.0)
+
+    def forward(self, x):
+        res3a_branch1 = self.res3a_branch1(x)
+        res3a_branch2a = self.res3a_branch2a(x)
+        bn3a_branch1 = self.bn3a_branch1(res3a_branch1)
+        bn3a_branch2a = self.bn3a_branch2a(res3a_branch2a)
+        res3a_branch2a_relu = F.relu(bn3a_branch2a)
+        res3a_branch2b_pad = F.pad(res3a_branch2a_relu, (1, 1, 1, 1))
+        res3a_branch2b = self.res3a_branch2b(res3a_branch2b_pad)
+        bn3a_branch2b = self.bn3a_branch2b(res3a_branch2b)
+        res3a_branch2b_relu = F.relu(bn3a_branch2b)
+        res3a_branch2c = self.res3a_branch2c(res3a_branch2b_relu)
+        bn3a_branch2c = self.bn3a_branch2c(res3a_branch2c)
+        res3a = bn3a_branch1 + bn3a_branch2c
+        res3a_relu = F.relu(res3a)
+        res3b_branch2a = self.res3b_branch2a(res3a_relu)
+        bn3b_branch2a = self.bn3b_branch2a(res3b_branch2a)
+        res3b_branch2a_relu = F.relu(bn3b_branch2a)
+        res3b_branch2b_pad = F.pad(res3b_branch2a_relu, (1, 1, 1, 1))
+        res3b_branch2b = self.res3b_branch2b(res3b_branch2b_pad)
+        bn3b_branch2b = self.bn3b_branch2b(res3b_branch2b)
+        res3b_branch2b_relu = F.relu(bn3b_branch2b)
+        res3b_branch2c = self.res3b_branch2c(res3b_branch2b_relu)
+        bn3b_branch2c = self.bn3b_branch2c(res3b_branch2c)
+        res3b = res3a_relu + bn3b_branch2c
+        res3b_relu = F.relu(res3b)
+        res3c_branch2a = self.res3c_branch2a(res3b_relu)
+        bn3c_branch2a = self.bn3c_branch2a(res3c_branch2a)
+        res3c_branch2a_relu = F.relu(bn3c_branch2a)
+        res3c_branch2b_pad = F.pad(res3c_branch2a_relu, (1, 1, 1, 1))
+        res3c_branch2b = self.res3c_branch2b(res3c_branch2b_pad)
+        bn3c_branch2b = self.bn3c_branch2b(res3c_branch2b)
+        res3c_branch2b_relu = F.relu(bn3c_branch2b)
+        res3c_branch2c = self.res3c_branch2c(res3c_branch2b_relu)
+        bn3c_branch2c = self.bn3c_branch2c(res3c_branch2c)
+        res3c = res3b_relu + bn3c_branch2c
+        res3c_relu = F.relu(res3c)
+        res3d_branch2a = self.res3d_branch2a(res3c_relu)
+        bn3d_branch2a = self.bn3d_branch2a(res3d_branch2a)
+        res3d_branch2a_relu = F.relu(bn3d_branch2a)
+        res3d_branch2b_pad = F.pad(res3d_branch2a_relu, (1, 1, 1, 1))
+        res3d_branch2b = self.res3d_branch2b(res3d_branch2b_pad)
+        bn3d_branch2b = self.bn3d_branch2b(res3d_branch2b)
+        res3d_branch2b_relu = F.relu(bn3d_branch2b)
+        res3d_branch2c = self.res3d_branch2c(res3d_branch2b_relu)
+        bn3d_branch2c = self.bn3d_branch2c(res3d_branch2c)
+        res3d = res3c_relu + bn3d_branch2c
+        res3d_relu = F.relu(res3d)
+        return res3d_relu
+
+
+class res50_layer4(KitModule):
+    def __init__(self, weight_file=None):
+        super(res50_layer4, self).__init__(weight_file)
+
+        self.res4a_branch1 = self.conv(2, name='res4a_branch1', in_channels=512, out_channels=1024, kernel_size=(
+            1, 1), stride=(2, 2), groups=1, bias=False)
+        self.res4a_branch2a = self.conv(2, name='res4a_branch2a', in_channels=512, out_channels=256, kernel_size=(
+            1, 1), stride=(2, 2), groups=1, bias=False)
+        self.bn4a_branch1 = self.batch_normalization(
+            2, 'bn4a_branch1', num_features=1024, eps=9.999999747378752e-06, momentum=0.0)
+        self.bn4a_branch2a = self.batch_normalization(
+            2, 'bn4a_branch2a', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
+        self.res4a_branch2b = self.conv(2, name='res4a_branch2b', in_channels=256, out_channels=256, kernel_size=(
+            3, 3), stride=(1, 1), groups=1, bias=False)
+        self.bn4a_branch2b = self.batch_normalization(
+            2, 'bn4a_branch2b', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
+        self.res4a_branch2c = self.conv(2, name='res4a_branch2c', in_channels=256, out_channels=1024, kernel_size=(
+            1, 1), stride=(1, 1), groups=1, bias=False)
+        self.bn4a_branch2c = self.batch_normalization(
+            2, 'bn4a_branch2c', num_features=1024, eps=9.999999747378752e-06, momentum=0.0)
+        self.res4b_branch2a = self.conv(2, name='res4b_branch2a', in_channels=1024, out_channels=256, kernel_size=(
+            1, 1), stride=(1, 1), groups=1, bias=False)
+        self.bn4b_branch2a = self.batch_normalization(
+            2, 'bn4b_branch2a', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
+        self.res4b_branch2b = self.conv(2, name='res4b_branch2b', in_channels=256, out_channels=256, kernel_size=(
+            3, 3), stride=(1, 1), groups=1, bias=False)
+        self.bn4b_branch2b = self.batch_normalization(
+            2, 'bn4b_branch2b', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
+        self.res4b_branch2c = self.conv(2, name='res4b_branch2c', in_channels=256, out_channels=1024, kernel_size=(
+            1, 1), stride=(1, 1), groups=1, bias=False)
+        self.bn4b_branch2c = self.batch_normalization(
+            2, 'bn4b_branch2c', num_features=1024, eps=9.999999747378752e-06, momentum=0.0)
+        self.res4c_branch2a = self.conv(2, name='res4c_branch2a', in_channels=1024, out_channels=256, kernel_size=(
+            1, 1), stride=(1, 1), groups=1, bias=False)
+        self.bn4c_branch2a = self.batch_normalization(
+            2, 'bn4c_branch2a', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
+        self.res4c_branch2b = self.conv(2, name='res4c_branch2b', in_channels=256, out_channels=256, kernel_size=(
+            3, 3), stride=(1, 1), groups=1, bias=False)
+        self.bn4c_branch2b = self.batch_normalization(
+            2, 'bn4c_branch2b', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
+        self.res4c_branch2c = self.conv(2, name='res4c_branch2c', in_channels=256, out_channels=1024, kernel_size=(
+            1, 1), stride=(1, 1), groups=1, bias=False)
+        self.bn4c_branch2c = self.batch_normalization(
+            2, 'bn4c_branch2c', num_features=1024, eps=9.999999747378752e-06, momentum=0.0)
+        self.res4d_branch2a = self.conv(2, name='res4d_branch2a', in_channels=1024, out_channels=256, kernel_size=(
+            1, 1), stride=(1, 1), groups=1, bias=False)
+        self.bn4d_branch2a = self.batch_normalization(
+            2, 'bn4d_branch2a', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
+        self.res4d_branch2b = self.conv(2, name='res4d_branch2b', in_channels=256, out_channels=256, kernel_size=(
+            3, 3), stride=(1, 1), groups=1, bias=False)
+        self.bn4d_branch2b = self.batch_normalization(
+            2, 'bn4d_branch2b', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
+        self.res4d_branch2c = self.conv(2, name='res4d_branch2c', in_channels=256, out_channels=1024, kernel_size=(
+            1, 1), stride=(1, 1), groups=1, bias=False)
+        self.bn4d_branch2c = self.batch_normalization(
+            2, 'bn4d_branch2c', num_features=1024, eps=9.999999747378752e-06, momentum=0.0)
+        self.res4e_branch2a = self.conv(2, name='res4e_branch2a', in_channels=1024, out_channels=256, kernel_size=(
+            1, 1), stride=(1, 1), groups=1, bias=False)
+        self.bn4e_branch2a = self.batch_normalization(
+            2, 'bn4e_branch2a', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
+        self.res4e_branch2b = self.conv(2, name='res4e_branch2b', in_channels=256, out_channels=256, kernel_size=(
+            3, 3), stride=(1, 1), groups=1, bias=False)
+        self.bn4e_branch2b = self.batch_normalization(
+            2, 'bn4e_branch2b', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
+        self.res4e_branch2c = self.conv(2, name='res4e_branch2c', in_channels=256, out_channels=1024, kernel_size=(
+            1, 1), stride=(1, 1), groups=1, bias=False)
+        self.bn4e_branch2c = self.batch_normalization(
+            2, 'bn4e_branch2c', num_features=1024, eps=9.999999747378752e-06, momentum=0.0)
+        self.res4f_branch2a = self.conv(2, name='res4f_branch2a', in_channels=1024, out_channels=256, kernel_size=(
+            1, 1), stride=(1, 1), groups=1, bias=False)
+        self.bn4f_branch2a = self.batch_normalization(
+            2, 'bn4f_branch2a', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
+        self.res4f_branch2b = self.conv(2, name='res4f_branch2b', in_channels=256, out_channels=256, kernel_size=(
+            3, 3), stride=(1, 1), groups=1, bias=False)
+        self.bn4f_branch2b = self.batch_normalization(
+            2, 'bn4f_branch2b', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
+        self.res4f_branch2c = self.conv(2, name='res4f_branch2c', in_channels=256, out_channels=1024, kernel_size=(
+            1, 1), stride=(1, 1), groups=1, bias=False)
+        self.bn4f_branch2c = self.batch_normalization(
+            2, 'bn4f_branch2c', num_features=1024, eps=9.999999747378752e-06, momentum=0.0)
+
+    def forward(self, x):
+        res4a_branch1 = self.res4a_branch1(x)
+        res4a_branch2a = self.res4a_branch2a(x)
+        bn4a_branch1 = self.bn4a_branch1(res4a_branch1)
+        bn4a_branch2a = self.bn4a_branch2a(res4a_branch2a)
+        res4a_branch2a_relu = F.relu(bn4a_branch2a)
+        res4a_branch2b_pad = F.pad(res4a_branch2a_relu, (1, 1, 1, 1))
+        res4a_branch2b = self.res4a_branch2b(res4a_branch2b_pad)
+        bn4a_branch2b = self.bn4a_branch2b(res4a_branch2b)
+        res4a_branch2b_relu = F.relu(bn4a_branch2b)
+        res4a_branch2c = self.res4a_branch2c(res4a_branch2b_relu)
+        bn4a_branch2c = self.bn4a_branch2c(res4a_branch2c)
+        res4a = bn4a_branch1 + bn4a_branch2c
+        res4a_relu = F.relu(res4a)
+        res4b_branch2a = self.res4b_branch2a(res4a_relu)
+        bn4b_branch2a = self.bn4b_branch2a(res4b_branch2a)
+        res4b_branch2a_relu = F.relu(bn4b_branch2a)
+        res4b_branch2b_pad = F.pad(res4b_branch2a_relu, (1, 1, 1, 1))
+        res4b_branch2b = self.res4b_branch2b(res4b_branch2b_pad)
+        bn4b_branch2b = self.bn4b_branch2b(res4b_branch2b)
+        res4b_branch2b_relu = F.relu(bn4b_branch2b)
+        res4b_branch2c = self.res4b_branch2c(res4b_branch2b_relu)
+        bn4b_branch2c = self.bn4b_branch2c(res4b_branch2c)
+        res4b = res4a_relu + bn4b_branch2c
+        res4b_relu = F.relu(res4b)
+        res4c_branch2a = self.res4c_branch2a(res4b_relu)
+        bn4c_branch2a = self.bn4c_branch2a(res4c_branch2a)
+        res4c_branch2a_relu = F.relu(bn4c_branch2a)
+        res4c_branch2b_pad = F.pad(res4c_branch2a_relu, (1, 1, 1, 1))
+        res4c_branch2b = self.res4c_branch2b(res4c_branch2b_pad)
+        bn4c_branch2b = self.bn4c_branch2b(res4c_branch2b)
+        res4c_branch2b_relu = F.relu(bn4c_branch2b)
+        res4c_branch2c = self.res4c_branch2c(res4c_branch2b_relu)
+        bn4c_branch2c = self.bn4c_branch2c(res4c_branch2c)
+        res4c = res4b_relu + bn4c_branch2c
+        res4c_relu = F.relu(res4c)
+        res4d_branch2a = self.res4d_branch2a(res4c_relu)
+        bn4d_branch2a = self.bn4d_branch2a(res4d_branch2a)
+        res4d_branch2a_relu = F.relu(bn4d_branch2a)
+        res4d_branch2b_pad = F.pad(res4d_branch2a_relu, (1, 1, 1, 1))
+        res4d_branch2b = self.res4d_branch2b(res4d_branch2b_pad)
+        bn4d_branch2b = self.bn4d_branch2b(res4d_branch2b)
+        res4d_branch2b_relu = F.relu(bn4d_branch2b)
+        res4d_branch2c = self.res4d_branch2c(res4d_branch2b_relu)
+        bn4d_branch2c = self.bn4d_branch2c(res4d_branch2c)
+        res4d = res4c_relu + bn4d_branch2c
+        res4d_relu = F.relu(res4d)
+        res4e_branch2a = self.res4e_branch2a(res4d_relu)
+        bn4e_branch2a = self.bn4e_branch2a(res4e_branch2a)
+        res4e_branch2a_relu = F.relu(bn4e_branch2a)
+        res4e_branch2b_pad = F.pad(res4e_branch2a_relu, (1, 1, 1, 1))
+        res4e_branch2b = self.res4e_branch2b(res4e_branch2b_pad)
+        bn4e_branch2b = self.bn4e_branch2b(res4e_branch2b)
+        res4e_branch2b_relu = F.relu(bn4e_branch2b)
+        res4e_branch2c = self.res4e_branch2c(res4e_branch2b_relu)
+        bn4e_branch2c = self.bn4e_branch2c(res4e_branch2c)
+        res4e = res4d_relu + bn4e_branch2c
+        res4e_relu = F.relu(res4e)
+        res4f_branch2a = self.res4f_branch2a(res4e_relu)
+        bn4f_branch2a = self.bn4f_branch2a(res4f_branch2a)
+        res4f_branch2a_relu = F.relu(bn4f_branch2a)
+        res4f_branch2b_pad = F.pad(res4f_branch2a_relu, (1, 1, 1, 1))
+        res4f_branch2b = self.res4f_branch2b(res4f_branch2b_pad)
+        bn4f_branch2b = self.bn4f_branch2b(res4f_branch2b)
+        res4f_branch2b_relu = F.relu(bn4f_branch2b)
+        res4f_branch2c = self.res4f_branch2c(res4f_branch2b_relu)
+        bn4f_branch2c = self.bn4f_branch2c(res4f_branch2c)
+        res4f = res4e_relu + bn4f_branch2c
+        res4f_relu = F.relu(res4f)
+        return res4f_relu
+
+
+class res50_base(KitModule):
+    def __init__(self, weight_file=None):
+        super(res50_base, self).__init__(weight_file)
+
+        self.conv1 = self.conv(2, name='conv1', in_channels=3, out_channels=64, kernel_size=(
+            7, 7), stride=(2, 2), groups=1, bias=True)
+        self.bn_conv1 = self.batch_normalization(
+            2, 'bn_conv1', num_features=64, eps=9.999999747378752e-06, momentum=0.0)
+        self.res2a_branch1 = self.conv(2, name='res2a_branch1', in_channels=64, out_channels=256, kernel_size=(
+            1, 1), stride=(1, 1), groups=1, bias=False)
+        self.res2a_branch2a = self.conv(2, name='res2a_branch2a', in_channels=64, out_channels=64, kernel_size=(
+            1, 1), stride=(1, 1), groups=1, bias=False)
+        self.bn2a_branch1 = self.batch_normalization(
+            2, 'bn2a_branch1', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
+        self.bn2a_branch2a = self.batch_normalization(
+            2, 'bn2a_branch2a', num_features=64, eps=9.999999747378752e-06, momentum=0.0)
+        self.res2a_branch2b = self.conv(2, name='res2a_branch2b', in_channels=64, out_channels=64, kernel_size=(
+            3, 3), stride=(1, 1), groups=1, bias=False)
+        self.bn2a_branch2b = self.batch_normalization(
+            2, 'bn2a_branch2b', num_features=64, eps=9.999999747378752e-06, momentum=0.0)
+        self.res2a_branch2c = self.conv(2, name='res2a_branch2c', in_channels=64, out_channels=256, kernel_size=(
+            1, 1), stride=(1, 1), groups=1, bias=False)
+        self.bn2a_branch2c = self.batch_normalization(
+            2, 'bn2a_branch2c', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
+        self.res2b_branch2a = self.conv(2, name='res2b_branch2a', in_channels=256, out_channels=64, kernel_size=(
+            1, 1), stride=(1, 1), groups=1, bias=False)
+        self.bn2b_branch2a = self.batch_normalization(
+            2, 'bn2b_branch2a', num_features=64, eps=9.999999747378752e-06, momentum=0.0)
+        self.res2b_branch2b = self.conv(2, name='res2b_branch2b', in_channels=64, out_channels=64, kernel_size=(
+            3, 3), stride=(1, 1), groups=1, bias=False)
+        self.bn2b_branch2b = self.batch_normalization(
+            2, 'bn2b_branch2b', num_features=64, eps=9.999999747378752e-06, momentum=0.0)
+        self.res2b_branch2c = self.conv(2, name='res2b_branch2c', in_channels=64, out_channels=256, kernel_size=(
+            1, 1), stride=(1, 1), groups=1, bias=False)
+        self.bn2b_branch2c = self.batch_normalization(
+            2, 'bn2b_branch2c', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
+        self.res2c_branch2a = self.conv(2, name='res2c_branch2a', in_channels=256, out_channels=64, kernel_size=(
+            1, 1), stride=(1, 1), groups=1, bias=False)
+        self.bn2c_branch2a = self.batch_normalization(
+            2, 'bn2c_branch2a', num_features=64, eps=9.999999747378752e-06, momentum=0.0)
+        self.res2c_branch2b = self.conv(2, name='res2c_branch2b', in_channels=64, out_channels=64, kernel_size=(
+            3, 3), stride=(1, 1), groups=1, bias=False)
+        self.bn2c_branch2b = self.batch_normalization(
+            2, 'bn2c_branch2b', num_features=64, eps=9.999999747378752e-06, momentum=0.0)
+        self.res2c_branch2c = self.conv(2, name='res2c_branch2c', in_channels=64, out_channels=256, kernel_size=(
+            1, 1), stride=(1, 1), groups=1, bias=False)
+        self.bn2c_branch2c = self.batch_normalization(
+            2, 'bn2c_branch2c', num_features=256, eps=9.999999747378752e-06, momentum=0.0)
+
+        self.res3a_branch1 = self.conv(2, name='res3a_branch1', in_channels=256, out_channels=512, kernel_size=(
+            1, 1), stride=(2, 2), groups=1, bias=False)
+        self.res3a_branch2a = self.conv(2, name='res3a_branch2a', in_channels=256, out_channels=128, kernel_size=(
+            1, 1), stride=(2, 2), groups=1, bias=False)
+        self.bn3a_branch1 = self.batch_normalization(
+            2, 'bn3a_branch1', num_features=512, eps=9.999999747378752e-06, momentum=0.0)
+        self.bn3a_branch2a = self.batch_normalization(
+            2, 'bn3a_branch2a', num_features=128, eps=9.999999747378752e-06, momentum=0.0)
+        self.res3a_branch2b = self.conv(2, name='res3a_branch2b', in_channels=128, out_channels=128, kernel_size=(
+            3, 3), stride=(1, 1), groups=1, bias=False)
+        self.bn3a_branch2b = self.batch_normalization(
+            2, 'bn3a_branch2b', num_features=128, eps=9.999999747378752e-06, momentum=0.0)
+        self.res3a_branch2c = self.conv(2, name='res3a_branch2c', in_channels=128, out_channels=512, kernel_size=(
+            1, 1), stride=(1, 1), groups=1, bias=False)
+        self.bn3a_branch2c = self.batch_normalization(
+            2, 'bn3a_branch2c', num_features=512, eps=9.999999747378752e-06, momentum=0.0)
+        self.res3b_branch2a = self.conv(2, name='res3b_branch2a', in_channels=512, out_channels=128, kernel_size=(
+            1, 1), stride=(1, 1), groups=1, bias=False)
+        self.bn3b_branch2a = self.batch_normalization(
+            2, 'bn3b_branch2a', num_features=128, eps=9.999999747378752e-06, momentum=0.0)
+        self.res3b_branch2b = self.conv(2, name='res3b_branch2b', in_channels=128, out_channels=128, kernel_size=(
+            3, 3), stride=(1, 1), groups=1, bias=False)
+        self.bn3b_branch2b = self.batch_normalization(
+            2, 'bn3b_branch2b', num_features=128, eps=9.999999747378752e-06, momentum=0.0)
+        self.res3b_branch2c = self.conv(2, name='res3b_branch2c', in_channels=128, out_channels=512, kernel_size=(
+            1, 1), stride=(1, 1), groups=1, bias=False)
+        self.bn3b_branch2c = self.batch_normalization(
+            2, 'bn3b_branch2c', num_features=512, eps=9.999999747378752e-06, momentum=0.0)
+        self.res3c_branch2a = self.conv(2, name='res3c_branch2a', in_channels=512, out_channels=128, kernel_size=(
+            1, 1), stride=(1, 1), groups=1, bias=False)
+        self.bn3c_branch2a = self.batch_normalization(
+            2, 'bn3c_branch2a', num_features=128, eps=9.999999747378752e-06, momentum=0.0)
+        self.res3c_branch2b = self.conv(2, name='res3c_branch2b', in_channels=128, out_channels=128, kernel_size=(
+            3, 3), stride=(1, 1), groups=1, bias=False)
+        self.bn3c_branch2b = self.batch_normalization(
+            2, 'bn3c_branch2b', num_features=128, eps=9.999999747378752e-06, momentum=0.0)
+        self.res3c_branch2c = self.conv(2, name='res3c_branch2c', in_channels=128, out_channels=512, kernel_size=(
+            1, 1), stride=(1, 1), groups=1, bias=False)
+        self.bn3c_branch2c = self.batch_normalization(
+            2, 'bn3c_branch2c', num_features=512, eps=9.999999747378752e-06, momentum=0.0)
+        self.res3d_branch2a = self.conv(2, name='res3d_branch2a', in_channels=512, out_channels=128, kernel_size=(
+            1, 1), stride=(1, 1), groups=1, bias=False)
+        self.bn3d_branch2a = self.batch_normalization(
+            2, 'bn3d_branch2a', num_features=128, eps=9.999999747378752e-06, momentum=0.0)
+        self.res3d_branch2b = self.conv(2, name='res3d_branch2b', in_channels=128, out_channels=128, kernel_size=(
+            3, 3), stride=(1, 1), groups=1, bias=False)
+        self.bn3d_branch2b = self.batch_normalization(
+            2, 'bn3d_branch2b', num_features=128, eps=9.999999747378752e-06, momentum=0.0)
+        self.res3d_branch2c = self.conv(2, name='res3d_branch2c', in_channels=128, out_channels=512, kernel_size=(
+            1, 1), stride=(1, 1), groups=1, bias=False)
+        self.bn3d_branch2c = self.batch_normalization(
+            2, 'bn3d_branch2c', num_features=512, eps=9.999999747378752e-06, momentum=0.0)
+
         self.res4a_branch1 = self.conv(2, name='res4a_branch1', in_channels=512, out_channels=1024, kernel_size=(
             1, 1), stride=(2, 2), groups=1, bias=False)
         self.res4a_branch2a = self.conv(2, name='res4a_branch2a', in_channels=512, out_channels=256, kernel_size=(
@@ -546,14 +907,14 @@ class res50_top(KitModule):
         #    7, 7), stride=(1, 1), padding=(0,), ceil_mode=False)
         return res5c_relu
 
-        #fc798_0 = pool5.view(pool5.size(0), -1)
-        #fc798_1 = self.fc798_1(fc798_0)
-        #prob = F.softmax(fc798_1)
+        # fc798_0 = pool5.view(pool5.size(0), -1)
+        # fc798_1 = self.fc798_1(fc798_0)
+        # prob = F.softmax(fc798_1)
 
 
 class PreResNet50(_fasterRCNN):
 
-    def __init__(self, classes, pretrained=False, class_agnostic=False, weight_file=None):
+    def __init__(self, classes, pretrained=False, class_agnostic=False, weight_file=None, fixed_layer=0):
 
         if weight_file == 'imagenet':
             self.model_path = "data/pretrained_model/resnet50_caffe.pth"
@@ -565,11 +926,24 @@ class PreResNet50(_fasterRCNN):
             self.model_path = None
         self.dout_base_model = 1024
         self.class_agnostic = class_agnostic
+        self.fixed_layer = fixed_layer
 
         _fasterRCNN.__init__(self, classes, class_agnostic)
 
     def _init_modules(self):
-        self.RCNN_base = res50_base(self.model_path)
+        #self.RCNN_base = res50_base(self.model_path)
+        self.RCNN_base = nn.Sequential(
+            res50_layer1(self.model_path),
+            res50_layer2(self.model_path),
+            res50_layer3(self.model_path),
+            res50_layer4(self.model_path))
+
+        assert self.fixed_layer >= 0 and self.fixed_layer <= 4
+
+        for layer_i in range(self.fixed_layer):
+            for p in self.RCNN_base[layer_i].parameters():
+                p.requires_grad = False
+
         self.RCNN_top = res50_top(self.model_path)
 
         self.RCNN_cls_score = nn.Linear(2048, self.n_classes)

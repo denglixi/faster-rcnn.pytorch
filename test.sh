@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # GPU usage
-GPU_ID=0
+GPU_ID=1
 
 # basic set
 Train=All
@@ -11,19 +11,23 @@ Test=
 #DATASET=foodexclYIHmt10_testYIH
 #DATASET=food$Train$mt$Test
 
-DATASET=foodexclYIH_fineYIHfew5_testYIHfew5
+#DATASET=foodexclYIH_fineYIHfew5_testYIHfew5
+#DATASET=foodexclYIH_testYIHmt10
 #DATASET=foodexclYIHmt10_testYIHfew1
-#DATASET=foodAllmt10
+
+DATASET=foodAllmt10
+
+
 
 NET=foodres50 #{foodres50, res101, vgg16}
 # load weight
-SESSION=111
-EPOCH=100
+SESSION=444
+EPOCH=50
 # YIH 11545 #UTown 11105 #All 14819
-CHECKPOINT=367
+CHECKPOINT=14819
 
 # whether visulazation the results during testing
-IS_VIS=false
+IS_VIS=true
 
 # whether test cache which have saved in last testing
 IS_TEST_CACHE=false

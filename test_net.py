@@ -159,7 +159,7 @@ if __name__ == '__main__':
 
     elif args.dataset == "foodexclYIH":
         args.imdb_name = "food_exclYIH_train_exclYIH_train"
-        args.imdbval_name = "food_exclYIH_val_exclYIH_train"
+        args.imdbval_name = "food_exclYIH_valmt0_exclYIH_train"
         args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
                          'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
@@ -195,6 +195,12 @@ if __name__ == '__main__':
     elif args.dataset == "foodexclYIH_testYIH":
         args.imdb_name = "food_exclYIH_train_exclYIH_train"
         args.imdbval_name = "food_YIH_inner_exclYIH_train"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
+    elif args.dataset == "foodexclYIH_testYIHmt10":
+        args.imdb_name = "food_exclYIH_train_exclYIH_train"
+        args.imdbval_name = "food_YIH_innermt10_exclYIH_train"
         args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
                          'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
@@ -293,7 +299,7 @@ if __name__ == '__main__':
     args.cfg_file = "cfgs/{}_ls.yml".format(
         args.net) if args.large_scale else "cfgs/{}.yml".format(args.net)
 
-    #args = construct_dataset(args)
+    # args = construct_dataset(args)
 
     if args.cfg_file is not None:
         cfg_from_file(args.cfg_file)
@@ -543,7 +549,7 @@ if __name__ == '__main__':
                 # cv2.imwrite('result.png', im2show)
                 # pdb.set_trace()
                 cv2.namedWindow("frame", 0)
-                cv2.resizeWindow("frame", 800, 800)
+                cv2.resizeWindow("frame", 1700, 900)
                 cv2.imshow('frame', im2show)
                 cv2.waitKey(0)
 
@@ -611,79 +617,84 @@ if __name__ == '__main__':
     print('Evaluating detections')
 
     # save_map_result(imdb, all_boxes, output_dir, args):
-    test_map_results = True
-    if test_map_results:
+    #test_map_results = True
+    # if test_map_results:
+    #    cls_ap_zip, dataset_map = imdb.evaluate_detections(
+    #        all_boxes, output_dir)
+    #    # results_filename = args.imdbval_name + \
+    #    #    time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    #    results_filename = args.imdbval_name + "_session" + \
+    #        str(args.checksession) + "_epoch" + str(args.checkepoch)
+    #    results_save_dir = "test_result/"
+    #    if not os.path.exists(results_save_dir):
+    #        os.makedirs(results_save_dir)
+
+    #    # filter results
+    #    # train_cls = get_categories(args.train_cls)
+    #    val_names = args.imdbval_name.split("_")
+    #    val_canteen = val_names[1]  # YIH
+    #    val_split = val_names[2]  # valmt10 -> val_mt10
+    #    if 'inner' in val_split:
+    #        val_categories = get_categories(val_canteen+"_"+"inner")
+    #    else:
+    #        val_categories, val_ap = zip(*cls_ap_zip)
+    #        cls_ap_zip = zip(val_categories, val_ap)
+
+    #    # f.write(str(dataset_map) + '\n')
+
+    #    map_exist_cls = []
+    #    with open(os.path.join(results_save_dir, results_filename), 'w') as f:
+    #        for cls, ap in cls_ap_zip:
+    #            if str(cls) in val_categories:
+    #                if np.isnan(ap):
+    #                    f.write(str(cls) + '\n')
+    #                else:
+    #                    f.write(str(cls) + '\t' + str(ap) + '\n')
+    #                    map_exist_cls.append(ap)
+    #        map_exist_cls = sum(map_exist_cls) / len(map_exist_cls)
+    #        print("exist cls map:{}".format(map_exist_cls))
+
+    #    with open(os.path.join(results_save_dir, results_filename), 'r+') as f:
+    #        old = f.read()
+    #        f.seek(0)
+    #        f.write('{}\t'.format('MAP') + str(map_exist_cls) + '\n')
+    #        f.write(old)
+
+    #    end = time.time()
+    #    print("test time: %0.4fs" % (end - start))
+
+    test_cls_loc = True
+    if test_cls_loc:
+
+        # get loc cls results
+        threshold = 0.5
+        loc_accuracy, clsify_accuracy = imdb.evaluate_cls_loc(
+            all_boxes, threshold)
+
+        # get MAP results
         cls_ap_zip, dataset_map = imdb.evaluate_detections(
             all_boxes, output_dir)
-        # results_filename = args.imdbval_name + \
-        #    time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-        results_filename = args.imdbval_name + "_session" + \
-            str(args.checksession) + "_epoch" + str(args.checkepoch)
-        results_save_dir = "test_result/"
+        cls_ap = list(cls_ap_zip)
+
+
+        # create save dir
+        results_save_dir = "test_result/model_{}/val_{}/session_{}".format(
+            model_name, "_".join(args.imdbval_name.split('_')[1:3]),
+            args.checksession)
         if not os.path.exists(results_save_dir):
             os.makedirs(results_save_dir)
 
-        # filter results
-        #train_cls = get_categories(args.train_cls)
-        val_names = args.imdbval_name.split("_")
-        val_canteen = val_names[1]  # YIH
-        val_split = val_names[2]  # valmt10 -> val_mt10
-        if 'inner' in val_split:
-            val_categories = get_categories(val_canteen+"_"+"inner")
-        else:
-            val_categories, val_ap = zip(*cls_ap_zip)
-            cls_ap_zip = zip(val_categories, val_ap)
-
-        # f.write(str(dataset_map) + '\n')
-
-        map_exist_cls = []
-        with open(os.path.join(results_save_dir, results_filename), 'w') as f:
-            for cls, ap in cls_ap_zip:
-                if str(cls) in val_categories:
-                    if np.isnan(ap):
-                        f.write(str(cls) + '\n')
-                    else:
-                        f.write(str(cls) + '\t' + str(ap) + '\n')
-                        map_exist_cls.append(ap)
-            map_exist_cls = sum(map_exist_cls) / len(map_exist_cls)
-            print("exist cls map:{}".format(map_exist_cls))
-            f.write(str(map_exist_cls))
-
-        end = time.time()
-        print("test time: %0.4fs" % (end - start))
-
-    test_cls_loc = True
-    threshold = 0.9
-    if test_cls_loc:
-        loc_accuracy, clsify_accuracy = imdb.evaluate_cls_loc(
-            all_boxes, threshold)
-        #acs = []
-        # for cls, ac in loc_accuracy:
-        #    if not np.isnan(ac):
-        #        acs.append(ac)
-        # print('loc_accuracy')
-        # print(loc_accuracy)
-        # print(np.mean(acs))
-        # for cls, ac in clsify_accuracy:
-        #    if not np.isnan(ac):
-        #        acs.append(ac)
-        # print('clsify_accuracy')
-        # print(clsify_accuracy)
-        # print(np.mean(acs))
-
-        #
-        for metrics in ['loc', 'cls']:
+        # save results of each metrics
+        for metrics in ['loc', 'cls', 'map']:
             if metrics == 'loc':
                 itertor = loc_accuracy
             elif metrics == 'cls':
                 itertor = clsify_accuracy
+            elif metrics == 'map':
+                itertor = cls_ap
 
-            results_filename = args.imdbval_name + "_session" + \
-                str(args.checksession) + "_epoch" + \
+            results_filename = "epoch" + \
                 str(args.checkepoch) + "{}".format(metrics)
-            results_save_dir = "test_result/"
-            if not os.path.exists(results_save_dir):
-                os.makedirs(results_save_dir)
 
             # filter results
             # train_cls = get_categories(args.train_cls)
@@ -698,6 +709,7 @@ if __name__ == '__main__':
             # f.write(str(dataset_map) + '\n')
 
             map_exist_cls = []
+
             with open(os.path.join(results_save_dir, results_filename), 'w') as f:
                 for cls, ap in itertor:
                     if str(cls) in val_categories:
@@ -707,8 +719,12 @@ if __name__ == '__main__':
                             f.write(str(cls) + '\t' + str(ap) + '\n')
                             map_exist_cls.append(ap)
                 map_exist_cls = sum(map_exist_cls) / len(map_exist_cls)
-                print("exist cls map:{}".format(map_exist_cls))
-                f.write(str(map_exist_cls))
+                print("exist {} map:{}".format(metrics, map_exist_cls))
+            with open(os.path.join(results_save_dir, results_filename), 'r+') as f:
+                old = f.read()
+                f.seek(0)
+                f.write('{}\t'.format(metrics) + str(map_exist_cls) + '\n')
+                f.write(old)
 
             end = time.time()
             print("test time: %0.4fs" % (end - start))

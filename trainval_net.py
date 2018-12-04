@@ -110,6 +110,9 @@ def parse_args():
     parser.add_argument('--pretrained', dest='pretrained',
                         help='use pretrained model or not',
                         default=True, type=bool)
+    parser.add_argument('--fixed_layer', dest='fixed_layer',
+                        help='determin the fixed layer of resnet50',
+                        default=0, type=int)
     parser.add_argument('--weight_file', dest='weight_file',
                         help='imagenet, prefood',
                         default='vgg16', type=str)
@@ -139,6 +142,9 @@ def parse_args():
     parser.add_argument('--save_model', dest='save_model',
                         help="whether save model",
                         action='store_true')
+    parser.add_argument('--save_epoch', dest='save_epoch',
+                        help='save model per save_epoch epoch',
+                        default=1, type=int)
 
     args = parser.parse_args()
     return args
@@ -225,6 +231,12 @@ if __name__ == '__main__':
                          'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
     elif args.dataset == "foodexclArts":
         args.imdb_name = "food_exclArts_train_exclArts_train"
+        args.imdbval_name = "food_exclArts_val_exclArts_train"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
+    elif args.dataset == "foodexclArtsmt10":
+        args.imdb_name = "food_exclArts_trainmt10_exclArts_train_mt10"
         args.imdbval_name = "food_exclArts_val_exclArts_train"
         args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
                          'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
@@ -378,7 +390,9 @@ if __name__ == '__main__':
                             class_agnostic=args.class_agnostic)
     elif args.net == 'foodres50':
         fasterRCNN = PreResNet50(imdb.classes, pretrained=args.pretrained,
-                                 class_agnostic=args.class_agnostic, weight_file=args.weight_file)
+                                 class_agnostic=args.class_agnostic,
+                                 weight_file=args.weight_file,
+                                 fixed_layer=args.fixed_layer)
     else:
         print("network is not defined")
         pdb.set_trace()
@@ -527,15 +541,16 @@ if __name__ == '__main__':
         save_name = os.path.join(
             output_dir, 'faster_rcnn_{}_{}_{}.pth'.format(args.session, epoch, step))
         if args.save_model:
-            save_checkpoint({
-                'session': args.session,
-                'epoch': epoch + 1,
-                'model': fasterRCNN.module.state_dict() if args.mGPUs else fasterRCNN.state_dict(),
-                'optimizer': optimizer.state_dict(),
-                'pooling_mode': cfg.POOLING_MODE,
-                'class_agnostic': args.class_agnostic,
-            }, save_name)
-            print('save model: {}'.format(save_name))
+            if (epoch+1) % args.save_epoch == 0:
+                save_checkpoint({
+                    'session': args.session,
+                    'epoch': epoch + 1,
+                    'model': fasterRCNN.module.state_dict() if args.mGPUs else fasterRCNN.state_dict(),
+                    'optimizer': optimizer.state_dict(),
+                    'pooling_mode': cfg.POOLING_MODE,
+                    'class_agnostic': args.class_agnostic,
+                }, save_name)
+                print('save model: {}'.format(save_name))
 
     if args.use_tfboard:
         logger.close()

@@ -23,7 +23,7 @@ __sets = {}
 # Set up food_<canteen>_<split>_<trainingcategories>
 splits = ['train', 'val', 'trainval', 'inner']
 mt_splits = []
-for n in [10, 30, 50, 100]:
+for n in [0,10, 30, 50, 100]:
     for s in splits:
         mt_splits += [s+"mt{}".format(n)]
 splits += mt_splits

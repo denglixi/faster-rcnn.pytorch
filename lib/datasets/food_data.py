@@ -52,16 +52,10 @@ class food_merge_imdb(imdb):
         self._data_path = os.path.join(
             self._devkit_path, 'Food_' + self._cantee)
         self._classes = get_categories(categories)
-        # ("__background__",  # always index 0
-        #  "1", "2", "3", "4", "5", "6", "11", "12",
-        #  "13", "14", "15",
-        #  "111", "21", "22", "23", "24", "25", "26", "31",
-        #  "32", "33", "34", "35", "36", "41", "42",
-        #  "43", "44", "45", "46", "47", "48", "51",
-        #  "52", "53", "54", "55", "67")
         self._class_to_ind = dict(zip(self.classes, xrange(self.num_classes)))
         self._image_ext = '.jpg'
         self._image_index = self._load_image_set_index()
+        self._origin_img_len = len(self._image_index)
         # Default to roidb handler
         # self._roidb_handler = self.selective_search_roidb
         self._roidb_handler = self.gt_roidb

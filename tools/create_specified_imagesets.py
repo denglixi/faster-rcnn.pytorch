@@ -53,6 +53,7 @@ class Xml_in_few_sample_filter:
     """Xml_in_few_sample_filter
     class for find few_count samples whose categories are match cls_dict
     """
+
     def __init__(self, cls_dict, few_count):
         self.cls_dict = cls_dict
         self.reserver_xmls = []
@@ -92,11 +93,6 @@ class Xml_in_few_sample_filter:
                         discard_xmls.append(img_name)
                         break
         self.discard_xmls = discard_xmls
-
-
-
-
-
 
 
 class filter_xml:
@@ -322,7 +318,13 @@ def create_mtN_imageset(canteen, imgset, N: int):
             objects = parse_rec(os.path.join(anno_path, xf))
             for obj in objects:
                 # only reserve the !!! training sample whose count is larger than 10
-                if obj['name'] in get_categories(canteen+"_train_mt{}".format(N)):
+                if N != 0:
+                    match_categories = get_categories(
+                        canteen+"_train_mt{}".format(N))
+                else:
+                    match_categories = get_categories(canteen+"_train")
+
+                if obj['name'] in match_categories:
                     content.append(xf.split(".")[0] + '\n')
                     break
 
@@ -374,5 +376,6 @@ if __name__ == '__main__':
     # create_all_canteen_train_and_val_imageset()
     # for N in [10, 30, 50, 100]:
     #    create_all_canteen_mtN_train_and_val_imageset(N)
-    # create_inner_imagesets()
-    create_few_inner_for_train_val("YIH", 'innermt10', 10, 5)
+    create_inner_imagesets()
+    create_few_inner_for_train_val("YIH", 'innermt10', mtN=10, fewN=1)
+    create_mtN_imageset("exclYIH","val" ,0)

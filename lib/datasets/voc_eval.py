@@ -98,6 +98,17 @@ def cal_overlap(boxes_array, box):
     return ovmax
 
 
+def loc_cls_eval_for_image(all_boxes,
+                           annopath,
+                           imagesetfile,
+                           cls_idx,
+                           classname,
+                           cachedir,
+                           threshold,
+                           ovthresh):
+    pass
+
+
 def loc_cls_eval(all_boxes,
                  annopath,
                  imagesetfile,

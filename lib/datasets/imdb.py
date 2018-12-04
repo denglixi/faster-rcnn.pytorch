@@ -36,6 +36,16 @@ class imdb(object):
         self._roidb_handler = self.default_roidb
         # Use this dict for storing dataset specific config options
         self.config = {}
+        self._origin_img_len = 0
+        self._augmentations = []
+
+    @property
+    def origin_img_len(self):
+        return self._origin_img_len
+
+    @property
+    def augmentations(self):
+        return self._augmentations
 
     @property
     def name(self):
