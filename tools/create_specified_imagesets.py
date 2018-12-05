@@ -373,9 +373,10 @@ def create_all_canteen_mtN_train_and_val_imageset(N):
 
 
 if __name__ == '__main__':
-    # create_all_canteen_train_and_val_imageset()
-    # for N in [10, 30, 50, 100]:
-    #    create_all_canteen_mtN_train_and_val_imageset(N)
+    create_all_canteen_train_and_val_imageset()
+    for N in [10, 30, 50, 100]:
+       create_all_canteen_mtN_train_and_val_imageset(N)
     create_inner_imagesets()
     create_few_inner_for_train_val("YIH", 'innermt10', mtN=10, fewN=1)
     create_mtN_imageset("exclYIH","val" ,0)
+    create_few_inner_for_train_val("Arts", 'innermt10', mtN=10, fewN=1)

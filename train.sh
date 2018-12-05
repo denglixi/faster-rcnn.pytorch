@@ -1,15 +1,15 @@
 #!/bin/sh
 # GPU usage
-GPU_ID=1
+GPU_ID=0
 WORKER_NUMBER=5
 
 # basic set
-DATASET=foodexclArtsmt10
+DATASET=foodexclYIHmt10
 NET=foodres50 #{foodres50, res101, vgg16}
-SESSION=000
-FIXED_LAYER=0
+SESSION=4442
+FIXED_LAYER=4
 PRETRAIN=true
-WEIGHT_FILE=prefood #{ prefood, imagenet } only for res50
+WEIGHT_FILE=imagenet #{ prefood, imagenet } only for res50
 MAXEPOCHS=100
 SAVE_EPOCH=3
 

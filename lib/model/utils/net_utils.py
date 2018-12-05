@@ -70,7 +70,7 @@ def vis_detections(im, class_name, dets, thresh=0.8, color=(0, 204, 0)):
     return im
 
 
-def cv2ImgAddText(img, text, left, top, textColor=(0, 255, 0), textSize=50):
+def cv2ImgAddText(img, text, left, top, textColor=(0, 255, 0), textSize=90):
     if (isinstance(img, numpy.ndarray)):  # 判断是否OpenCV图片类型
         img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
     draw = ImageDraw.Draw(img)

@@ -296,6 +296,18 @@ if __name__ == '__main__':
         args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
                          'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
+    elif args.dataset == "foodexclArtsmt10_testArtsfew1":
+        args.imdb_name = "food_All_trainfew10mt10_All_train_mt10"
+        args.imdbval_name = "food_Arts_innerfew1mt10val_exclArts_train_mt10"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
+    elif args.dataset == "foodexclArtsmt10":
+        args.imdb_name = "food_All_trainfew10mt10_All_train_mt10"
+        args.imdbval_name = "food_exclArts_valmt10_exclArts_train_mt10"
+        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+
     args.cfg_file = "cfgs/{}_ls.yml".format(
         args.net) if args.large_scale else "cfgs/{}.yml".format(args.net)
 
@@ -447,9 +459,6 @@ if __name__ == '__main__':
             gt_boxes_cpu = gt_boxes.cpu().numpy()[0]
             gt_boxes_cpu[:, 0:4] /= float(im_info[0][2].cpu().numpy())
 
-            if args.save_for_vis:
-                save_vis_root_path = './savevis/{}_{}_{}/'.format(
-                    args.checksession, args.checkepoch, args.checkpoint)
 
                 # if vis or args.save_for_vis:
                 #    im = cv2.imread(imdb.image_path_at(i))
@@ -573,8 +582,8 @@ if __name__ == '__main__':
                 gt_boxes_cpu = gt_boxes.cpu().numpy()[0]
                 gt_boxes_cpu[:, 0:4] /= float(im_info[0][2].cpu().numpy())
 
-                save_vis_root_path = './savevis/{}_{}_{}/'.format(
-                    args.checksession, args.checkepoch, args.checkpoint)
+                save_vis_root_path = './savevis/{}/{}/{}_{}_{}/'.format(model_name, args.imdbval_name,
+                                                                        args.checksession, args.checkepoch, args.checkpoint)
 
                 # show ground-truth
                 for gt_b in gt_boxes_cpu:
@@ -675,7 +684,6 @@ if __name__ == '__main__':
         cls_ap_zip, dataset_map = imdb.evaluate_detections(
             all_boxes, output_dir)
         cls_ap = list(cls_ap_zip)
-
 
         # create save dir
         results_save_dir = "test_result/model_{}/val_{}/session_{}".format(

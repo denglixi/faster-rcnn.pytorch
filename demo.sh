@@ -10,7 +10,7 @@ CFG_FILE=./cfgs/demo.yml
 
 # load weight
 SESSION=444
-EPOCH=50
+EPOCH=35
 CHECKPOINT=14819
 
 
