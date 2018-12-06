@@ -24,7 +24,7 @@ from .imdb import imdb
 from .imdb import ROOT_DIR
 from . import ds_utils
 from .voc_eval import voc_eval
-from .voc_eval import loc_cls_eval
+from .voc_eval import loc_cls_eval, loc_cls_eval_for_image
 from .food_category import get_categories
 
 # TODO: make fast_rcnn irrelevant
@@ -382,6 +382,25 @@ class food_merge_imdb(imdb):
                     self._image_set, output_dir)
         print('Running:\n{}'.format(cmd))
         status = subprocess.call(cmd, shell=True)
+
+    def evaluate_cls_loc_for_image(self, all_boxes, threshold=0.5):
+
+        # gt of cls
+        annopath = os.path.join(
+            self._devkit_path,
+            'Food_' + self._cantee,
+            'Annotations',
+            '{:s}.xml')
+        imagesetfile = os.path.join(
+            self._devkit_path,
+            'Food_' + self._cantee,
+            'ImageSets',
+            self._image_set + '.txt')
+
+        cachedir = os.path.join(self._devkit_path, 'annotations_cache')
+
+        return loc_cls_eval_for_image(
+            all_boxes, annopath, imagesetfile, self._classes,  cachedir, threshold, 0.5)
 
     def evaluate_cls_loc(self, all_boxes, threshold=0.5):
 

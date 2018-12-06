@@ -459,15 +459,14 @@ if __name__ == '__main__':
             gt_boxes_cpu = gt_boxes.cpu().numpy()[0]
             gt_boxes_cpu[:, 0:4] /= float(im_info[0][2].cpu().numpy())
 
+            # if vis or args.save_for_vis:
+            #    im = cv2.imread(imdb.image_path_at(i))
+            #    im2show = np.copy(im)
 
-                # if vis or args.save_for_vis:
-                #    im = cv2.imread(imdb.image_path_at(i))
-                #    im2show = np.copy(im)
-
-                # show ground-truth
-                # for gt_b in gt_boxes_cpu:
-                #    im2show = vis_detections(
-                #        im2show, id2chn[imdb.classes[int(gt_b[-1])]], gt_b[np.newaxis, :], 0.1, (204, 0, 0))
+            # show ground-truth
+            # for gt_b in gt_boxes_cpu:
+            #    im2show = vis_detections(
+            #        im2show, id2chn[imdb.classes[int(gt_b[-1])]], gt_b[np.newaxis, :], 0.1, (204, 0, 0))
 
             det_tic = time.time()
             rois, cls_prob, bbox_pred, \
@@ -671,6 +670,14 @@ if __name__ == '__main__':
 
     #    end = time.time()
     #    print("test time: %0.4fs" % (end - start))
+
+    if False:
+        # test image level recall precision
+        threshold_for_img = 0.5
+        recall_imgs, accuracy_imgs = imdb.evaluate_cls_loc_for_image(
+            all_boxes, threshold_for_img)
+        print("recall = {}, accuracy = {} at threshold of {}".format(
+            recall_imgs, accuracy_imgs, threshold_for_img))
 
     test_cls_loc = True
     if test_cls_loc:

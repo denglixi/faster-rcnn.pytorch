@@ -250,6 +250,7 @@ def main():
     #get_statis(food_dataset_root, 'YIH', 'innerfew5mt10train', 'exclYIH_trainmt10')
     #get_statis(food_dataset_root, 'Arts', 'innerfew1mt10val', 'exclArts_trainmt10')
     get_statis(food_dataset_root, 'exclArts', 'trainmt10', 'Arts_inner')
+    get_statis(food_dataset_root, 'YIH', 'innerfew1mt10val', 'exclYIH_trainmt10')
 
 
 if __name__ == '__main__':

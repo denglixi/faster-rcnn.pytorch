@@ -4,7 +4,7 @@ GPU_ID=0
 WORKER_NUMBER=5
 
 # basic set
-DATASET=foodexclYIHmt10
+DATASET=foodexclUTownmt10
 NET=foodres50 #{foodres50, res101, vgg16}
 SESSION=4442
 FIXED_LAYER=4

@@ -180,6 +180,39 @@ class sampler(Sampler):
         return self.num_data
 
 
+def get_data2imdb_dict():
+    # create canttens
+    canteens = ["Arts", "Sciences", "YIH", "UTown", "TechChicken", "TechMixedVeg"]
+    excl_ct = ["excl"+x for x in canteens]
+    canteens += excl_ct
+
+    # basic setting
+    train_dataset = canteens
+    val_dataset = canteens
+    model_cts = canteens
+    ct_splits = ['train', 'trainmt10']
+
+    # create dict{ dataset -> imdb_name }
+    data2imdb_dict = {}
+
+    for mt in model_cts:
+        for mtN in [0, 10]:
+            if mtN == 0:
+                ct_sp = "train"
+            else:
+                ct_sp = "trainmt{}".format(mtN)
+
+            imdb_name = "food_{}_{}_{}_train_mt{}".format(mt, ct_sp, mt, mtN)
+            dataset = "food{}mt{}".format(mt, mtN)
+            data2imdb_dict[dataset] = imdb_name
+    return data2imdb_dict
+
+def set_imdb_name(args):
+    data2imdb_dict = get_data2imdb_dict()
+    args.imdb_name = data2imdb_dict[args.dataset]
+    return args
+
+
 if __name__ == '__main__':
 
     args = parse_args()
@@ -187,131 +220,46 @@ if __name__ == '__main__':
     print('Called with args:')
     print(args)
 
-    if args.dataset == "pascal_voc":
-        args.imdb_name = "voc_2007_trainval"
-        args.imdbval_name = "voc_2007_test"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-    elif args.dataset == "pascal_voc_0712":
-        args.imdb_name = "voc_2007_trainval+voc_2012_trainval"
-        args.imdbval_name = "voc_2007_test"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-    elif args.dataset == "coco":
-        args.imdb_name = "coco_2014_train+coco_2014_valminusminival"
-        args.imdbval_name = "coco_2014_minival"
-        args.set_cfgs = ['ANCHOR_SCALES', '[4, 8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '50']
-    elif args.dataset == "imagenet":
-        args.imdb_name = "imagenet_train"
-        args.imdbval_name = "imagenet_val"
-        args.set_cfgs = ['ANCHOR_SCALES', '[4, 8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '30']
-    elif args.dataset == "vg":
-        # train sizes: train, smalltrain, minitrain
-        # train scale: ['150-50-20', '150-50-50', '500-150-80', '750-250-150', '1750-700-450', '1600-400-20']
-        args.imdb_name = "vg_150-50-50_minitrain"
-        args.imdbval_name = "vg_150-50-50_minival"
-        args.set_cfgs = ['ANCHOR_SCALES', '[4, 8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '50']
-    elif args.dataset == "food":
-        args.imdb_name = "food_YIH_train"
-        args.imdbval_name = "food_YIH_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-    elif args.dataset == "foodtechmixed":
-        args.imdb_name = "food_Tech_train"
-        args.imdbval_name = "food_Tech_val"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-    elif args.dataset == "foodAll":
-        args.imdb_name = "food_All_train_All_train"
-        args.imdbval_name = "food_All_val_All_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-    elif args.dataset == "foodexclArts":
-        args.imdb_name = "food_exclArts_train_exclArts_train"
-        args.imdbval_name = "food_exclArts_val_exclArts_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+    #elif args.dataset == "foodAllmt50":
+    #    args.imdb_name = "food_All_trainmt50_All_train_mt50"
+    #    args.imdbval_name = "food_All_val_All_train"
+    #    args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+    #                     'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
-    elif args.dataset == "foodexclArtsmt10":
-        args.imdb_name = "food_exclArts_trainmt10_exclArts_train_mt10"
-        args.imdbval_name = "food_exclArts_val_exclArts_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+    #elif args.dataset == "foodAllmt100":
+    #    args.imdb_name = "food_All_trainmt100_All_train_mt100"
+    #    args.imdbval_name = "food_All_val_All_train"
+    #    args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+    #                     'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
-    elif args.dataset == "foodexclYIH":
-        args.imdb_name = "food_exclYIH_train_exclYIH_train"
-        args.imdbval_name = "food_exclYIH_val_exclYIH_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+    #elif args.dataset == "foodexclYIHmt10":
+    #    args.imdb_name = "food_exclYIH_trainmt10_exclYIH_train_mt10"
+    #    args.imdbval_name = "food_All_val_All_train"
+    #    args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+    #                     'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
-    elif args.dataset == "foodexclUTown":
-        args.imdb_name = "food_exclUTown_train_exclUTown_train"
-        args.imdbval_name = "food_exclUTown_val_exclUTown_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+    #elif args.dataset == "foodexclUTownmt10":
+    #    args.imdb_name = "food_exclUTown_trainmt10_exclUTown_train_mt10"
+    #    args.imdbval_name = "food_All_val_All_train"
+    #    args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+    #                     'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
-    elif args.dataset == "foodexclTechChicken":
-        args.imdb_name = "food_exclTechChicken_train_exclTechChicken_train"
-        args.imdbval_name = "food_exclTechChicken_val_exclTechChicken_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+    #elif args.dataset == "foodexclYIH_fineYIH":
+    #    args.imdb_name = "food_YIH_innerfew1mt10train_exclYIH_train_mt10"
+    #    args.imdbval_name = "food_All_val_All_train"
+    #    args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+    #                     'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
-    elif args.dataset == "foodexclTechMixedVeg":
-        args.imdb_name = "food_exclTechMixedVeg_train_exclTechMixedVeg_train"
-        args.imdbval_name = "food_exclTechMixedVeg_val_exclTechMixedVeg_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+    #elif args.dataset == "foodexclYIH_fineYIHfew5":
+    #    args.imdb_name = "food_YIH_innerfew5mt10train_exclYIH_train_mt10"
+    #    args.imdbval_name = "food_All_val_All_train"
+    #    args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+    #                     'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
-    elif args.dataset == "foodexclScience":
-        args.imdb_name = "food_exclScience_train_exclScience_train"
-        args.imdbval_name = "food_exclScience_val_exclScience_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+    args = set_imdb_name(args)
 
-    elif args.dataset == "foodAllmt10":
-        args.imdb_name = "food_All_trainmt10_All_train_mt10"
-        args.imdbval_name = "food_All_val_All_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    elif args.dataset == "foodAllmt50":
-        args.imdb_name = "food_All_trainmt50_All_train_mt50"
-        args.imdbval_name = "food_All_val_All_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    elif args.dataset == "foodAllmt100":
-        args.imdb_name = "food_All_trainmt100_All_train_mt100"
-        args.imdbval_name = "food_All_val_All_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    elif args.dataset == "foodexclYIHmt10":
-        args.imdb_name = "food_exclYIH_trainmt10_exclYIH_train_mt10"
-        args.imdbval_name = "food_All_val_All_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    elif args.dataset == "foodexclUTownmt10":
-        args.imdb_name = "food_exclUTown_trainmt10_exclUTown_train_mt10"
-        args.imdbval_name = "food_All_val_All_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    elif args.dataset == "foodexclYIH_fineYIH":
-        args.imdb_name = "food_YIH_innerfew1mt10train_exclYIH_train_mt10"
-        args.imdbval_name = "food_All_val_All_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    elif args.dataset == "foodexclYIH_fineYIHfew5":
-        args.imdb_name = "food_YIH_innerfew5mt10train_exclYIH_train_mt10"
-        args.imdbval_name = "food_All_val_All_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+    args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                     'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
     args.cfg_file = "cfgs/{}_ls.yml".format(
         args.net) if args.large_scale else "cfgs/{}.yml".format(args.net)

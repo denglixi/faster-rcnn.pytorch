@@ -101,12 +101,84 @@ def cal_overlap(boxes_array, box):
 def loc_cls_eval_for_image(all_boxes,
                            annopath,
                            imagesetfile,
-                           cls_idx,
-                           classname,
+                           classes,
                            cachedir,
                            threshold,
                            ovthresh):
-    pass
+
+    if not os.path.isdir(cachedir):
+        os.mkdir(cachedir)
+    cachefile = os.path.join(cachedir, '%s_annots.pkl' % imagesetfile)
+    # read list of images
+    with open(imagesetfile, 'r') as f:
+        lines = f.readlines()
+    imagenames = [x.strip() for x in lines]
+
+    if not os.path.isfile(cachefile):
+        # load annotations
+        recs = {}
+        for i, imagename in enumerate(imagenames):
+            recs[imagename] = parse_rec(annopath.format(imagename))
+            if i % 100 == 0:
+                print('Reading annotation for {:d}/{:d}'.format(
+                    i + 1, len(imagenames)))
+        # save
+        print('Saving cached annotations to {:s}'.format(cachefile))
+        with open(cachefile, 'wb') as f:
+            pickle.dump(recs, f)
+    else:
+        # load
+        with open(cachefile, 'rb') as f:
+            try:
+                recs = pickle.load(f)
+            except Exception:
+                recs = pickle.load(f, encoding='bytes')
+
+    #import pdb
+    # pdb.set_trace()
+
+    recall_all = []
+    accuracy_all = []
+    for img_idx, imagename in enumerate(imagenames):
+        img_gt_recs = recs[imagename]
+        npos_img = len(img_gt_recs)
+        if npos_img == 0:
+            continue
+        TP = 0
+        FP = 0
+        img_all_boxes = [b[img_idx] for b in all_boxes]
+        for cls_idx, det_boxes in enumerate(img_all_boxes):
+            if len(det_boxes) > 0:
+                cls_name = classes[cls_idx]
+                R = [obj for obj in recs[imagename] if obj['name'] == cls_name]
+                bbox = np.array([x['bbox'] for x in R])
+                for det_box in det_boxes:
+                    # filter the det box by score
+                    if det_box[4] > threshold:
+                        det_box = np.array(det_box)
+                    else:
+                        continue
+
+                    #
+                    if len(bbox) > 0:
+                        if cal_overlap(bbox, det_box) > ovthresh:
+                            TP += 1
+                        else:
+                            FP += 1
+                    else:
+                        FP += 1
+
+        recall = TP / np.float32(npos_img)
+        if TP + FP == 0:
+            accuracy =  0
+        else:
+            accuracy = TP / np.float32(TP+FP)
+
+        recall_all.append(recall)
+        accuracy_all.append(accuracy)
+
+    # use np to return nan while the npos is zero
+    return np.mean(recall_all), np.mean(accuracy_all)
 
 
 def loc_cls_eval(all_boxes,
