@@ -28,8 +28,12 @@ def prepare_roidb(imdb):
         roidb[i]['img_id'] = imdb.image_id_at(i)
         roidb[i]['image'] = imdb.image_path_at(i)
         if not (imdb.name.startswith('coco')):
-            roidb[i]['width'] = sizes[i][0]
-            roidb[i]['height'] = sizes[i][1]
+            if roidb[i]['rotated'] in [90, 270]:
+                roidb[i]['width'] = sizes[i][1]
+                roidb[i]['height'] = sizes[i][0]
+            else:
+                roidb[i]['width'] = sizes[i][0]
+                roidb[i]['height'] = sizes[i][1]
         # need gt_overlaps as a dense array for argmax
         gt_overlaps = roidb[i]['gt_overlaps'].toarray()
         # max overlap with gt over classes (columns)
@@ -99,6 +103,16 @@ def combined_roidb(imdb_names, training=True):
             print('Appending horizontally-flipped training examples...')
             imdb.append_flipped_images()
             print('done')
+
+            for anchor in [90, 180, 270]:
+                print('Appending anchor {} training examples...'.format(anchor))
+                imdb.append_rotated_images(anchor)
+                print('done')
+
+            for anchor in [90, 180, 270]:
+                print('Appending flipped anchor {} training examples...'.format(anchor))
+                imdb.append_rotated_images(anchor, flipped=True)
+                print('done')
 
         print('Preparing training data...')
 

@@ -371,17 +371,20 @@ def create_all_canteen_mtN_train_and_val_imageset(N):
         for imgset in ['train', 'val']:
             create_mtN_imageset(ct, imgset, N)
 
+
 def create_all_few_inner():
     canteens = ['Arts', 'Science', 'TechMixedVeg',
-               'TechChicken', 'UTown', 'YIH']
+                'TechChicken', 'UTown', 'YIH']
     for ct in canteens:
         for mtN in [10]:
             for fewN in [1, 5]:
-                create_few_inner_for_train_val(ct, 'innermt{}'.format(mtN), mtN, fewN)
+                create_few_inner_for_train_val(
+                    ct, 'innermt{}'.format(mtN), mtN, fewN)
+
 
 if __name__ == '__main__':
-    #create_all_canteen_train_and_val_imageset()
-    #for N in [ 10, 30, 50, 100]:
+    # create_all_canteen_train_and_val_imageset()
+    # for N in [ 10, 30, 50, 100]:
     #   create_all_canteen_mtN_train_and_val_imageset(N)
-    #create_inner_imagesets()
+    # create_inner_imagesets()
     create_all_few_inner()

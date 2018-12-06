@@ -17,14 +17,15 @@ Test=
 
 #DATASET=foodAllmt10
 
-DATASET=foodexclArtsmt10_testArtsfew1
+#DATASET=foodexclArtsmt10_testArtsfew1
+DATASET=foodexclUTownmt10_testUTownfew1
 
 NET=foodres50 #{foodres50, res101, vgg16}
 # load weight
 SESSION=4442
-EPOCH=59
-# YIH 11545 #UTown 11105 #All 14819 #arts 13349
-CHECKPOINT=13349
+EPOCH=38
+# YIH 11545 #UTown 11407 #All 14819 #arts 13349
+CHECKPOINT=11407
 
 # whether visulazation the results during testing
 IS_VIS=false

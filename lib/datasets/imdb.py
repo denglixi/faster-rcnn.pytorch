@@ -37,6 +37,8 @@ class imdb(object):
         # Use this dict for storing dataset specific config options
         self.config = {}
         self._origin_img_len = 0
+        self._origin_widths = None
+        self._origin_heights = None
         self._augmentations = []
 
     @property
@@ -82,6 +84,7 @@ class imdb(object):
         #   gt_overlaps
         #   gt_classes
         #   flipped
+        #   rotate
         if self._roidb is not None:
             return self._roidb
         self._roidb = self.roidb_handler()
@@ -119,15 +122,19 @@ class imdb(object):
         raise NotImplementedError
 
     def _get_widths(self):
-        return [PIL.Image.open(self.image_path_at(i)).size[0]
-                for i in range(self.num_images)]
+        if self._origin_widths is None:
+            self._origin_widths = [PIL.Image.open(self.image_path_at(i)).size[0]
+                                   for i in range(self.num_images)]
+        return self._origin_widths
 
     def _get_heights(self):
-        return [PIL.Image.open(self.image_path_at(i)).size[1]
-                for i in range(self.num_images)]
+        if self._origin_heights is None:
+            self._origin_heights = [PIL.Image.open(self.image_path_at(i)).size[1]
+                                    for i in range(self.num_images)]
+        return self._origin_heights
 
     def append_flipped_images(self):
-        num_images = self.num_images
+        num_images = self.origin_img_len
         widths = self._get_widths()
         for i in range(num_images):
             boxes = self.roidb[i]['boxes'].copy()
@@ -139,26 +146,68 @@ class imdb(object):
             entry = {'boxes': boxes,
                      'gt_overlaps': self.roidb[i]['gt_overlaps'],
                      'gt_classes': self.roidb[i]['gt_classes'],
-                     'flipped': True}
+                     'flipped': True,
+                     'rotated': 0}
             self.roidb.append(entry)
-        self._image_index = self._image_index * 2
+        self._image_index += self._image_index[:num_images]
+        self._augmentations.append("flipped")
 
-    def append_rotate_image(self, anchor: int):
+    def append_rotated_images(self, anchor: int, flipped=False):
         """append_rotate_image
+        append rotated annotations from the origin gt rois
 
         :param anchor: only support 90, 180, 270 degree, clockwised
         :type anchor: int
         """
-        num_images = self.num_images
+        num_images = self.origin_img_len
+        # TODO width and heights may lead errors
         widths = self._get_widths()
         heights = self._get_heights()
 
-        for i in range(num_images):
+        if flipped:
+            base = (self._augmentations.index("flipped") + 1) * num_images
+        else:
+            base = 0
+
+        for i in range(base, base+num_images):
             boxes = self.roidb[i]['boxes'].copy()
             oldx1 = boxes[:, 0].copy()
             oldy1 = boxes[:, 1].copy()
             oldx2 = boxes[:, 2].copy()
             oldy2 = boxes[:, 3].copy()
+
+            size_i = i - num_images
+            if anchor == 90:
+                boxes[:, 0] = oldy1
+                boxes[:, 1] = widths[size_i] - oldx2
+                boxes[:, 2] = oldy2
+                boxes[:, 3] = widths[size_i] - oldx1
+            elif anchor == 180:
+                boxes[:, 0] = widths[size_i] - oldx2
+                boxes[:, 1] = heights[size_i] - oldy2
+                boxes[:, 2] = widths[size_i] - oldx1
+                boxes[:, 3] = heights[size_i] - oldy1
+            elif anchor == 270:
+                boxes[:, 0] = heights[size_i] - oldy2
+                boxes[:, 1] = oldx1
+                boxes[:, 2] = heights[size_i] - oldy1
+                boxes[:, 3] = oldx2
+
+            assert (boxes[:, 2] >= boxes[:, 0]).all()
+            assert (boxes[:, 3] >= boxes[:, 1]).all()
+            entry = {'boxes': boxes,
+                     'gt_overlaps': self.roidb[i]['gt_overlaps'],
+                     'gt_classes': self.roidb[i]['gt_classes'],
+                     'flipped': flipped,
+                     'rotated': anchor}
+            self.roidb.append(entry)
+
+        self._image_index += self._image_index[:num_images]
+
+        if flipped:
+            self._augmentations.append("flippedrotated{}".format(anchor))
+        else:
+            self._augmentations.append("rotated{}".format(anchor))
 
     def evaluate_recall(self, candidate_boxes=None, thresholds=None,
                         area='all', limit=None):
@@ -277,6 +326,7 @@ class imdb(object):
                 'gt_classes': np.zeros((num_boxes,), dtype=np.int32),
                 'gt_overlaps': overlaps,
                 'flipped': False,
+                'rotated': 0,
                 'seg_areas': np.zeros((num_boxes,), dtype=np.float32),
             })
         return roidb

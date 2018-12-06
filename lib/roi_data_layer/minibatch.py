@@ -13,6 +13,7 @@ from __future__ import print_function
 import numpy as np
 import numpy.random as npr
 from scipy.misc import imread
+from scipy import ndimage
 from model.utils.config import cfg
 from model.utils.blob import prep_im_for_blob, im_list_to_blob
 import pdb
@@ -58,6 +59,25 @@ def get_minibatch(roidb, num_classes):
     return blobs
 
 
+def process_image_by_aug(im, flipped, rotated_angle):
+    """process_image_by_aug
+
+    :param im:
+    :param rotated_angle: the clockwised angle at which image should be rotated
+    :param flipped: is image should be flipped
+    """
+
+    if flipped:
+        im = im[:, ::-1, :]
+    if rotated_angle == 90:
+        im = np.rot90(im, 3)
+    elif rotated_angle == 180:
+        im = np.rot90(im, 2)
+    elif rotated_angle == 270:
+        im = np.rot90(im)
+    return im
+
+
 def _get_image_blob(roidb, scale_inds):
     """Builds an input blob from the images in the roidb at the specified
     scales.
@@ -77,8 +97,8 @@ def _get_image_blob(roidb, scale_inds):
         # rgb -> bgr
         # im = im[:, :, ::-1]
 
-        if roidb[i]['flipped']:
-            im = im[:, ::-1, :]
+        im = process_image_by_aug(im, roidb[i]['flipped'], roidb[i]['rotated'])
+
         target_size = cfg.TRAIN.SCALES[scale_inds[i]]
         im, im_scale = prep_im_for_blob(im, cfg.PIXEL_MEANS, target_size,
                                         cfg.TRAIN.MAX_SIZE)

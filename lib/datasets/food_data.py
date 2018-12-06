@@ -285,6 +285,7 @@ class food_merge_imdb(imdb):
                 'gt_ishard': ishards,
                 'gt_overlaps': overlaps,
                 'flipped': False,
+                'rotated': 0,
                 'seg_areas': seg_areas}
 
     def _get_comp_id(self):

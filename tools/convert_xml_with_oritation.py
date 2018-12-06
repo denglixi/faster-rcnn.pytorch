@@ -38,6 +38,8 @@ def rotate_bbox(im_shape, bbox, exif_flag):
     if exif_flag == 0 or exif_flag == 1:
         return bbox
     # 8 is clockwise 90 degree
+    # 3 is 180
+    # 6 is 270
     if exif_flag == 6:
         x1 = y - bbox[3]
         y1 = bbox[0]
