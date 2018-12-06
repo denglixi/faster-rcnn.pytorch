@@ -182,20 +182,15 @@ class sampler(Sampler):
 
 def get_data2imdb_dict():
     # create canttens
-    canteens = ["Arts", "Sciences", "YIH", "UTown", "TechChicken", "TechMixedVeg"]
-    excl_ct = ["excl"+x for x in canteens]
-    canteens += excl_ct
-
-    # basic setting
-    train_dataset = canteens
-    val_dataset = canteens
-    model_cts = canteens
-    ct_splits = ['train', 'trainmt10']
+    collected_cts = ["Arts", "Sciences", "YIH",
+                     "UTown", "TechChicken", "TechMixedVeg"]
+    excl_cts = ["excl"+x for x in collected_cts]
+    all_canteens = collected_cts + excl_cts + ['All']
 
     # create dict{ dataset -> imdb_name }
     data2imdb_dict = {}
 
-    for mt in model_cts:
+    for mt in all_canteens:
         for mtN in [0, 10]:
             if mtN == 0:
                 ct_sp = "train"

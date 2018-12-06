@@ -100,6 +100,63 @@ lr = cfg.TRAIN.LEARNING_RATE
 momentum = cfg.TRAIN.MOMENTUM
 weight_decay = cfg.TRAIN.WEIGHT_DECAY
 
+
+def get_data2imdbval_dict():
+    # create canttens
+    collected_cts = ["Arts", "Sciences", "YIH",
+                     "UTown", "TechChicken", "TechMixedVeg"]
+    excl_cts = ["excl"+x for x in collected_cts]
+    all_canteens = collected_cts + excl_cts + ['All']
+
+    # basic setting
+
+    # create dict{ dataset -> imdb_name }
+    # 1. create dataset -> dataset_val
+    data2imdbval_dict = {}
+
+    for ct in all_canteens:
+        for mtN in [0, 10]:
+            if mtN == 0:
+                ct_sp = "val"
+            else:
+                ct_sp = "valmt{}".format(mtN)
+
+            # datasets here only support mtN format
+            dataset = "food{}mt{}".format(ct, mtN)
+            imdbval_name = "food_{}_{}_{}_train_mt{}".format(
+                ct, ct_sp, ct, mtN)
+            data2imdbval_dict[dataset] = imdbval_name
+
+    # 2. create excl_dataset -> dataset
+    for ct in collected_cts:
+        for mtN in [0, 10]:
+            for fewN in [0, 1, 5]:
+                if mtN == 0:
+                    mtN_str = ""
+                else:
+                    mtN_str = "mt{}".format(mtN)
+
+                if fewN == 0:
+                    fewN_str = ""
+                else:
+                    fewN_str = "few{}".format(fewN)
+
+                # datasets here only support mtN format
+                dataset = "foodexcl{}{}_test{}{}".format(
+                    ct, mtN_str, ct,  fewN_str)
+                imdbval_name = "food_{}_inner{}{}val_excl{}_train_mt{}".format(
+                    ct, fewN_str, mtN_str, ct, mtN)
+                data2imdbval_dict[dataset] = imdbval_name
+
+    return data2imdbval_dict
+
+
+def set_imdbval_name(args):
+    data2imdbval_dict = get_data2imdbval_dict()
+    args.imdbval_name = data2imdbval_dict[args.dataset]
+    return args
+
+
 if __name__ == '__main__':
 
     args = parse_args()
@@ -111,203 +168,11 @@ if __name__ == '__main__':
         print("WARNING: You have a CUDA device, so you should probably run with --cuda")
 
     np.random.seed(cfg.RNG_SEED)
-    if args.dataset == "pascal_voc":
-        args.imdb_name = "voc_2007_trainval"
-        args.imdbval_name = "voc_2007_test"
-        args.set_cfgs = ['ANCHOR_SCALES',
-                         '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]']
-    elif args.dataset == "pascal_voc_0712":
-        args.imdb_name = "voc_2007_trainval+voc_2012_trainval"
-        args.imdbval_name = "voc_2007_test"
-        args.set_cfgs = ['ANCHOR_SCALES',
-                         '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]']
-    elif args.dataset == "coco":
-        args.imdb_name = "coco_2014_train+coco_2014_valminusminival"
-        args.imdbval_name = "coco_2014_minival"
-        args.set_cfgs = ['ANCHOR_SCALES',
-                         '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]']
-    elif args.dataset == "imagenet":
-        args.imdb_name = "imagenet_train"
-        args.imdbval_name = "imagenet_val"
-        args.set_cfgs = ['ANCHOR_SCALES',
-                         '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]']
-    elif args.dataset == "vg":
-        args.imdb_name = "vg_150-50-50_minitrain"
-        args.imdbval_name = "vg_150-50-50_minival"
-        args.set_cfgs = ['ANCHOR_SCALES',
-                         '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]']
-    elif args.dataset == "food":
-        args.imdb_name = "food_YIH_train"
-        args.imdbval_name = "food_YIH_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-    elif args.dataset == "foodtechmixed":
-        args.imdb_name = "food_Tech_train"
-        args.imdbval_name = "food_YIH_occur_in_tech"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-    elif args.dataset == "foodAll":
-        args.imdb_name = "food_All_train_All_train"
-        args.imdbval_name = "food_All_val_All_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-    elif args.dataset == "foodexclArts":
-        args.imdb_name = "food_exclArts_train_exclArts_train"
-        args.imdbval_name = "food_exclArts_val_exclArts_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
-    elif args.dataset == "foodexclYIH":
-        args.imdb_name = "food_exclYIH_train_exclYIH_train"
-        args.imdbval_name = "food_exclYIH_valmt0_exclYIH_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
+    args = set_imdbval_name(args)
 
-    elif args.dataset == "foodexclUTown":
-        args.imdb_name = "food_exclUTown_train_exclUTown_train"
-        args.imdbval_name = "food_exclUTown_val_exclUTown_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    elif args.dataset == "foodexclTechChicken":
-        args.imdb_name = "food_exclTechChicken_train_exclTechChicken_train"
-        args.imdbval_name = "food_exclTechChicken_val_exclTechChicken_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    elif args.dataset == "foodexclTechMixedVeg":
-        args.imdb_name = "food_exclTechMixedVeg_train_exclTechMixedVeg_train"
-        args.imdbval_name = "food_exclTechMixedVeg_val_exclTechMixedVeg_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    elif args.dataset == "foodexclScience":
-        args.imdb_name = "food_exclScience_train_exclScience_train"
-        args.imdbval_name = "food_exclScience_val_exclScience_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-    elif args.dataset == "foodexclArts_testArts":
-        args.imdb_name = "food_exclArts_train_exclArts_train"
-        args.imdbval_name = "food_Arts_inner_exclArts_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    elif args.dataset == "foodexclYIH_testYIH":
-        args.imdb_name = "food_exclYIH_train_exclYIH_train"
-        args.imdbval_name = "food_YIH_inner_exclYIH_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    elif args.dataset == "foodexclYIH_testYIHmt10":
-        args.imdb_name = "food_exclYIH_train_exclYIH_train"
-        args.imdbval_name = "food_YIH_innermt10_exclYIH_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    elif args.dataset == "foodexclUTown_testUTown":
-        args.imdb_name = "food_exclUTown_train_exclUTown_train"
-        args.imdbval_name = "food_UTown_inner_exclUTown_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    elif args.dataset == "foodexclTechChicken_testTechChicken":
-        args.imdb_name = "food_exclTechChicken_train_exclTechChicken_train"
-        args.imdbval_name = "food_TechChicken_inner_exclTechChicken_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    elif args.dataset == "foodexclTechMixedVeg_testTechMixedVeg":
-        args.imdb_name = "food_exclTechMixedVeg_train_exclTechMixedVeg_train"
-        args.imdbval_name = "food_TechMixedVeg_inner_exclTechMixedVeg_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    elif args.dataset == "foodexclScience_testScience":
-        args.imdb_name = "food_exclScience_train_exclScience_train"
-        args.imdbval_name = "food_Science_inner_exclScience_train"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    elif args.dataset == "foodAllmt10":
-        args.imdb_name = "food_All_trainmt10_All_train_mt10"
-        args.imdbval_name = "food_All_valmt10_All_train_mt10"
-        args.train_cls = "All_train_mt10"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    elif args.dataset == "foodAllmt100":
-        args.imdb_name = "food_All_trainmt10_All_train_mt10"
-        args.imdbval_name = "food_All_valmt10_All_train_mt100"
-        args.train_cls = "All_train_mt100"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    elif args.dataset == "foodAllmt50":
-        args.imdb_name = "food_All_trainmt10_All_train_mt10"
-        args.imdbval_name = "food_All_valmt10_All_train_mt50"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    elif args.dataset == "foodexclYIHmt10":
-        args.imdb_name = "food_All_trainmt10_All_train_mt10"
-        args.imdbval_name = "food_exclYIH_valmt10_exclYIH_train_mt10"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    elif args.dataset == "foodexclYIHmt10_testYIH":
-        args.imdb_name = "food_All_trainmt10_All_train_mt10"
-        args.imdbval_name = "food_YIH_innermt10_exclYIH_train_mt10"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    elif args.dataset == "foodexclUTownmt10_testUTown":
-        args.imdb_name = "food_All_trainmt10_All_train_mt10"
-        args.imdbval_name = "food_UTown_innermt10_exclUTown_train_mt10"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    elif args.dataset == "foodexclUTownmt10":
-        args.imdb_name = "food_All_trainmt10_All_train_mt10"
-        args.imdbval_name = "food_exclUTown_val_exclUTown_train_mt10"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    elif args.dataset == "foodexclYIHmt10_testYIHfew1":
-        args.imdb_name = "food_All_trainfew10mt10_All_train_mt10"
-        args.imdbval_name = "food_YIH_innerfew1mt10val_exclYIH_train_mt10"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    elif args.dataset == "foodexclYIH_fineYIH_testYIHfew1":
-        args.imdb_name = "food_All_trainfew10mt10_All_train_mt10"
-        args.imdbval_name = "food_YIH_innerfew1mt10val_exclYIH_train_mt10"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    elif args.dataset == "foodexclYIH_fineYIHfew5_testYIHfew5":
-        args.imdb_name = "food_All_trainfew10mt10_All_train_mt10"
-        args.imdbval_name = "food_YIH_innerfew5mt10val_exclYIH_train_mt10"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    elif args.dataset == "foodexclYIH_testYIHfew1":
-        args.imdb_name = "food_All_trainfew10mt10_All_train_mt10"
-        args.imdbval_name = "food_YIH_innerfew1mt10val_exclYIH_train_mt10"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    elif args.dataset == "foodexclArtsmt10_testArtsfew1":
-        args.imdb_name = "food_All_trainfew10mt10_All_train_mt10"
-        args.imdbval_name = "food_Arts_innerfew1mt10val_exclArts_train_mt10"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    elif args.dataset == "foodexclArtsmt10":
-        args.imdb_name = "food_All_trainfew10mt10_All_train_mt10"
-        args.imdbval_name = "food_exclArts_valmt10_exclArts_train_mt10"
-        args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-                         'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
+    args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
+                     'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
     args.cfg_file = "cfgs/{}_ls.yml".format(
         args.net) if args.large_scale else "cfgs/{}.yml".format(args.net)
 
@@ -624,52 +489,6 @@ if __name__ == '__main__':
 
     print('Evaluating detections')
 
-    # save_map_result(imdb, all_boxes, output_dir, args):
-    #test_map_results = True
-    # if test_map_results:
-    #    cls_ap_zip, dataset_map = imdb.evaluate_detections(
-    #        all_boxes, output_dir)
-    #    # results_filename = args.imdbval_name + \
-    #    #    time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-    #    results_filename = args.imdbval_name + "_session" + \
-    #        str(args.checksession) + "_epoch" + str(args.checkepoch)
-    #    results_save_dir = "test_result/"
-    #    if not os.path.exists(results_save_dir):
-    #        os.makedirs(results_save_dir)
-
-    #    # filter results
-    #    # train_cls = get_categories(args.train_cls)
-    #    val_names = args.imdbval_name.split("_")
-    #    val_canteen = val_names[1]  # YIH
-    #    val_split = val_names[2]  # valmt10 -> val_mt10
-    #    if 'inner' in val_split:
-    #        val_categories = get_categories(val_canteen+"_"+"inner")
-    #    else:
-    #        val_categories, val_ap = zip(*cls_ap_zip)
-    #        cls_ap_zip = zip(val_categories, val_ap)
-
-    #    # f.write(str(dataset_map) + '\n')
-
-    #    map_exist_cls = []
-    #    with open(os.path.join(results_save_dir, results_filename), 'w') as f:
-    #        for cls, ap in cls_ap_zip:
-    #            if str(cls) in val_categories:
-    #                if np.isnan(ap):
-    #                    f.write(str(cls) + '\n')
-    #                else:
-    #                    f.write(str(cls) + '\t' + str(ap) + '\n')
-    #                    map_exist_cls.append(ap)
-    #        map_exist_cls = sum(map_exist_cls) / len(map_exist_cls)
-    #        print("exist cls map:{}".format(map_exist_cls))
-
-    #    with open(os.path.join(results_save_dir, results_filename), 'r+') as f:
-    #        old = f.read()
-    #        f.seek(0)
-    #        f.write('{}\t'.format('MAP') + str(map_exist_cls) + '\n')
-    #        f.write(old)
-
-    #    end = time.time()
-    #    print("test time: %0.4fs" % (end - start))
 
     if False:
         # test image level recall precision
@@ -734,7 +553,7 @@ if __name__ == '__main__':
                             f.write(str(cls) + '\t' + str(ap) + '\n')
                             map_exist_cls.append(ap)
                 map_exist_cls = sum(map_exist_cls) / len(map_exist_cls)
-                print("exist {} map:{}".format(metrics, map_exist_cls))
+                print("exist {} :{}".format(metrics, map_exist_cls))
             with open(os.path.join(results_save_dir, results_filename), 'r+') as f:
                 old = f.read()
                 f.seek(0)
