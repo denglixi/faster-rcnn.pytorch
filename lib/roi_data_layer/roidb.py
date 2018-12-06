@@ -21,19 +21,21 @@ def prepare_roidb(imdb):
 
     roidb = imdb.roidb
     if not (imdb.name.startswith('coco')):
-        sizes = [PIL.Image.open(imdb.image_path_at(i)).size
-                 for i in range(imdb.num_images)]
+        #sizes = [PIL.Image.open(imdb.image_path_at(i)).size
+        #         for i in range(imdb.num_images)]
+        widths = imdb._get_widths() * int(imdb.num_images / imdb.origin_img_len)
+        heights = imdb._get_heights() * int(imdb.num_images / imdb.origin_img_len)
 
     for i in range(len(imdb.image_index)):
         roidb[i]['img_id'] = imdb.image_id_at(i)
         roidb[i]['image'] = imdb.image_path_at(i)
         if not (imdb.name.startswith('coco')):
             if roidb[i]['rotated'] in [90, 270]:
-                roidb[i]['width'] = sizes[i][1]
-                roidb[i]['height'] = sizes[i][0]
+                roidb[i]['width'] = heights[i]  # sizes[i][1]
+                roidb[i]['height'] = widths[i]  # sizes[i][0]
             else:
-                roidb[i]['width'] = sizes[i][0]
-                roidb[i]['height'] = sizes[i][1]
+                roidb[i]['width'] = widths[i]  # sizes[i][0]
+                roidb[i]['height'] = heights[i]  # sizes[i][1]
         # need gt_overlaps as a dense array for argmax
         gt_overlaps = roidb[i]['gt_overlaps'].toarray()
         # max overlap with gt over classes (columns)

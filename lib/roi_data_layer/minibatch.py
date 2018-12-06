@@ -31,7 +31,8 @@ def get_minibatch(roidb, num_classes):
         format(num_images, cfg.TRAIN.BATCH_SIZE)
 
     # Get the input image blob, formatted for caffe
-    im_blob, im_scales = _get_image_blob(roidb, random_scale_inds)
+    im_blob, im_scales, flipped, rotated = _get_image_blob(
+        roidb, random_scale_inds)
 
     blobs = {'data': im_blob}
 
@@ -55,6 +56,8 @@ def get_minibatch(roidb, num_classes):
         dtype=np.float32)
 
     blobs['img_id'] = roidb[0]['img_id']
+    blobs['flipped'] = flipped
+    blobs['rotated'] = rotated
 
     return blobs
 
@@ -70,11 +73,11 @@ def process_image_by_aug(im, flipped, rotated_angle):
     if flipped:
         im = im[:, ::-1, :]
     if rotated_angle == 90:
-        im = np.rot90(im, 3)
+        im = np.rot90(im )
     elif rotated_angle == 180:
         im = np.rot90(im, 2)
     elif rotated_angle == 270:
-        im = np.rot90(im)
+        im = np.rot90(im, 3)
     return im
 
 
@@ -108,4 +111,4 @@ def _get_image_blob(roidb, scale_inds):
     # Create a blob to hold the input images
     blob = im_list_to_blob(processed_ims)
 
-    return blob, im_scales
+    return blob, im_scales, roidb[i]['flipped'], roidb[i]['rotated']

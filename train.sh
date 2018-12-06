@@ -1,7 +1,7 @@
 #!/bin/sh
 # GPU usage
-GPU_ID=1
-WORKER_NUMBER=31
+GPU_ID=0
+WORKER_NUMBER=5
 
 # basic set
 DATASET=foodAllmt10
@@ -10,7 +10,7 @@ SESSION=44
 FIXED_LAYER=4
 PRETRAIN=true
 WEIGHT_FILE=prefood #{ prefood, imagenet } only for res50
-MAXEPOCHS=100
+MAXEPOCHS=40
 SAVE_EPOCH=1
 
 # optimizer setting

@@ -34,6 +34,9 @@ from model.faster_rcnn.vgg16 import vgg16
 from model.faster_rcnn.resnet import resnet
 from model.faster_rcnn.prefood_res50 import PreResNet50
 
+from model.utils.net_utils import vis_detections
+from datasets.id2name import id2chn, id2eng
+
 
 def parse_args():
     """
@@ -202,6 +205,7 @@ def get_data2imdb_dict():
             data2imdb_dict[dataset] = imdb_name
     return data2imdb_dict
 
+
 def set_imdb_name(args):
     data2imdb_dict = get_data2imdb_dict()
     args.imdb_name = data2imdb_dict[args.dataset]
@@ -215,37 +219,37 @@ if __name__ == '__main__':
     print('Called with args:')
     print(args)
 
-    #elif args.dataset == "foodAllmt50":
+    # elif args.dataset == "foodAllmt50":
     #    args.imdb_name = "food_All_trainmt50_All_train_mt50"
     #    args.imdbval_name = "food_All_val_All_train"
     #    args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
     #                     'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
-    #elif args.dataset == "foodAllmt100":
+    # elif args.dataset == "foodAllmt100":
     #    args.imdb_name = "food_All_trainmt100_All_train_mt100"
     #    args.imdbval_name = "food_All_val_All_train"
     #    args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
     #                     'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
-    #elif args.dataset == "foodexclYIHmt10":
+    # elif args.dataset == "foodexclYIHmt10":
     #    args.imdb_name = "food_exclYIH_trainmt10_exclYIH_train_mt10"
     #    args.imdbval_name = "food_All_val_All_train"
     #    args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
     #                     'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
-    #elif args.dataset == "foodexclUTownmt10":
+    # elif args.dataset == "foodexclUTownmt10":
     #    args.imdb_name = "food_exclUTown_trainmt10_exclUTown_train_mt10"
     #    args.imdbval_name = "food_All_val_All_train"
     #    args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
     #                     'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
-    #elif args.dataset == "foodexclYIH_fineYIH":
+    # elif args.dataset == "foodexclYIH_fineYIH":
     #    args.imdb_name = "food_YIH_innerfew1mt10train_exclYIH_train_mt10"
     #    args.imdbval_name = "food_All_val_All_train"
     #    args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
     #                     'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
-    #elif args.dataset == "foodexclYIH_fineYIHfew5":
+    # elif args.dataset == "foodexclYIH_fineYIHfew5":
     #    args.imdb_name = "food_YIH_innerfew5mt10train_exclYIH_train_mt10"
     #    args.imdbval_name = "food_All_val_All_train"
     #    args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
@@ -405,12 +409,41 @@ if __name__ == '__main__':
             lr *= args.lr_decay_gamma
 
         data_iter = iter(dataloader)
+
+        #from collections import defaultdict
+        vis_dict = {}
+        for fli in [0, 1]:
+            for angle in [0, 90, 180, 270]:
+                vis_dict[fli+angle] = 0
+
+
         for step in range(iters_per_epoch):
             data = next(data_iter)
             im_data.data.resize_(data[0].size()).copy_(data[0])
             im_info.data.resize_(data[1].size()).copy_(data[1])
             gt_boxes.data.resize_(data[2].size()).copy_(data[2])
             num_boxes.data.resize_(data[3].size()).copy_(data[3])
+
+            # visual test for rotated
+            #flipped = data[4].numpy()[0]
+            #rotated = data[5].numpy()[0]
+
+            # if vis_dict[flipped+rotated] == 0:
+            #    gt_boxes_cpu = gt_boxes.cpu().numpy()[0]
+            #    #gt_boxes_cpu[:, 0:4] /= float(im_info[0][2].cpu().numpy())
+
+            #    im2show = np.transpose(im_data.cpu().numpy()[
+            #                           0], (1, 2, 0)).astype(np.uint8)
+            #    #im2show = im2show[:, :, ::-1]
+            #    im2show = im2show.copy()
+            #    for gt_b in gt_boxes_cpu[np.where(gt_boxes_cpu[:,4]>0)]:
+            #        im2show = vis_detections(
+            #            im2show, id2chn[imdb.classes[int(gt_b[-1])]], gt_b[np.newaxis, :], 0.1, (204, 0, 0))
+            #    cv2.imshow("flipped{}_rotated{}".format(flipped, rotated), im2show)
+            #    cv2.waitKey()
+            #    vis_dict[flipped+rotated] = 1
+            # else:
+            #    continue
 
             fasterRCNN.zero_grad()
             rois, cls_prob, bbox_pred, \
