@@ -1,10 +1,10 @@
 #!/bin/sh
 # GPU usage
-GPU_ID=1
+GPU_ID=0
 WORKER_NUMBER=10
 
 # basic set
-DATASET=foodAllmt10
+DATASET=foodexclArtsmt10
 NET=foodres50 #{foodres50, res101, vgg16}
 SESSION=44
 FIXED_LAYER=4
@@ -26,8 +26,8 @@ RESUME=1 # null is for false
 RESUME_OPT=1 # null for false
 RESUME_SESS_EPOCH=1 #null for false
 CHECKSESSION=44
-CHECKEPOCH=3
-CHECKPOINT=59280
+CHECKEPOCH=5
+CHECKPOINT=53399
 
 
 # writing the experiment detail to file
