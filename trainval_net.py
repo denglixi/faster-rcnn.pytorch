@@ -193,16 +193,28 @@ def get_data2imdb_dict():
     # create dict{ dataset -> imdb_name }
     data2imdb_dict = {}
 
-    for mt in all_canteens:
+    # 1. train on origin mt
+    for ct in all_canteens:
         for mtN in [0, 10]:
             if mtN == 0:
                 ct_sp = "train"
             else:
                 ct_sp = "trainmt{}".format(mtN)
 
-            imdb_name = "food_{}_{}_{}_train_mt{}".format(mt, ct_sp, mt, mtN)
-            dataset = "food{}mt{}".format(mt, mtN)
+            imdb_name = "food_{}_{}_{}_train_mt{}".format(ct, ct_sp, ct, mtN)
+            dataset = "food{}mt{}".format(ct, mtN)
             data2imdb_dict[dataset] = imdb_name
+
+    # 2. trian on fine
+    for ct in collected_cts:
+        for mtN in [10]:
+            for fewN in [1, 5]:
+                dataset = "foodexcl{}mt{}_fine{}few{}".format(
+                    ct, mtN, ct, fewN)
+                imdb_name = "food_{}_innerfew{}mt{}train_excl{}_train_mt{}".format(
+                    ct, fewN, mtN, ct, mtN)
+                data2imdb_dict[dataset] = imdb_name
+
     return data2imdb_dict
 
 
@@ -415,7 +427,6 @@ if __name__ == '__main__':
         for fli in [0, 1]:
             for angle in [0, 90, 180, 270]:
                 vis_dict[fli+angle] = 0
-
 
         for step in range(iters_per_epoch):
             data = next(data_iter)
