@@ -1,7 +1,7 @@
 #!/bin/sh
 # GPU usage
-GPU_ID=1
-WORKER_NUMBER=10
+GPU_ID=0
+WORKER_NUMBER=5
 
 # basic set
 DATASET=foodAllmt10
@@ -22,12 +22,12 @@ WARMING_UP_LR=0.0000001
 BATCH_SIZE=1
 
 # resume from
-RESUME=1 # null is for false
-RESUME_OPT=1 # null for false
-RESUME_SESS_EPOCH=1 #null for false
-CHECKSESSION=44
-CHECKEPOCH=3
-CHECKPOINT=59280
+RESUME= # null is for false
+RESUME_OPT= # null for false
+RESUME_SESS_EPOCH= #null for false
+CHECKSESSION=1
+CHECKEPOCH=40
+CHECKPOINT=11545
 
 
 # writing the experiment detail to file

@@ -13,7 +13,7 @@ EPOCH=7
 CHECKPOINT=10021
 CUDA_VISIBLE_DEVICES=$GPU_ID
 python trainval_net.py \
-                   --dataset foodAll --net vgg16 \
+                   --dataset foodAllmt10 --net vgg16 \
                    --s $SESSION \
                    --r=$RESUME \
                    --checksession $CHECKSESSION --checkepoch $EPOCH --checkpoint $CHECKPOINT \
