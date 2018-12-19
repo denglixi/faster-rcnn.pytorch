@@ -245,12 +245,15 @@ def main():
     # for ct in ['YIH', 'exclYIH', 'All']:
     #    for sp in ['trainmt10', 'valmt10']:
     #        get_statis(food_dataset_root, ct, sp, ct+'_trainmt10')
-    #get_statis(food_dataset_root, 'YIH', 'innerfew1mt10train', 'trainmt10')
+    # get_statis(food_dataset_root, 'YIH', 'innerfew1mt10train', 'trainmt10')
 
-    #get_statis(food_dataset_root, 'YIH', 'innerfew5mt10train', 'exclYIH_trainmt10')
-    #get_statis(food_dataset_root, 'Arts', 'innerfew1mt10val', 'exclArts_trainmt10')
-    get_statis(food_dataset_root, 'exclArts', 'trainmt10', 'Arts_inner')
-    get_statis(food_dataset_root, 'YIH', 'innerfew1mt10val', 'exclYIH_trainmt10')
+    # get_statis(food_dataset_root, 'YIH', 'innerfew5mt10train', 'exclYIH_trainmt10')
+    # get_statis(food_dataset_root, 'Arts', 'innerfew1mt10val', 'exclArts_trainmt10')
+    # get_statis(food_dataset_root, 'exclArts', 'trainmt10', 'Arts_inner')
+    # get_statis(food_dataset_root, 'exclUTown', 'trainmt10', 'UTown_inner')
+    # get_statis(food_dataset_root, 'YIH', 'innerfew1mt10val', 'exclYIH_trainmt10')
+    get_statis(food_dataset_root, 'All', 'trainval', 'All_trainval')
+    # get_statis(food_dataset_root, 'UTown', 'innerfew1mt10val', 'exclUTown_trainmt10')
 
 
 if __name__ == '__main__':

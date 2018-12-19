@@ -5,7 +5,7 @@ WORKER_NUMBER=10
 
 # basic set
 DATASET=foodexclArtsmt10
-NET=foodres50 #{foodres50, res101, vgg16}
+NET=foodres50_hierarchy #{foodres50, res101, vgg16}
 SESSION=44
 FIXED_LAYER=4
 PRETRAIN=true
@@ -22,7 +22,7 @@ WARMING_UP_LR=0.0000001
 BATCH_SIZE=1
 
 # resume from
-RESUME=1 # null is for false
+RESUME= # null is for false
 RESUME_OPT=1 # null for false
 RESUME_SESS_EPOCH=1 #null for false
 CHECKSESSION=44

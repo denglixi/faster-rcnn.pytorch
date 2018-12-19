@@ -383,8 +383,8 @@ def create_all_few_inner():
 
 
 if __name__ == '__main__':
-    # create_all_canteen_train_and_val_imageset()
-    # for N in [ 10, 30, 50, 100]:
-    #   create_all_canteen_mtN_train_and_val_imageset(N)
-    # create_inner_imagesets()
+    create_all_canteen_train_and_val_imageset()
+    for N in [10, 30, 50, 100]:
+        create_all_canteen_mtN_train_and_val_imageset(N)
+    create_inner_imagesets()
     create_all_few_inner()

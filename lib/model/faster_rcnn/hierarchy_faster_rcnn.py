@@ -16,13 +16,19 @@ import pdb
 from model.utils.net_utils import _smooth_l1_loss, _crop_pool_layer, _affine_grid_gen, _affine_theta
 
 
-class _fasterRCNN(nn.Module):
+class _hierarchyFasterRCNN(nn.Module):
     """ faster RCNN """
 
-    def __init__(self, classes, class_agnostic):
-        super(_fasterRCNN, self).__init__()
-        self.classes = classes
-        self.n_classes = len(classes)
+    def __init__(self, main_classes, sub_classes, class_agnostic):
+        super(_hierarchyFasterRCNN, self).__init__()
+        #self.classes = classes
+
+        self.main_classes = main_classes
+        self.sub_classes = sub_classes
+
+        self.n_sub_classes = len(sub_classes)
+        self.n_main_classes = len(main_classes)
+
         self.class_agnostic = class_agnostic
         # loss
         self.RCNN_loss_cls = 0
@@ -30,7 +36,7 @@ class _fasterRCNN(nn.Module):
 
         # define rpn
         self.RCNN_rpn = _RPN(self.dout_base_model)
-        self.RCNN_proposal_target = _ProposalTargetLayer(self.n_classes)
+        self.RCNN_proposal_target = _ProposalTargetLayer(self.n_sub_classes)
         self.RCNN_roi_pool = _RoIPooling(
             cfg.POOLING_SIZE, cfg.POOLING_SIZE, 1.0/16.0)
         self.RCNN_roi_align = RoIAlignAvg(
@@ -61,18 +67,16 @@ class _fasterRCNN(nn.Module):
             roi_data = self.RCNN_proposal_target(rois, gt_boxes, num_boxes)
             rois, rois_label, rois_target, rois_inside_ws, rois_outside_ws = roi_data
 
-            #rois_label is sub classlable
-
-            main_cls_label = Variable(rois_label.view(-1).long())
-
             rois_label = Variable(rois_label.view(-1).long())
+            # TODO
+            rois_main_label = Variable(rois_label.view(-1).long())
             rois_target = Variable(rois_target.view(-1, rois_target.size(2)))
             rois_inside_ws = Variable(
                 rois_inside_ws.view(-1, rois_inside_ws.size(2)))
             rois_outside_ws = Variable(
                 rois_outside_ws.view(-1, rois_outside_ws.size(2)))
         else:
-            main_cls_label = None
+            rois_main_label = None
             rois_label = None
             rois_target = None
             rois_inside_ws = None
@@ -104,46 +108,65 @@ class _fasterRCNN(nn.Module):
             pooled_feat = self.RCNN_roi_pool(base_feat, rois.view(-1, 5))
 
         # feed pooled features to top model
-        #(256,1024,7,7)
-
-        pooled_feat = self._head_to_tail(pooled_feat)
+        pooled_feat_main = self._head_to_tail_main(pooled_feat)
+        pooled_feat_sub = self._head_to_tail_sub(pooled_feat)
 
         # compute bbox offset
-        bbox_pred = self.RCNN_bbox_pred(pooled_feat)
+        bbox_pred_main = self.RCNN_bbox_pred_main(pooled_feat_main)
+        bbox_pred_sub = self.RCNN_bbox_pred_sub(pooled_feat_sub)
         if self.training and not self.class_agnostic:
             # select the corresponding columns according to roi labels
-            bbox_pred_view = bbox_pred.view(
-                bbox_pred.size(0), int(bbox_pred.size(1) / 4), 4)
-            bbox_pred_select = torch.gather(bbox_pred_view, 1, rois_label.view(
+            bbox_pred_view_main = bbox_pred_main.view(
+                bbox_pred_main.size(0), int(bbox_pred_main.size(1) / 4), 4)
+            bbox_pred_select_main = torch.gather(bbox_pred_view_main, 1, rois_label.view(
                 rois_label.size(0), 1, 1).expand(rois_label.size(0), 1, 4))
-            bbox_pred = bbox_pred_select.squeeze(1)
+            bbox_pred_main = bbox_pred_select_main.squeeze(1)
+
+            bbox_pred_view_sub = bbox_pred_sub.view(
+                bbox_pred_sub.size(0), int(bbox_pred_sub.size(1) / 4), 4)
+            bbox_pred_select_sub = torch.gather(bbox_pred_view_sub, 1, rois_label.view(
+                rois_label.size(0), 1, 1).expand(rois_label.size(0), 1, 4))
+            bbox_pred_sub = bbox_pred_select_sub.squeeze(1)
 
         # compute object classification probability
-        cls_score = self.RCNN_cls_score(pooled_feat)
-        cls_prob = F.softmax(cls_score, 1)
+        cls_score_main = self.RCNN_cls_score_main(pooled_feat_main)
+        cls_prob_main = F.softmax(cls_score_main, 1)
+        cls_score_sub = self.RCNN_cls_score_sub(pooled_feat_sub)
+        cls_prob_sub = F.softmax(cls_score_sub, 1)
 
+        RCNN_loss_cls_main = 0
+        RCNN_loss_bbox_main = 0
 
-        RCNN_loss_cls = 0
-        RCNN_loss_bbox = 0
+        RCNN_loss_cls_sub = 0
+        RCNN_loss_bbox_sub = 0
 
         if self.training:
             # classification loss
-            RCNN_loss_cls = F.cross_entropy(cls_score, rois_label)
+            RCNN_loss_cls_main = F.cross_entropy(cls_score_main, rois_label)
+
+            #TODO roi_lable should
+            RCNN_loss_cls_sub = F.cross_entropy(cls_score_sub, rois_label)
 
             # bounding box regression L1 loss
-            RCNN_loss_bbox = _smooth_l1_loss(
-                bbox_pred, rois_target, rois_inside_ws, rois_outside_ws)
+            RCNN_loss_bbox_main = _smooth_l1_loss(
+                bbox_pred_main, rois_target, rois_inside_ws, rois_outside_ws)
+            RCNN_loss_bbox_sub = _smooth_l1_loss(
+                bbox_pred_main, rois_target, rois_inside_ws, rois_outside_ws)
 
-        cls_prob = cls_prob.view(batch_size, rois.size(1), -1)
-        bbox_pred = bbox_pred.view(batch_size, rois.size(1), -1)
+        cls_prob_main = cls_prob_main.view(batch_size, rois.size(1), -1)
+        bbox_pred_main = bbox_pred_main.view(batch_size, rois.size(1), -1)
+        cls_prob_sub = cls_prob_sub.view(batch_size, rois.size(1), -1)
+        bbox_pred_sub = bbox_pred_sub.view(batch_size, rois.size(1), -1)
 
         if self.training:
             rpn_loss_cls = torch.unsqueeze(rpn_loss_cls, 0)
             rpn_loss_bbox = torch.unsqueeze(rpn_loss_bbox, 0)
-            RCNN_loss_cls = torch.unsqueeze(RCNN_loss_cls, 0)
-            RCNN_loss_bbox = torch.unsqueeze(RCNN_loss_bbox, 0)
+            RCNN_loss_cls_main = torch.unsqueeze(RCNN_loss_cls_main, 0)
+            RCNN_loss_bbox_main = torch.unsqueeze(RCNN_loss_bbox_main, 0)
+            RCNN_loss_cls_sub = torch.unsqueeze(RCNN_loss_cls_sub, 0)
+            RCNN_loss_bbox_sub = torch.unsqueeze(RCNN_loss_bbox_sub, 0)
 
-        return rois, cls_prob, bbox_pred, rpn_loss_cls, rpn_loss_bbox, RCNN_loss_cls, RCNN_loss_bbox, rois_label
+        return rois, cls_prob_sub, bbox_pred_sub, rpn_loss_cls, rpn_loss_bbox, RCNN_loss_cls_sub, RCNN_loss_bbox_sub, rois_label
 
     def _init_weights(self):
         def normal_init(m, mean, stddev, truncated=False):
@@ -161,8 +184,10 @@ class _fasterRCNN(nn.Module):
         normal_init(self.RCNN_rpn.RPN_Conv, 0, 0.01, cfg.TRAIN.TRUNCATED)
         normal_init(self.RCNN_rpn.RPN_cls_score, 0, 0.01, cfg.TRAIN.TRUNCATED)
         normal_init(self.RCNN_rpn.RPN_bbox_pred, 0, 0.01, cfg.TRAIN.TRUNCATED)
-        normal_init(self.RCNN_cls_score, 0, 0.01, cfg.TRAIN.TRUNCATED)
-        normal_init(self.RCNN_bbox_pred, 0, 0.001, cfg.TRAIN.TRUNCATED)
+        normal_init(self.RCNN_cls_score_main, 0, 0.01, cfg.TRAIN.TRUNCATED)
+        normal_init(self.RCNN_bbox_pred_main, 0, 0.001, cfg.TRAIN.TRUNCATED)
+        normal_init(self.RCNN_cls_score_sub, 0, 0.01, cfg.TRAIN.TRUNCATED)
+        normal_init(self.RCNN_bbox_pred_sub, 0, 0.001, cfg.TRAIN.TRUNCATED)
 
     def create_architecture(self):
         self._init_modules()

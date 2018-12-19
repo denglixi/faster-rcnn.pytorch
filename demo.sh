@@ -1,6 +1,6 @@
 #!/bin/sh
 
-GPU_ID=1
+GPU_ID=0
 
 IMAGEDIR=./images/userimage/
 MODELDIR=./models/
@@ -9,9 +9,9 @@ CFG_FILE=./cfgs/demo.yml
 #webcam_num -2 show image online -1 saveimage
 
 # load weight
-SESSION=444
-EPOCH=35
-CHECKPOINT=14819
+SESSION=44
+EPOCH=26
+CHECKPOINT=59279
 
 
 # basic set

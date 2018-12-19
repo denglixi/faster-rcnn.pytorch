@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # GPU usage
-GPU_ID=0
+GPU_ID=1
 
 # basic set
 Train=All
@@ -22,19 +22,20 @@ DATASET=foodexclUTownmt10_testUTownfew1
 
 NET=foodres50 #{foodres50, res101, vgg16}
 # load weight
-SESSION=4442
-EPOCH=38
+SESSION=444
+EPOCH=41
 # YIH 11545 #UTown 11407 #All 14819 #arts 13349
+# Arts 53399
 CHECKPOINT=11407
 
 # whether visulazation the results during testing
 IS_VIS=false
 
 # whether test cache which have saved in last testing
-IS_TEST_CACHE=true
+IS_TEST_CACHE=false
 
 # whether save all detection results in images
-SAVE_FOR_VIS=false
+SAVE_FOR_VIS=true
 
 
 if $IS_VIS ;then

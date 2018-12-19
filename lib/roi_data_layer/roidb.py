@@ -106,15 +106,17 @@ def combined_roidb(imdb_names, training=True):
             imdb.append_flipped_images()
             print('done')
 
-            for anchor in [90, 180, 270]:
-                print('Appending anchor {} training examples...'.format(anchor))
-                imdb.append_rotated_images(anchor)
-                print('done')
+            # rotate image for annotation
+            if False:
+                for anchor in [90, 180, 270]:
+                    print('Appending anchor {} training examples...'.format(anchor))
+                    imdb.append_rotated_images(anchor)
+                    print('done')
 
-            for anchor in [90, 180, 270]:
-                print('Appending flipped anchor {} training examples...'.format(anchor))
-                imdb.append_rotated_images(anchor, flipped=True)
-                print('done')
+                for anchor in [90, 180, 270]:
+                    print('Appending flipped anchor {} training examples...'.format(anchor))
+                    imdb.append_rotated_images(anchor, flipped=True)
+                    print('done')
 
         print('Preparing training data...')
 

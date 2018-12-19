@@ -16,7 +16,7 @@ import pdb
 from model.utils.net_utils import _smooth_l1_loss, _crop_pool_layer, _affine_grid_gen, _affine_theta
 
 
-class _fasterRCNN(nn.Module):
+class _RFCN(nn.Module):
     """ faster RCNN """
 
     def __init__(self, classes, class_agnostic):
@@ -61,10 +61,6 @@ class _fasterRCNN(nn.Module):
             roi_data = self.RCNN_proposal_target(rois, gt_boxes, num_boxes)
             rois, rois_label, rois_target, rois_inside_ws, rois_outside_ws = roi_data
 
-            #rois_label is sub classlable
-
-            main_cls_label = Variable(rois_label.view(-1).long())
-
             rois_label = Variable(rois_label.view(-1).long())
             rois_target = Variable(rois_target.view(-1, rois_target.size(2)))
             rois_inside_ws = Variable(
@@ -72,7 +68,6 @@ class _fasterRCNN(nn.Module):
             rois_outside_ws = Variable(
                 rois_outside_ws.view(-1, rois_outside_ws.size(2)))
         else:
-            main_cls_label = None
             rois_label = None
             rois_target = None
             rois_inside_ws = None
@@ -104,8 +99,6 @@ class _fasterRCNN(nn.Module):
             pooled_feat = self.RCNN_roi_pool(base_feat, rois.view(-1, 5))
 
         # feed pooled features to top model
-        #(256,1024,7,7)
-
         pooled_feat = self._head_to_tail(pooled_feat)
 
         # compute bbox offset
@@ -121,7 +114,6 @@ class _fasterRCNN(nn.Module):
         # compute object classification probability
         cls_score = self.RCNN_cls_score(pooled_feat)
         cls_prob = F.softmax(cls_score, 1)
-
 
         RCNN_loss_cls = 0
         RCNN_loss_bbox = 0

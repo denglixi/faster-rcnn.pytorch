@@ -33,9 +33,11 @@ from model.utils.net_utils import weights_normal_init, save_net, load_net, \
 from model.faster_rcnn.vgg16 import vgg16
 from model.faster_rcnn.resnet import resnet
 from model.faster_rcnn.prefood_res50 import PreResNet50
+from model.faster_rcnn.prefood_res50_hi import PreResNet50Hierarchy
 
 from model.utils.net_utils import vis_detections
 from datasets.id2name import id2chn, id2eng
+from datasets.sub2main import sub2main_dict
 
 
 def parse_args():
@@ -47,7 +49,7 @@ def parse_args():
                         help='training dataset',
                         default='pascal_voc', type=str)
     parser.add_argument('--net', dest='net',
-                        help='vgg16, res101, prefood_res50',
+                        help='vgg16, res101, food_res50, food_res50_hierarchy',
                         default='vgg16', type=str)
     parser.add_argument('--start_epoch', dest='start_epoch',
                         help='starting epoch',
@@ -352,6 +354,17 @@ if __name__ == '__main__':
                                  class_agnostic=args.class_agnostic,
                                  weight_file=args.weight_file,
                                  fixed_layer=args.fixed_layer)
+    elif args.net == 'foodres50_hierarchy':
+        def get_main_cls(sub_classes):
+            main_classes = []
+            for i in sub_classes:
+                main_classes.append(main_classes)
+
+        main_classes = get_main_cls(imdb.classes)
+        fasterRCNN = PreResNet50Hierarchy(main_classes.classes, imdb.classes, pretrained=args.pretrained,
+                                          class_agnostic=args.class_agnostic,
+                                          weight_file=args.weight_file,
+                                          fixed_layer=args.fixed_layer)
     else:
         print("network is not defined")
         pdb.set_trace()
@@ -436,8 +449,8 @@ if __name__ == '__main__':
             num_boxes.data.resize_(data[3].size()).copy_(data[3])
 
             # visual test for rotated
-            #flipped = data[4].numpy()[0]
-            #rotated = data[5].numpy()[0]
+            # flipped = data[4].numpy()[0]
+            # rotated = data[5].numpy()[0]
 
             # if vis_dict[flipped+rotated] == 0:
             #    gt_boxes_cpu = gt_boxes.cpu().numpy()[0]
