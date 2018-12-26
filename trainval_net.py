@@ -34,6 +34,8 @@ from model.faster_rcnn.vgg16 import vgg16
 from model.faster_rcnn.resnet import resnet
 from model.faster_rcnn.prefood_res50 import PreResNet50
 from model.faster_rcnn.prefood_res50_hi import PreResNet50Hierarchy
+from model.faster_rcnn.prefood_res50_2fc import PreResNet502Fc
+from model.faster_rcnn.prefood_res50_attention import PreResNet50Attention
 
 from model.utils.net_utils import vis_detections
 from datasets.id2name import id2chn, id2eng
@@ -104,7 +106,7 @@ def parse_args():
                         default=5, type=int)
     parser.add_argument('--lr_decay_gamma', dest='lr_decay_gamma',
                         help='learning rate decay ratio',
-                        default=0.1, type=float)
+                        default=0.3, type=float)
 
 # set training session
     parser.add_argument('--s', dest='session',
@@ -187,7 +189,7 @@ class sampler(Sampler):
 
 def get_data2imdb_dict():
     # create canttens
-    collected_cts = ["Arts", "Sciences", "YIH",
+    collected_cts = ["Arts", "Science", "YIH",
                      "UTown", "TechChicken", "TechMixedVeg"]
     excl_cts = ["excl"+x for x in collected_cts]
     all_canteens = collected_cts + excl_cts + ['All']
@@ -354,6 +356,19 @@ if __name__ == '__main__':
                                  class_agnostic=args.class_agnostic,
                                  weight_file=args.weight_file,
                                  fixed_layer=args.fixed_layer)
+
+    elif args.net == 'foodres50attention':
+        fasterRCNN = PreResNet50Attention(imdb.classes, pretrained=args.pretrained,
+                                          class_agnostic=args.class_agnostic,
+                                          weight_file=args.weight_file,
+                                          fixed_layer=args.fixed_layer)
+
+    elif args.net == 'foodres502fc':
+        fasterRCNN = PreResNet502Fc(imdb.classes, pretrained=args.pretrained,
+                                    class_agnostic=args.class_agnostic,
+                                    weight_file=args.weight_file,
+                                    fixed_layer=args.fixed_layer)
+
     elif args.net == 'foodres50_hierarchy':
         def get_main_cls(sub_classes):
             main_classes = []
@@ -361,7 +376,8 @@ if __name__ == '__main__':
                 main_classes.append(main_classes)
 
         main_classes = get_main_cls(imdb.classes)
-        fasterRCNN = PreResNet50Hierarchy(main_classes.classes, imdb.classes, pretrained=args.pretrained,
+        fasterRCNN = PreResNet50Hierarchy(main_classes.classes, imdb.classes,
+                                          pretrained=args.pretrained,
                                           class_agnostic=args.class_agnostic,
                                           weight_file=args.weight_file,
                                           fixed_layer=args.fixed_layer)

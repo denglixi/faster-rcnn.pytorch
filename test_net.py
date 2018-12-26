@@ -31,6 +31,8 @@ from model.utils.net_utils import save_net, load_net, vis_detections
 from model.faster_rcnn.vgg16 import vgg16
 from model.faster_rcnn.resnet import resnet
 from model.faster_rcnn.prefood_res50 import PreResNet50
+from model.faster_rcnn.prefood_res50_attention import PreResNet50Attention
+from model.faster_rcnn.prefood_res50_2fc import PreResNet502Fc
 from datasets.food_category import get_categories
 from datasets.id2name import id2chn, id2eng
 
@@ -220,6 +222,12 @@ if __name__ == '__main__':
     elif args.net == 'foodres50':
         fasterRCNN = PreResNet50(imdb.classes, pretrained=True,
                                  class_agnostic=args.class_agnostic)
+    elif args.net == 'foodres50attention':
+        fasterRCNN = PreResNet50Attention(imdb.classes, pretrained=True,
+                                          class_agnostic=args.class_agnostic)
+    elif args.net == 'foodres502fc':
+        fasterRCNN = PreResNet502Fc(imdb.classes, pretrained=True,
+                                    class_agnostic=args.class_agnostic)
     else:
         print("network is not defined")
         pdb.set_trace()
@@ -370,6 +378,7 @@ if __name__ == '__main__':
             pred_boxes = pred_boxes.squeeze()
             det_toc = time.time()
 
+            nms_time = 0
             detect_time = det_toc - det_tic
             misc_tic = time.time()
             if vis or args.save_for_vis:
@@ -488,7 +497,6 @@ if __name__ == '__main__':
             pickle.dump(all_boxes, f, pickle.HIGHEST_PROTOCOL)
 
     print('Evaluating detections')
-
 
     if False:
         # test image level recall precision

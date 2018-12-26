@@ -1,22 +1,26 @@
 #!/bin/sh
 # GPU usage
-GPU_ID=0
-WORKER_NUMBER=10
+GPU_ID=1
+WORKER_NUMBER=8
 
 # basic set
-DATASET=foodexclArtsmt10
-NET=foodres50_hierarchy #{foodres50, res101, vgg16}
-SESSION=44
+#DATASET=foodexclArtsmt10
+DATASET=foodexclSciencemt10
+
+
+#NET=foodres50_hierarchy #{foodres50, res101, vgg16}
+NET=foodres50attention #{foodres50, res101, vgg16 , foodres50attention, foodres502fc}
+SESSION=5
 FIXED_LAYER=4
 PRETRAIN=true
 WEIGHT_FILE=prefood #{ prefood, imagenet } only for res50
-MAXEPOCHS=40
-SAVE_EPOCH=1
+MAXEPOCHS=60
+SAVE_EPOCH=3
 
 # optimizer setting
-OPTIMIZER=adam
+OPTIMIZER=sgd
 LEARNING_RATE=0.001
-DECAY_STEP=10
+DECAY_STEP=5
 IS_WARMING_UP=false
 WARMING_UP_LR=0.0000001
 BATCH_SIZE=1

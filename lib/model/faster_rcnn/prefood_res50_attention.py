@@ -3,7 +3,7 @@ from __future__ import division
 from __future__ import print_function
 
 from model.utils.config import cfg
-from model.faster_rcnn.faster_rcnn_hierarchy import _hierarchyFasterRCNN
+from model.faster_rcnn.faster_rcnn_attention import _fasterRCNNAttention
 
 import torch
 import torch.nn as nn
@@ -912,9 +912,9 @@ class res50_top(KitModule):
         # prob = F.softmax(fc798_1)
 
 
-class PreResNet50Hierarchy(_hierarchyFasterRCNN):
+class PreResNet50Attention(_fasterRCNNAttention):
 
-    def __init__(self, main_classes, sub_classes, pretrained=False, class_agnostic=False, weight_file=None, fixed_layer=0):
+    def __init__(self, classes, pretrained=False, class_agnostic=False, weight_file=None, fixed_layer=0):
 
         if weight_file == 'imagenet':
             self.model_path = "data/pretrained_model/resnet50_caffe.pth"
@@ -928,7 +928,7 @@ class PreResNet50Hierarchy(_hierarchyFasterRCNN):
         self.class_agnostic = class_agnostic
         self.fixed_layer = fixed_layer
 
-        _hierarchyFasterRCNN.__init__(self, main_classes, sub_classes, class_agnostic)
+        _fasterRCNNAttention.__init__(self, classes, class_agnostic)
 
     def _init_modules(self):
         #self.RCNN_base = res50_base(self.model_path)
@@ -944,18 +944,13 @@ class PreResNet50Hierarchy(_hierarchyFasterRCNN):
             for p in self.RCNN_base[layer_i].parameters():
                 p.requires_grad = False
 
-        self.RCNN_top_main = res50_top(self.model_path)
-        self.RCNN_top_sub = res50_top(self.model_path)
+        self.RCNN_top = res50_top(self.model_path)
 
-        self.RCNN_cls_score_main = nn.Linear(2048, self.n_main_classes)
-        self.RCNN_cls_score_sub = nn.Linear(2048, self.n_sub_classes)
-
+        self.RCNN_cls_score = nn.Linear(1024, self.n_classes)
         if self.class_agnostic:
-            self.RCNN_bbox_pred_main = nn.Linear(2048, 4)
-            self.RCNN_bbox_pred_sub = nn.Linear(2048, 4)
+            self.RCNN_bbox_pred = nn.Linear(1024, 4)
         else:
-            self.RCNN_bbox_pred_main = nn.Linear(2048, 4 * self.n_main_classes)
-            self.RCNN_bbox_pred_sub = nn.Linear(2048, 4 * self.n_sub_classes)
+            self.RCNN_bbox_pred = nn.Linear(1024, 4 * self.n_classes)
 
         # Fix blocks
 
@@ -966,8 +961,7 @@ class PreResNet50Hierarchy(_hierarchyFasterRCNN):
                     p.requires_grad = False
 
         self.RCNN_base.apply(set_bn_fix)
-        self.RCNN_top_main.apply(set_bn_fix)
-        self.RCNN_top_sub.apply(set_bn_fix)
+        self.RCNN_top.apply(set_bn_fix)
 
     def train(self, mode=True):
         # Override train so that the training mode is set as we want
@@ -984,13 +978,8 @@ class PreResNet50Hierarchy(_hierarchyFasterRCNN):
                     m.eval()
 
             self.RCNN_base.apply(set_bn_eval)
-            self.RCNN_top_main.apply(set_bn_eval)
-            self.RCNN_top_sub.apply(set_bn_eval)
+            self.RCNN_top.apply(set_bn_eval)
 
-    def _head_to_tail_main(self, pool5):
-        fc7 = self.RCNN_top_main(pool5).mean(3).mean(2)
-        return fc7
-
-    def _head_to_tail_sub(self, pool5):
-        fc7 = self.RCNN_top_sub(pool5).mean(3).mean(2)
+    def _head_to_tail(self, pool5):
+        fc7 = self.RCNN_top(pool5).mean(3).mean(2)
         return fc7

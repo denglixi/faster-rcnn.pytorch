@@ -4,21 +4,25 @@
 GPU_ID=0
 
 # basic set
-#DATASET=foodexclYIH
 #DATASET=foodexclYIHmt10
 #DATASET=foodexclYIHmt10_fineYIH_testYIHfew1
 #DATASET=foodexclYIHmt10_testYIHfew1
 
+#DATASET=foodexclArtsmt10
 #DATASET=foodexclArtsmt10_testArtsfew1
-DATASET=foodAllmt10
+
 
 #DATASET=foodAllmt10
-#DATASET=foodexclUTownmt10_testUTownfew1
-NET=foodres50 #{foodres50, res101, vgg16}
+
+
+#DATASET=foodexclUTownmt10
+DATASET=foodexclUTownmt10_testUTownfew1
+
+NET=foodres50attention #{foodres50, res101, vgg16}
 # load weight
 
 # YIH 11545 #UTown 11407 #All 14819 #arts 13349
-CHECKPOINT=59279
+CHECKPOINT=11407
 
 # whether visulazation the results during testing
 IS_VIS=false
@@ -31,10 +35,10 @@ IS_TEST_CACHE=false
 SAVE_FOR_VIS=
 
 #sessionlist="0 111 222 333 444 4442"
-sessionlist="44"
+sessionlist="5"
 for sess in $sessionlist
 do
-for i in `seq 20 2 40`
+for i in `seq  5 3 44`
 do
     EPOCH=$i
     SESSION=$sess

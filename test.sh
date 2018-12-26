@@ -15,18 +15,18 @@ Test=
 #DATASET=foodexclYIH_testYIHmt10
 #DATASET=foodexclYIHmt10_testYIHfew1
 
-#DATASET=foodAllmt10
+#DATASET=foodexclArtsmt10
 
-#DATASET=foodexclArtsmt10_testArtsfew1
-DATASET=foodexclUTownmt10_testUTownfew1
+DATASET=foodexclArtsmt10_testArtsfew1
+#DATASET=foodexclUTownmt10_testUTownfew1
 
-NET=foodres50 #{foodres50, res101, vgg16}
+NET=foodres50attention #{foodres50, res101, vgg16}
 # load weight
-SESSION=444
-EPOCH=41
+SESSION=5
+EPOCH=44
 # YIH 11545 #UTown 11407 #All 14819 #arts 13349
 # Arts 53399
-CHECKPOINT=11407
+CHECKPOINT=13349
 
 # whether visulazation the results during testing
 IS_VIS=false
@@ -35,7 +35,7 @@ IS_VIS=false
 IS_TEST_CACHE=false
 
 # whether save all detection results in images
-SAVE_FOR_VIS=true
+SAVE_FOR_VIS= # blank for false
 
 
 if $IS_VIS ;then
