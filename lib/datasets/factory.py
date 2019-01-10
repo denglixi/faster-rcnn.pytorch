@@ -30,7 +30,7 @@ splits += mt_splits
 
 # take few sample in inner between dataset of canteen and dataset of excl canteen as training data. And regard the lefts as validation.
 inner_few = []
-for fewN in [1, 3, 5, 10]:
+for fewN in [0, 1, 3, 5, 10]:
     for mtN in [10]:
         for d in ['train', 'val']:
             inner_few += ["innerfew{}mt{}{}".format(fewN, mtN, d)]

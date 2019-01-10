@@ -16,13 +16,19 @@ import pdb
 from model.utils.net_utils import _smooth_l1_loss, _crop_pool_layer, _affine_grid_gen, _affine_theta
 from datasets.sub2main import sub2main_dict
 
+from collections import defaultdict
 
-class _hierarchyFasterRCNN(nn.Module):
+
+class _hierarchyCasecadeFasterRCNN(nn.Module):
     """ faster RCNN """
 
-    def __init__(self, main_classes, sub_classes, class_agnostic):
-        super(_hierarchyFasterRCNN, self).__init__()
+    def __init__(self, main_classes, sub_classes, class_agnostic, casecade_type='add_score', alpha=0.5):
+        super(_hierarchyCasecadeFasterRCNN, self).__init__()
         #self.classes = classes
+
+        #type: add_score, add_prob, mul_score, mul_prob
+        self.casecade_type = casecade_type
+        self.alpha = alpha
 
         self.main_classes = main_classes
         self.sub_classes = sub_classes
@@ -49,6 +55,15 @@ class _hierarchyFasterRCNN(nn.Module):
             2 if cfg.CROP_RESIZE_WITH_MAX_POOL else cfg.POOLING_SIZE
         self.RCNN_roi_crop = _RoICrop()
 
+        self.main2sub_idx_dict = defaultdict(list)
+        for key, val in sub2main_dict.items():
+            try:
+                # not all cls in dict are in this imdb
+                self.main2sub_idx_dict[self.main_classes.index(
+                    val)].append(self.sub_classes.index(key))
+            except:
+                print("key:{}, val:{} may not in this imdb".format(key, val))
+
     def forward(self, im_data, im_info, gt_boxes, num_boxes):
         batch_size = im_data.size(0)
 
@@ -70,6 +85,8 @@ class _hierarchyFasterRCNN(nn.Module):
             rois_label = Variable(rois_label.view(-1).long())
 
             # TODO
+
+
             rois_main_label = Variable(rois_label.view(-1).long())
             rois_sub_class = list(map(
                 lambda x: self.sub_classes[x], rois_main_label))
@@ -117,13 +134,11 @@ class _hierarchyFasterRCNN(nn.Module):
         elif cfg.POOLING_MODE == 'pspool':
             pooled_feat = self.RCNN_roi_pool(base_feat, rois.view(-1, 5))
 
+        # main Rcnn branch
         # feed pooled features to top model
         pooled_feat_main = self._head_to_tail_main(pooled_feat)
-        pooled_feat_sub = self._head_to_tail_sub(pooled_feat)
-
         # compute bbox offset
         bbox_pred_main = self.RCNN_bbox_pred_main(pooled_feat_main)
-        bbox_pred_sub = self.RCNN_bbox_pred_sub(pooled_feat_sub)
         if self.training and not self.class_agnostic:
             # select the corresponding columns according to roi labels
             bbox_pred_view_main = bbox_pred_main.view(
@@ -132,17 +147,53 @@ class _hierarchyFasterRCNN(nn.Module):
                 rois_main_label.size(0), 1, 1).expand(rois_main_label.size(0), 1, 4))
             bbox_pred_main = bbox_pred_select_main.squeeze(1)
 
+        # compute object classification probability
+        cls_score_main = self.RCNN_cls_score_main(pooled_feat_main)
+        cls_prob_main = F.softmax(cls_score_main, 1)
+
+
+        # sub Rcnn branch
+
+        pooled_feat_sub = self._head_to_tail_sub(pooled_feat)
+        bbox_pred_sub = self.RCNN_bbox_pred_sub(pooled_feat_sub)
+        if self.training and not self.class_agnostic:
             bbox_pred_view_sub = bbox_pred_sub.view(
                 bbox_pred_sub.size(0), int(bbox_pred_sub.size(1) / 4), 4)
             bbox_pred_select_sub = torch.gather(bbox_pred_view_sub, 1, rois_label.view(
                 rois_label.size(0), 1, 1).expand(rois_label.size(0), 1, 4))
             bbox_pred_sub = bbox_pred_select_sub.squeeze(1)
 
-        # compute object classification probability
-        cls_score_main = self.RCNN_cls_score_main(pooled_feat_main)
-        cls_prob_main = F.softmax(cls_score_main, 1)
         cls_score_sub = self.RCNN_cls_score_sub(pooled_feat_sub)
+
+        #pdb.set_trace()
+        # process weight of main classes to sub score
+        if 'score' in self.casecade_type:
+            main_cls_weight = torch.cuda.FloatTensor(
+                cls_score_main.size()[0], len(self.sub_classes))
+            for key, val in self.main2sub_idx_dict.items():
+                for column_idx in val:
+                    main_cls_weight[:, column_idx] = cls_score_main[:, key]
+            if self.casecade_type == 'add_score':
+                cls_score_sub += main_cls_weight
+            elif self.casecade_type == 'mul_score':
+                cls_score_sub *= main_cls_weight
+
         cls_prob_sub = F.softmax(cls_score_sub, 1)
+
+        # process weight of main classes to sub prob
+        if 'prob' in self.casecade_type:
+            main_cls_weight = torch.cuda.FloatTensor(
+                cls_prob_main.size()[0], len(self.sub_classes))
+            for key, val in self.main2sub_idx_dict.items():
+                for column_idx in val:
+                    main_cls_weight[:, column_idx] = cls_prob_main[:, key]
+            if self.casecade_type == 'add_prob':
+                # TODO normalized
+                cls_prob_sub = cls_prob_sub * self.alpha + (1-self.alpha) * main_cls_weight
+
+
+
+
 
         RCNN_loss_cls_main = 0
         RCNN_loss_bbox_main = 0
@@ -166,6 +217,7 @@ class _hierarchyFasterRCNN(nn.Module):
 
         cls_prob_main = cls_prob_main.view(batch_size, rois.size(1), -1)
         bbox_pred_main = bbox_pred_main.view(batch_size, rois.size(1), -1)
+
         cls_prob_sub = cls_prob_sub.view(batch_size, rois.size(1), -1)
         bbox_pred_sub = bbox_pred_sub.view(batch_size, rois.size(1), -1)
 

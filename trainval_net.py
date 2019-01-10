@@ -34,6 +34,7 @@ from model.faster_rcnn.vgg16 import vgg16
 from model.faster_rcnn.resnet import resnet
 from model.faster_rcnn.prefood_res50 import PreResNet50
 from model.faster_rcnn.prefood_res50_hi import PreResNet50Hierarchy
+from model.faster_rcnn.prefood_res50_hi_ca import PreResNet50HierarchyCasecade
 from model.faster_rcnn.prefood_res50_2fc import PreResNet502Fc
 from model.faster_rcnn.prefood_res50_attention import PreResNet50Attention
 
@@ -212,7 +213,7 @@ def get_data2imdb_dict():
     # 2. trian on fine
     for ct in collected_cts:
         for mtN in [10]:
-            for fewN in [1, 5]:
+            for fewN in [1, 5, 10]:
                 dataset = "foodexcl{}mt{}_fine{}few{}".format(
                     ct, mtN, ct, fewN)
                 imdb_name = "food_{}_innerfew{}mt{}train_excl{}_train_mt{}".format(
@@ -226,6 +227,15 @@ def set_imdb_name(args):
     data2imdb_dict = get_data2imdb_dict()
     args.imdb_name = data2imdb_dict[args.dataset]
     return args
+
+
+def get_main_cls(sub_classes):
+    main_classes = []
+    for i in sub_classes:
+        main_classes.append(sub2main_dict[i])
+    main_classes = set(main_classes)
+    main_classes = list(main_classes)
+    return main_classes
 
 
 if __name__ == '__main__':
@@ -370,17 +380,32 @@ if __name__ == '__main__':
                                     fixed_layer=args.fixed_layer)
 
     elif args.net == 'foodres50_hierarchy':
-        def get_main_cls(sub_classes):
-            main_classes = []
-            for i in sub_classes:
-                main_classes.append(main_classes)
-
         main_classes = get_main_cls(imdb.classes)
-        fasterRCNN = PreResNet50Hierarchy(main_classes.classes, imdb.classes,
+        fasterRCNN = PreResNet50Hierarchy(main_classes, imdb.classes,
                                           pretrained=args.pretrained,
                                           class_agnostic=args.class_agnostic,
                                           weight_file=args.weight_file,
                                           fixed_layer=args.fixed_layer)
+    elif 'foodres50_hierarchy_casecade' in args.net:
+        nets_param = args.net.split('_')
+        if len(nets_param) == 3:
+            casecade_type = 'add_score'
+            alpha = 0.5
+        elif len(nets_param) == 5:
+            casecade_type = "".join(nets_param[3:5])
+            alpha = 0.5
+        elif len(nets_param) == 6:
+            casecade_type = "".join(nets_param[3:5])
+            alpha = float(nets_param[5])
+
+        main_classes = get_main_cls(imdb.classes)
+        fasterRCNN = PreResNet50HierarchyCasecade(main_classes, imdb.classes,
+                                                  pretrained=args.pretrained,
+                                                  class_agnostic=args.class_agnostic,
+                                                  weight_file=args.weight_file,
+                                                  fixed_layer=args.fixed_layer,
+                                                  casecade_type=casecade_type,
+                                                  alpha=alpha)
     else:
         print("network is not defined")
         pdb.set_trace()
@@ -413,7 +438,8 @@ if __name__ == '__main__':
         fasterRCNN.cuda()
 
     if args.resume:
-        load_name = os.path.join(output_dir,
+        resume_dir = args.save_dir + "/" + args.net + "/" + args.dataset.split("_")[0]
+        load_name = os.path.join(resume_dir,
                                  'faster_rcnn_{}_{}_{}.pth'.format(args.checksession,
                                                                    args.checkepoch, args.checkpoint))
         print("loading checkpoint %s" % (load_name))
@@ -486,10 +512,31 @@ if __name__ == '__main__':
             #    continue
 
             fasterRCNN.zero_grad()
-            rois, cls_prob, bbox_pred, \
-                rpn_loss_cls, rpn_loss_box, \
-                RCNN_loss_cls, RCNN_loss_bbox, \
-                rois_label = fasterRCNN(im_data, im_info, gt_boxes, num_boxes)
+
+            if "hierarchy" in args.net:
+                rois, cls_prob_main, bbox_pred_main, \
+                    cls_prob_sub, bbox_pred_sub, \
+                    rpn_loss_cls, rpn_loss_box, \
+                    *RCNN_losses, \
+                    rois_label = fasterRCNN(
+                        im_data, im_info, gt_boxes, num_boxes)
+            else:
+                rois, cls_prob, bbox_pred, \
+                    rpn_loss_cls, rpn_loss_box, \
+                    *RCNN_losses, \
+                    rois_label = fasterRCNN(
+                        im_data, im_info, gt_boxes, num_boxes)
+
+            if len(RCNN_losses) == 2:
+                RCNN_loss_cls = RCNN_losses[0]
+                RCNN_loss_bbox = RCNN_losses[1]
+                RCNN_loss_cls_main = None
+                RCNN_loss_bbox_main = None
+            elif len(RCNN_losses) == 4:
+                RCNN_loss_cls = RCNN_losses[0]
+                RCNN_loss_bbox = RCNN_losses[1]
+                RCNN_loss_cls_main = RCNN_losses[2]
+                RCNN_loss_bbox_main = RCNN_losses[3]
 
             loss = rpn_loss_cls.mean() + rpn_loss_box.mean() \
                 + RCNN_loss_cls.mean() + RCNN_loss_bbox.mean()
@@ -523,6 +570,16 @@ if __name__ == '__main__':
                     loss_rpn_box = rpn_loss_box.mean().item()
                     loss_rcnn_cls = RCNN_loss_cls.mean().item()
                     loss_rcnn_box = RCNN_loss_bbox.mean().item()
+                    # hierarchy
+                    if RCNN_loss_cls_main:
+                        loss_rcnn_cls_main = RCNN_loss_cls_main.mean().item()
+                    else:
+                        loss_rcnn_cls_main = None
+                    if RCNN_loss_bbox_main:
+                        loss_rcnn_bbox_main = RCNN_loss_bbox_main.mean().item()
+                    else:
+                        loss_rcnn_bbox_main = None
+
                     fg_cnt = torch.sum(rois_label.data.ne(0))
                     bg_cnt = rois_label.data.numel() - fg_cnt
                 else:
@@ -530,6 +587,15 @@ if __name__ == '__main__':
                     loss_rpn_box = rpn_loss_box.item()
                     loss_rcnn_cls = RCNN_loss_cls.item()
                     loss_rcnn_box = RCNN_loss_bbox.item()
+                    # hierarchy
+                    if RCNN_loss_cls_main:
+                        loss_rcnn_cls_main = RCNN_loss_cls_main.item()
+                    else:
+                        loss_rcnn_cls_main = None
+                    if RCNN_loss_bbox_main:
+                        loss_rcnn_bbox_main = RCNN_loss_bbox_main.item()
+                    else:
+                        loss_rcnn_bbox_main = None
                     fg_cnt = torch.sum(rois_label.data.ne(0))
                     bg_cnt = rois_label.data.numel() - fg_cnt
 
@@ -539,6 +605,10 @@ if __name__ == '__main__':
                       (fg_cnt, bg_cnt, end-start))
                 print("\t\t\trpn_cls: %.4f, rpn_box: %.4f, rcnn_cls: %.4f, rcnn_box %.4f"
                       % (loss_rpn_cls, loss_rpn_box, loss_rcnn_cls, loss_rcnn_box))
+                if loss_rcnn_bbox_main:
+                    print("\t\t\trcnn_cls_main: %.4f, rcnn_box_main %.4f"
+                          % (loss_rcnn_cls_main, loss_rcnn_bbox_main))
+
                 if args.use_tfboard:
                     info = {
                         'loss': loss_temp,

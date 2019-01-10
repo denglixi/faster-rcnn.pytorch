@@ -156,15 +156,6 @@ def get_data2imdbval_dict():
                     imdbval_name = "food_{}_inner{}{}val_excl{}_train_mt{}".format(
                         ct, fewN_str, mtN_str, ct, mtN)
                 data2imdbval_dict[dataset] = imdbval_name
-    # 3. create exclcanteen_finecanteenfewN -> canteenfewN
-    for ct in collected_cts:
-        for mtN in [10]:
-            for fewN in [1, 5, 10]:
-                dataset = "foodexcl{}mt{}_fine{}few{}_test{}few{}".format(
-                    ct, mtN, ct, fewN, ct, fewN)
-                imdbval_name = "food_{}_innerfew{}mt{}val_excl{}_train_mt{}".format(
-                    ct, fewN, mtN, ct, mtN)
-                data2imdbval_dict[dataset] = imdbval_name
 
     return data2imdbval_dict
 
@@ -601,25 +592,6 @@ if __name__ == '__main__':
         print("recall = {}, accuracy = {} at threshold of {}".format(
             recall_imgs, accuracy_imgs, threshold_for_img))
 
-    # topk recall
-
-    # recall, precision = imdb.evaluate_rec_pre_for_image_topk(
-    #    all_boxes, imdb.classes, 5)
-
-    # print(recall)
-
-    # print("recall {}".format(recall))
-    # print("precision {}".format(precision))
-
-    # topk_accu5, topk_alarm5 = imdb.evalute_topk_acc(all_boxes, 5)
-    # topk_accu10, topk_alarm10 = imdb.evalute_topk_acc(all_boxes, 10)
-    # topk_accu15, topk_alarm15 = imdb.evalute_topk_acc(all_boxes, 15)
-
-    if False:
-        topk_alarm5 = imdb.evalute_topk_falsealarm(all_boxes, 5)
-        topk_alarm10 = imdb.evalute_topk_falsealarm(all_boxes, 10)
-        topk_alarm15 = imdb.evalute_topk_falsealarm(all_boxes, 15)
-    # print(topk_false_alarm)
 
     test_cls_loc = True
     if test_cls_loc:
@@ -641,28 +613,16 @@ if __name__ == '__main__':
             os.makedirs(results_save_dir)
 
         # save results of each metrics
-        # ['loc', 'cls', 'map']:
-        for metrics in ['map', 'loc', 'cls']:
+        for metrics in ['loc', 'cls', 'map']:
             if metrics == 'loc':
                 itertor = loc_accuracy
             elif metrics == 'cls':
                 itertor = clsify_accuracy
             elif metrics == 'map':
                 itertor = cls_ap
-            # if metrics == '5a':
-            #    itertor = topk_accu5
-            # elif metrics == '10a':
-            #    itertor = topk_accu10
-            # elif metrics == '15a':
-            #    itertor = topk_accu15
-            # if metrics == '5fp':
-            #    itertor = topk_alarm5
-            # elif metrics == '10fp':
-            #    itertor = topk_alarm10
-            # elif metrics == '15fp':
-            #    itertor = topk_alarm15
-            # results_filename = "epoch" + \
-            #    str(args.checkepoch) + "{}".format(metrics)
+
+            results_filename = "epoch" + \
+                str(args.checkepoch) + "{}".format(metrics)
 
             # filter results
             # train_cls = get_categories(args.train_cls)

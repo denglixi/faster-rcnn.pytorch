@@ -25,6 +25,10 @@ from .imdb import ROOT_DIR
 from . import ds_utils
 from .voc_eval import voc_eval
 from .voc_eval import loc_cls_eval, loc_cls_eval_for_image
+from .voc_eval import rec_pre_eval_for_image_topk, rec_pre_eval_for_image_hierarchy
+from .voc_eval import topk_acc_of_cls_per_dish
+from .voc_eval import topk_acc_of_cls_per_dish_2
+from .voc_eval import topk_falsealarm_of_cls_per_dish
 from .food_category import get_categories
 
 # TODO: make fast_rcnn irrelevant
@@ -61,7 +65,8 @@ class food_merge_imdb(imdb):
         self._roidb_handler = self.gt_roidb
         self._salt = str(uuid.uuid4())
         self._comp_id = 'comp4'
-
+        # init annopath, imagesetfile, cachedir
+        self.init_evaluate_inform()
         # PASCAL specific config options
         self.config = {'cleanup': True,
                        'use_salt': True,
@@ -74,6 +79,19 @@ class food_merge_imdb(imdb):
             'VOCdevkit path does not exist: {}'.format(self._devkit_path)
         assert os.path.exists(self._data_path), \
             'Path does not exist: {}'.format(self._data_path)
+
+    def init_evaluate_inform(self):
+        self.annopath = os.path.join(
+            self._devkit_path,
+            'Food_' + self._cantee,
+            'Annotations',
+            '{:s}.xml')
+        self.imagesetfile = os.path.join(
+            self._devkit_path,
+            'Food_' + self._cantee,
+            'ImageSets',
+            self._image_set + '.txt')
+        self.cachedir = os.path.join(self._devkit_path, 'annotations_cache')
 
     def image_path_at(self, i):
         """
@@ -403,21 +421,58 @@ class food_merge_imdb(imdb):
         return loc_cls_eval_for_image(
             all_boxes, annopath, imagesetfile, self._classes,  cachedir, threshold, 0.5)
 
-    def evaluate_cls_loc(self, all_boxes, threshold=0.5):
+    def evaluate_rec_pre_for_image_topk(self, all_boxes, classes, topk):
+        annopath = self.annopath
+        imagesetfile = self.imagesetfile
+        cachedir = self.cachedir
+        return rec_pre_eval_for_image_topk(all_boxes, annopath, imagesetfile, classes, cachedir, threshold=0.5, ovthresh=0.5, k=topk)
 
+    def evaluate_hierarchy(self, all_boxes, classes):
+        annopath = self.annopath
+        imagesetfile = self.imagesetfile
+        cachedir = self.cachedir
+        return rec_pre_eval_for_image_hierarchy(all_boxes, annopath, imagesetfile, classes, cachedir, threshold=0.5, ovthresh=0.5, k=None)
+
+    def evalute_topk_falsealarm(self, all_boxes, topk):
         # gt of cls
-        annopath = os.path.join(
-            self._devkit_path,
-            'Food_' + self._cantee,
-            'Annotations',
-            '{:s}.xml')
-        imagesetfile = os.path.join(
-            self._devkit_path,
-            'Food_' + self._cantee,
-            'ImageSets',
-            self._image_set + '.txt')
+        annopath = self.annopath
+        imagesetfile = self.imagesetfile
+        cachedir = self.cachedir
 
-        cachedir = os.path.join(self._devkit_path, 'annotations_cache')
+        all_clsify = []
+        for i, cls in enumerate(self._classes):
+            if cls == '__background__':
+                continue
+            else:
+                cls_accuracy = topk_falsealarm_of_cls_per_dish(
+                    all_boxes, annopath, imagesetfile, i, cls, cachedir, 0.5, 0.5, topk)
+                all_clsify.append(cls_accuracy)
+        return list(zip(self._classes[1:], all_clsify))
+
+    def evalute_topk_acc(self, all_boxes, topk):
+        # gt of cls
+        annopath = self.annopath
+        imagesetfile = self.imagesetfile
+        cachedir = self.cachedir
+
+        all_acc = []
+        all_fls = []
+        for i, cls in enumerate(self._classes):
+            if cls == '__background__':
+                continue
+            else:
+                accuracy, falsealarm = topk_acc_of_cls_per_dish_2(
+                    all_boxes, annopath, imagesetfile, i, cls, cachedir, 0.5, 0.5, topk)
+                all_acc.append(accuracy)
+                all_fls.append(falsealarm)
+        return list(zip(self._classes[1:], all_acc)), list(zip(self._classes[1:], all_fls))
+
+    def evaluate_cls_loc(self, all_boxes, threshold=0.5):
+        # gt of cls
+        annopath = self.annopath
+        imagesetfile = self.imagesetfile
+        cachedir = self.cachedir
+
         all_loc = []
         all_clsify = []
         for i, cls in enumerate(self._classes):

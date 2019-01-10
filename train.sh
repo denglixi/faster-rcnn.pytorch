@@ -5,12 +5,15 @@ WORKER_NUMBER=8
 
 # basic set
 #DATASET=foodexclArtsmt10
-DATASET=foodexclSciencemt10
 
+#DATASET=foodexclYIHmt10
+#DATASET=foodexclUTownmt10
+DATASET=foodexclUTownmt10_fineUTownfew5
 
-#NET=foodres50_hierarchy #{foodres50, res101, vgg16}
-NET=foodres50attention #{foodres50, res101, vgg16 , foodres50attention, foodres502fc}
-SESSION=5
+NET=foodres50 #{foodres50, res101, vgg16}
+#NET=foodres50_hierarchy_casecade_add_prob_0.5 #_casecade #{foodres50, res101, vgg16 , foodres50_hierarchy foodres50attention, foodres502fc, foodres50_hierarchy_casecade}
+
+SESSION=9
 FIXED_LAYER=4
 PRETRAIN=true
 WEIGHT_FILE=prefood #{ prefood, imagenet } only for res50
@@ -26,12 +29,12 @@ WARMING_UP_LR=0.0000001
 BATCH_SIZE=1
 
 # resume from
-RESUME= # null is for false
-RESUME_OPT=1 # null for false
-RESUME_SESS_EPOCH=1 #null for false
-CHECKSESSION=44
-CHECKEPOCH=5
-CHECKPOINT=53399
+RESUME=1 # null is for false
+RESUME_OPT= # null for false
+RESUME_SESS_EPOCH= #null for false
+CHECKSESSION=444
+CHECKEPOCH=35
+CHECKPOINT=11407
 
 
 # writing the experiment detail to file
