@@ -11,18 +11,18 @@ WORKER_NUMBER=8
 #DATASET=foodexclUTownmt10_fineUTownfew5
 DATASET=food_meta_Arts_train
 
-NET=foodres50 #{foodres50, res101, vgg16}
+NET=foodres50meta #{foodres50, res101, vgg16}
 #NET=foodres50_hierarchy_casecade_add_prob_0.5 #_casecade #{foodres50, res101, vgg16 , foodres50_hierarchy foodres50attention, foodres502fc, foodres50_hierarchy_casecade}
 
 SESSION=9
 FIXED_LAYER=4
 PRETRAIN=true
 WEIGHT_FILE=prefood #{ prefood, imagenet } only for res50
-MAXEPOCHS=60
-SAVE_EPOCH=3
+MAXEPOCHS=20
+SAVE_EPOCH=20
 
 # optimizer setting
-OPTIMIZER=sgd
+OPTIMIZER=adam
 LEARNING_RATE=0.001
 DECAY_STEP=5
 IS_WARMING_UP=false
@@ -35,7 +35,7 @@ RESUME_OPT= # null for false
 RESUME_SESS_EPOCH= #null for false
 CHECKSESSION=444
 CHECKEPOCH=35
-CHECKPOINT=11407
+CHECKPOINT=11545
 
 
 # writing the experiment detail to file
@@ -77,7 +77,7 @@ LOG=./Experiments/DetailLogs/log-`date +%Y-%m-%d-%H-%M-%S`-${DATASET}-${NET}-${S
 
 # training command
 if $IS_WARMING_UP ; then
-    CUDA_VISIBLE_DEVICES=$GPU_ID python trainval_net.py \
+    CUDA_VISIBLE_DEVICES=$GPU_ID python trainval_net_meta.py \
                    --dataset $DATASET --net $NET \
                    --epochs $MAXEPOCHS --save_epoch=$SAVE_EPOCH \
                    --s $SESSION \
@@ -91,7 +91,7 @@ if $IS_WARMING_UP ; then
                    --wu --wulr $WARMING_UP_LR
                        #2>&1 | tee $LOG $@
 else
-    CUDA_VISIBLE_DEVICES=$GPU_ID python trainval_net.py \
+    CUDA_VISIBLE_DEVICES=$GPU_ID python trainval_net_meta.py \
                    --dataset $DATASET --net $NET \
                    --epochs $MAXEPOCHS --save_epoch=$SAVE_EPOCH \
                    --s $SESSION \

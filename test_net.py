@@ -661,11 +661,10 @@ if __name__ == '__main__':
             #    itertor = topk_alarm10
             # elif metrics == '15fp':
             #    itertor = topk_alarm15
-            # results_filename = "epoch" + \
-            #    str(args.checkepoch) + "{}".format(metrics)
+            results_filename = "epoch" + \
+               str(args.checkepoch) + "{}".format(metrics)
 
             # filter results
-            # train_cls = get_categories(args.train_cls)
             val_names = args.imdbval_name.split("_")
             val_canteen = val_names[1]  # YIH
             val_split = val_names[2]  # valmt10 -> val_mt10

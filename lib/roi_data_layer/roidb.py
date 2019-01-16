@@ -7,8 +7,21 @@ import datasets
 import numpy as np
 from model.utils.config import cfg
 from datasets.factory import get_imdb
+from datasets.food_meta_data import food_meta_imdb
 import PIL
 import pdb
+
+
+def get_meta_imdb_params(dataset_name):
+    __sets = {}
+    for canteen in ["Arts"]:
+        for split in ['train', 'test']:
+            name = 'food_meta_{}_{}'.format(canteen, split)
+            categories = "{}_trainval".format(canteen)
+            # __sets[name] = (lambda split=split, canteen=canteen:
+            #                food_meta_imdb(split, canteen, categories))
+            __sets[name] = (split, canteen, categories)
+    return __sets[dataset_name]
 
 
 def prepare_roidb(imdb):
@@ -21,7 +34,7 @@ def prepare_roidb(imdb):
 
     roidb = imdb.roidb
     if not (imdb.name.startswith('coco')):
-        #sizes = [PIL.Image.open(imdb.image_path_at(i)).size
+        # sizes = [PIL.Image.open(imdb.image_path_at(i)).size
         #         for i in range(imdb.num_images)]
         widths = imdb._get_widths() * int(imdb.num_images / imdb.origin_img_len)
         heights = imdb._get_heights() * int(imdb.num_images / imdb.origin_img_len)
@@ -50,7 +63,10 @@ def prepare_roidb(imdb):
         assert all(max_classes[zero_inds] == 0)
         # max overlap > 0 => class should not be zero (must be a fg class)
         nonzero_inds = np.where(max_overlaps > 0)[0]
-        assert all(max_classes[nonzero_inds] != 0)
+        #assert all(max_classes[nonzero_inds] != 0)
+        if  all(max_classes[nonzero_inds] == 0):
+            pdb.set_trace()
+
 
 
 def rank_roidb_ratio(roidb):
@@ -94,6 +110,73 @@ def filter_roidb(roidb):
     return roidb
 
 
+def combined_roidb_meta(imdb_names, training=True):
+    """
+    Combine multiple roidbs
+    """
+
+    def get_training_roidb(imdb):
+        """Returns a roidb (Region of Interest database) for use in training."""
+        if cfg.TRAIN.USE_FLIPPED:
+            print('Appending horizontally-flipped training examples...')
+            imdb.append_flipped_images()
+            print('done')
+
+            # rotate image for annotation
+            if False:
+                for anchor in [90, 180, 270]:
+                    print('Appending anchor {} training examples...'.format(anchor))
+                    imdb.append_rotated_images(anchor)
+                    print('done')
+
+                for anchor in [90, 180, 270]:
+                    print(
+                        'Appending flipped anchor {} training examples...'.format(anchor))
+                    imdb.append_rotated_images(anchor, flipped=True)
+                    print('done')
+
+        print('Preparing training data...')
+
+        prepare_roidb(imdb)
+        # ratio_index = rank_roidb_ratio(imdb)
+        print('done')
+
+        return imdb.roidb
+
+    def get_roidb(imdb_name):
+        # imdb = get_imdb(imdb_name)
+        split, canteen, categories= get_meta_imdb_params(imdb_name)
+        imdb = food_meta_imdb(split, canteen, categories)
+
+        imdb_test = food_meta_imdb(split, canteen, categories)
+        # imdb test reset
+        imdb_test.class_to_ind = imdb.class_to_ind
+        imdb_test.classes = imdb.classes
+        imdb_test.image_index = imdb.test_index
+        imdb_test.origin_img_len = len(imdb.test_index)
+        print('Loaded dataset `{:s}` for training'.format(imdb.name))
+        imdb.set_proposal_method(cfg.TRAIN.PROPOSAL_METHOD)
+        imdb_test.set_proposal_method(cfg.TRAIN.PROPOSAL_METHOD)
+        print('Set proposal method: {:s}'.format(cfg.TRAIN.PROPOSAL_METHOD))
+        print("roidb len:{}".format(imdb.num_images))
+        roidb = get_training_roidb(imdb)
+
+        print("roidb test len:{}".format(imdb_test.num_images))
+        roidb_test = get_training_roidb(imdb_test)
+        return roidb, roidb_test, imdb, imdb_test
+
+    roidb, roidb_test, imdb, imdb_test = get_roidb(imdb_names)
+
+    if training:
+        roidb = filter_roidb(roidb)
+        roidb_test = filter_roidb(roidb_test)
+
+    ratio_list, ratio_index = rank_roidb_ratio(roidb)
+    ratio_list_test, ratio_index_test = rank_roidb_ratio(roidb_test)
+
+    return imdb, roidb, ratio_list, ratio_index, imdb_test, roidb_test, ratio_list_test, ratio_index_test
+
+
 def combined_roidb(imdb_names, training=True):
     """
     Combine multiple roidbs
@@ -114,7 +197,8 @@ def combined_roidb(imdb_names, training=True):
                     print('done')
 
                 for anchor in [90, 180, 270]:
-                    print('Appending flipped anchor {} training examples...'.format(anchor))
+                    print(
+                        'Appending flipped anchor {} training examples...'.format(anchor))
                     imdb.append_rotated_images(anchor, flipped=True)
                     print('done')
 

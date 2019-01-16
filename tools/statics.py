@@ -225,21 +225,26 @@ def statistic_all():
 
     for ct in canttens:
         # construct imagesets
-        imagesets = ['trainval', 'train', 'val', 'inner']
+        imagesets = ['trainval']#, 'train', 'val', 'inner']
         imagesets_mt = []
-        for N in [10, 30, 50, 100]:
-            imagesets_mt += [x+"mt{}".format(N) for x in imagesets]
+        for N in [0]:#, 10, 30, 50, 100]:
+            if N == 0:
+                imagesets_mt += [x for x in imagesets]
+            else:
+                imagesets_mt += [x+"mt{}".format(N) for x in imagesets]
         imagesets += imagesets_mt
 
         # statistics
         for img_set in imagesets:
             if "inner" in img_set and ct not in ["Arts", "YIH", "UTown", "Science", "TechChicken", "TechMixedVeg"]:
                 continue
-            get_statis(food_dataset_root, ct, img_set)
+            print("ct:{}, img_set:{}".format(ct, img_set))
+            get_statis(food_dataset_root, ct, img_set, "{}_{}".format(ct, img_set))
 
 
 def main():
     """main"""
+    statistic_all()
 
     food_dataset_root = "/home/d/denglixi/faster-rcnn.pytorch/data/Food/"
     # for ct in ['YIH', 'exclYIH', 'All']:

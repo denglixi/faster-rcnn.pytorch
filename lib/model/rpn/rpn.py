@@ -52,6 +52,8 @@ class _RPN(nn.Module):
         self.rpn_loss_cls = 0
         self.rpn_loss_box = 0
 
+
+
     @staticmethod
     def reshape(x, d):
         input_shape = x.size()
@@ -63,7 +65,7 @@ class _RPN(nn.Module):
         )
         return x
 
-    def forward(self, base_feat, im_info, gt_boxes, num_boxes):
+    def forward(self, base_feat, im_info, gt_boxes, num_boxes, weight=None):
 
         batch_size = base_feat.size(0)
 

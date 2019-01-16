@@ -18,10 +18,10 @@ Test=
 #DATASET=foodexclYIHmt10_testYIHfew1
 
 #DATASET=foodexclArtsmt10
-DATASET=foodexclArtsmt10_testArtsfew1
+#DATASET=foodexclArtsmt10_testArtsfew1
 
 #DATASET=foodexclUTownmt10_testUTownfew1
-#DATASET=foodexclUTownmt10_fineUTownfew5_testUTownfew5
+DATASET=foodexclUTownmt10_fineUTownfew5_testUTownfew5
 
 #DATASET=foodexclSciencemt10
 
@@ -31,20 +31,20 @@ DATASET=foodexclArtsmt10_testArtsfew1
 #NET=foodres50_hierarchy_casecade_add_prob_0.5 #_casecade #{foodres50, res101, vgg16 , foodres50_hierarchy foodres50attention, foodres502fc, foodres50_hierarchy_casecade}
 NET=foodres50
 # load weight
-SESSION=444
-EPOCH=35
+SESSION=9
+EPOCH=8
 # YIH 11545 #UTown 11407 #All 14819 #arts 13349 #science 13667
 # Arts 53399
-CHECKPOINT=13349
+CHECKPOINT=189
 
 # whether visulazation the results during testing
 IS_VIS=false
 
 # whether test cache which have saved in last testing
-IS_TEST_CACHE=false
+IS_TEST_CACHE=true
 
 # whether save all detection results in images
-SAVE_FOR_VIS=true # blank for false
+SAVE_FOR_VIS= # blank for false
 
 
 if $IS_VIS ;then

@@ -16,9 +16,16 @@ from datasets.imagenet import imagenet
 from datasets.vg import vg
 from datasets.food import food
 from datasets.food_data import food_merge_imdb
+from datasets.food_meta_data import food_meta_imdb
 
 __sets = {}
 
+for canteen in ["Arts"]:
+    for split in ['train', 'test']:
+        name = 'food_meta_{}_{}'.format(canteen, split)
+        categories = "{}_trainval".format(canteen)
+        __sets[name] = (lambda split=split, canteen=canteen:
+                        food_meta_imdb(split, canteen, categories))
 
 # Set up food_<canteen>_<split>_<trainingcategories>
 splits = ['train', 'val', 'trainval', 'inner']

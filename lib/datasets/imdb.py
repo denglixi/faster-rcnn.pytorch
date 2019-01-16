@@ -45,6 +45,10 @@ class imdb(object):
     def origin_img_len(self):
         return self._origin_img_len
 
+    @origin_img_len.setter
+    def origin_img_len(self, origin_img_len):
+        self._origin_img_len = origin_img_len
+
     @property
     def augmentations(self):
         return self._augmentations
@@ -61,13 +65,30 @@ class imdb(object):
     def classes(self):
         return self._classes
 
+    @classes.setter
+    def classes(self, classes):
+        self._classes = classes
+
+    @property
+    def class_to_ind(self):
+        return self._class_to_ind
+
+    @class_to_ind.setter
+    def class_to_ind(self, class_to_ind):
+        self._class_to_ind = class_to_ind
+
     @property
     def image_index(self):
         return self._image_index
 
+    @image_index.setter
+    def image_index(self, image_index):
+        self._image_index = image_index
+
     @property
     def roidb_handler(self):
         return self._roidb_handler
+
 
     @roidb_handler.setter
     def roidb_handler(self, val):
@@ -136,11 +157,15 @@ class imdb(object):
     def append_flipped_images(self):
         num_images = self.origin_img_len
         widths = self._get_widths()
+
         for i in range(num_images):
             boxes = self.roidb[i]['boxes'].copy()
             oldx1 = boxes[:, 0].copy()
             oldx2 = boxes[:, 2].copy()
-            boxes[:, 0] = widths[i] - oldx2 - 1
+            try:
+                boxes[:, 0] = widths[i] - oldx2 - 1
+            except:
+                pdb.set_trace()
             boxes[:, 2] = widths[i] - oldx1 - 1
             assert (boxes[:, 2] >= boxes[:, 0]).all()
             entry = {'boxes': boxes,
