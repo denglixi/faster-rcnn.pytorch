@@ -1,24 +1,25 @@
 #!/bin/sh
 
-GPU_ID=0
+GPU_ID=1
 
-IMAGEDIR=./images/userimage/
+IMAGEDIR=./images/
 MODELDIR=./models/
 CFG_FILE=./cfgs/demo.yml
 
 #webcam_num -2 show image online -1 saveimage
 
 # load weight
-SESSION=123
-EPOCH=32
+SESSION=444
+EPOCH=35
 CHECKPOINT=14819
 
 
 # basic set
+#DATASET=foodEconomicBeeHoon
 DATASET=foodAllmt10
 NET=foodres50 #{foodres50, res101, vgg16}
 
-WEB_NUM=-2
+WEB_NUM=-1
 
 CUDA_VISIBLE_DEVICES=$GPU_ID python demo.py --net $NET \
                --cfg $CFG_FILE \

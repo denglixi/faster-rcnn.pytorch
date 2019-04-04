@@ -14,7 +14,7 @@ import os
 from xml_process import parse_rec
 
 
-def create_dishes(canteen):
+def create_dishes(canteen, imageset=None):
     """create_dishes"""
     # each dish may have more than 1 image (mostly is 2).
     # construct dish-> [image1(anno) , image2(anno)]
@@ -27,6 +27,9 @@ def create_dishes(canteen):
 
     # sort is important since listdir func do not return a ordered results.
     all_xml_fs = sorted(os.listdir(anno_path))
+    if imageset is not None:
+        with open(os.path.join(root_path, 'ImageSets', imageset+'.txt'), 'r') as imageset_f:
+            all_xml_fs = [x.strip()+'.xml' for x in imageset_f.readlines()]
 
     for x_f in all_xml_fs:
         x_f_path = os.path.join(anno_path, x_f)
@@ -81,8 +84,3 @@ def clean_validation(val_set, dishes):
 
     with open("all_in_val.txt", 'w') as f:
         f.writelines([x+"\n" for x in left_val])
-
-
-dishes = create_dishes("Arts")
-import pdb
-pdb.set_trace()

@@ -21,6 +21,7 @@ from torch.autograd import Variable
 import torch.nn as nn
 import torch.optim as optim
 
+import xml.etree.ElementTree as ET
 import torchvision.transforms as transforms
 import torchvision.datasets as dset
 from scipy.misc import imread
@@ -43,6 +44,31 @@ try:
 except NameError:
     xrange = range  # Python 3
 
+beehoonid2name = {'1': 'bee hoon', '2': 'fried noodles', '3': 'kway teow', '4': 'kway teow, yellow noodles mix', '5': 'rice', '51': 'fried rice', '7': 'hokkien mee', '8': 'maggie noodle', '9': 'Glutinous rice', '10': 'beehoon and noodle mix', '110': 'stir fry mee tai mak', '11': 'fried egg', '12': 'scrambled egg', '13': 'cabbage', '131': 'hairy gourd with egg', '14': 'french bean/long bean', '141': 'broccoli', '142': 'celery', '143': 'beansprout', '15': 'deep fried beancurd skin', '16':
+                  'fried beancurd/taukwa', '17': 'taupok', '171': 'braised taupok', '18': 'Acar', '181': 'Stir fried eggplant', '19': 'cucumber', '21': 'luncheon meat', '22': 'hashbrown', '23': 'ngoh hiang', '24': 'begedil', '25': 'spring roll', '31': 'otah', '32': 'fish ball/sotong ball', '33': 'white, yellow fish fillet', '331': 'orange, red fish fillet', '34': 'fish cake', '341': 'ngoh hiang fish cake', '35': 'kuning fish (fried small fish)', '351': 'fried fish steak', '36': 'siew mai',
+                  '41': 'hotdog/taiwan sausage', '42': 'seaweed chicken', '43': 'chicken nugget', '44': 'fried chicken / chicken wings', '441': 'fried chicken chopped up', '45': 'fried chicken cutlet (not ground meat)', '55': 'curry mixed veg', '551': 'curry chicken and potato', '61': 'ikan bilis', '62': 'chilli paste', '63': 'green chilli', '64': 'peanut', '65': 'Sweet Sauce', '66': 'red chilli chopped', '71': 'deep fried fish', '91': 'Butter cereal chicken', '92': 'fried wanton/ dumpling', '93':
+                  'Vegetarian meat', '94': 'Fried onions', '95': 'Crabstick'}
+
+id2chn = beehoonid2name
+
+def parse_rec(filename):
+    """ Parse a PASCAL VOC xml file """
+    tree = ET.parse(filename)
+    objects = []
+    for obj in tree.findall('object'):
+        obj_struct = {}
+        obj_struct['name'] = obj.find('name').text
+        obj_struct['pose'] = obj.find('pose').text
+        obj_struct['truncated'] = int(obj.find('truncated').text)
+        obj_struct['difficult'] = int(obj.find('difficult').text)
+        bbox = obj.find('bndbox')
+        obj_struct['bbox'] = [int(bbox.find('xmin').text),
+                              int(bbox.find('ymin').text),
+                              int(bbox.find('xmax').text),
+                              int(bbox.find('ymax').text)]
+        objects.append(obj_struct)
+
+    return objects
 
 def parse_args():
     """
@@ -170,7 +196,7 @@ if __name__ == '__main__':
     load_name = os.path.join(input_dir,
                              'faster_rcnn_{}_{}_{}.pth'.format(args.checksession, args.checkepoch, args.checkpoint))
 
-    pascal_classes = np.asarray(get_categories("All_trainmt10"))
+    pascal_classes = np.asarray(get_categories("EconomicBeeHoon_train"))
 
     # initilize the network here.
     if args.net == 'vgg16':
@@ -339,6 +365,13 @@ if __name__ == '__main__':
         det_toc = time.time()
         detect_time = det_toc - det_tic
         misc_tic = time.time()
+
+        # get gt
+        # 1. read xml
+
+
+
+
         if vis:
             im2show = np.copy(im)
         for j in xrange(1, len(pascal_classes)):

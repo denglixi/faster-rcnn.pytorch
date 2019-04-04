@@ -22,7 +22,7 @@ def create_category(imageset):
     canttens = ['All', 'exclArts', 'exclYIH', 'exclTechChicken',
                 'exclTechMixedVeg', 'exclUTown', 'exclScience',
                 'YIH', 'Arts', 'Science', 'UTown',
-                'TechChicken', 'TechMixedVeg']
+                'TechChicken', 'TechMixedVeg', 'EconomicBeeHoon']
     category_file = './food_category.py'
     food_dataset_root = "/home/d/denglixi/faster-rcnn.pytorch/data/Food/"
     datasets = imageset

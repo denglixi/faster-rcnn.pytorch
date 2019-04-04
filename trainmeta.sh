@@ -1,6 +1,6 @@
 #!/bin/sh
 # GPU usage
-GPU_ID=1
+GPU_ID=0
 WORKER_NUMBER=8
 
 # basic set
@@ -14,7 +14,7 @@ DATASET=food_meta_Arts_train
 NET=foodres50meta #{foodres50, res101, vgg16}
 #NET=foodres50_hierarchy_casecade_add_prob_0.5 #_casecade #{foodres50, res101, vgg16 , foodres50_hierarchy foodres50attention, foodres502fc, foodres50_hierarchy_casecade}
 
-SESSION=9
+SESSION=1
 FIXED_LAYER=4
 PRETRAIN=true
 WEIGHT_FILE=prefood #{ prefood, imagenet } only for res50
@@ -23,7 +23,7 @@ SAVE_EPOCH=20
 
 # optimizer setting
 OPTIMIZER=adam
-LEARNING_RATE=0.001
+LEARNING_RATE=0.0001
 DECAY_STEP=5
 IS_WARMING_UP=false
 WARMING_UP_LR=0.0000001

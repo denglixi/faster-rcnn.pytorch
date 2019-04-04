@@ -11,7 +11,6 @@ import xml.dom.minidom as minidom
 
 import os
 # import PIL
-import random
 import numpy as np
 import scipy.sparse
 import subprocess
@@ -32,6 +31,7 @@ from .voc_eval import topk_acc_of_cls_per_dish_2
 from .voc_eval import topk_falsealarm_of_cls_per_dish
 from .food_category import get_categories
 
+
 # TODO: make fast_rcnn irrelevant
 # >>>> obsolete, because it depends on sth outside of this project
 from model.utils.config import cfg
@@ -44,31 +44,27 @@ except NameError:
 # <<<< obsolete
 
 
-class food_meta_imdb(imdb):
-
-    def __init__(self, image_set, cantee, categories, devkit_path=None):
-        """
-        categories: All_trainval, exclYIH_trainval, ...
-        """
-        self._train_or_test = 'train'
-        imdb.__init__(self, 'food_' + cantee + '_' + image_set)
-        self._cantee = cantee
+class school_lunch(imdb):
+    def __init__(self, image_set,  devkit_path=None):
+        imdb.__init__(self, 'schoollunch'+ '_' + image_set)
         self._image_set = image_set
         self._devkit_path = self._get_default_path() if devkit_path is None \
             else devkit_path
-        self._data_path = os.path.join(
-            self._devkit_path, 'Food_' + self._cantee)
-        self._classes = get_categories(categories)
-        self._classes = self.extend_categories(self._classes)
+        self._data_path = self._devkit_path
+        self._classes = ('__background__',  # always index 0
+                         '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11',
+                         '12', '13', '14', '15', '16', '17', '18', '19', '20', '21')
         self._class_to_ind = dict(zip(self.classes, xrange(self.num_classes)))
         self._image_ext = '.jpg'
         self._image_index = self._load_image_set_index()
-        self._origin_img_len = len(self._image_index)
         # Default to roidb handler
         # self._roidb_handler = self.selective_search_roidb
         self._roidb_handler = self.gt_roidb
         self._salt = str(uuid.uuid4())
         self._comp_id = 'comp4'
+        self._origin_img_len = len(self._image_index)
+
+
         # init annopath, imagesetfile, cachedir
         self.init_evaluate_inform()
         # PASCAL specific config options
@@ -84,95 +80,13 @@ class food_meta_imdb(imdb):
         assert os.path.exists(self._data_path), \
             'Path does not exist: {}'.format(self._data_path)
 
-    # def change_data_to_test(self):
-    #    self._image_index = self.test_index
-    #    self._origin_img_len = len(self._image_index)
-
-    # def change_data_to_train(self):
-    #    self._image_index = self.train_index
-    #    self._origin_img_len = len(self._image_index)
-
-    def extend_categories(self, categories):
-        cls_num = len(categories)
-        extend_cls_num = 164 - cls_num
-        extend_cls_name = []
-        for i in range(extend_cls_num):
-            extend_cls_name.append("extend_cls_{}".format(i))
-        categories = categories + extend_cls_name
-        random.shuffle(categories)
-        categories.insert(0, '__background__')
-        return categories
-
-    def parse_rec(self, filename):
-        """ Parse a PASCAL VOC xml file """
-        tree = ET.parse(filename)
-        objects = []
-        for obj in tree.findall('object'):
-            obj_struct = {}
-            obj_struct['name'] = obj.find('name').text
-            obj_struct['pose'] = obj.find('pose').text
-            obj_struct['truncated'] = int(obj.find('truncated').text)
-            obj_struct['difficult'] = int(obj.find('difficult').text)
-            bbox = obj.find('bndbox')
-            obj_struct['bbox'] = [int(bbox.find('xmin').text),
-                                  int(bbox.find('ymin').text),
-                                  int(bbox.find('xmax').text),
-                                  int(bbox.find('ymax').text)]
-            objects.append(obj_struct)
-
-        return objects
-
-    def create_dishes(self):
-        """create_dishes"""
-        # each dish may have more than 1 image (mostly is 2).
-        # construct dish-> [image1(anno) , image2(anno)]
-        # dishes = [dish1, ..., dishn]
-
-        anno_path = os.path.join(
-            self._devkit_path,
-            'Food_' + self._cantee,
-            'Annotations')
-        dishes = []
-        dish = []
-
-        # sort is important since listdir func do not return a ordered results.
-        all_xml_fs = sorted(os.listdir(anno_path))
-
-        for x_f in all_xml_fs:
-            x_f_path = os.path.join(anno_path, x_f)
-            x_f_name = x_f.split('.')[0]
-
-            # get cls
-            objs = self.parse_rec(x_f_path)
-            cls_of_image = []
-            for obj in objs:
-                cls_of_image.append(obj['name'])
-            cls_of_image = sorted(cls_of_image)
-
-            # process dish & x_f_name
-            if not dish:  # first image of dish
-                dish = [x_f_name]
-                cls_of_dish = cls_of_image
-            else:
-                # the same dish. TODO some samples are wrong in the following condition
-                if cls_of_image == cls_of_dish or set(cls_of_image) > set(cls_of_dish) or set(cls_of_dish) > set(cls_of_image):
-                    dish.append(x_f_name)
-                else:
-                    # new dish
-                    dishes.append(dish)
-                    dish = [x_f_name]
-                    cls_of_dish = sorted(cls_of_image)
-        return dishes
-
     def init_evaluate_inform(self):
         self.annopath = os.path.join(
             self._devkit_path,
-            'Food_' + self._cantee,
             'Annotations',
             '{:s}.xml')
         self.imagesetfile = os.path.join(
             self._devkit_path,
-            'Food_' + self._cantee,
             'ImageSets',
             self._image_set + '.txt')
         self.cachedir = os.path.join(self._devkit_path, 'annotations_cache')
@@ -205,34 +119,19 @@ class food_meta_imdb(imdb):
         """
         # Example path to image set file:
         # self._devkit_path + /VOCdevkit2007/VOC2007/ImageSets/Main/val.txt
-        # image_set_file = os.path.join(self._data_path, 'ImageSets',
-        #                              self._image_set + '.txt')
-        # assert os.path.exists(image_set_file), \
-        #    'Path does not exist: {}'.format(image_set_file)
-        # with open(image_set_file) as f:
-        #    image_index = [x.strip() for x in f.readlines()]
-        dishes = self.create_dishes()
-        random.shuffle(dishes)
-        train_dishes = dishes[0:5]
-        test_dishes = dishes[5:10]
-        self.train_index = []
-        self.test_index = []
-
-        for dish in train_dishes:
-            self.train_index.extend(dish)
-
-        for dish in test_dishes:
-            self.test_index.extend(dish)
-
-        # TODO save test_dishes
-
-        return self.train_index
+        image_set_file = os.path.join(self._data_path, 'ImageSets',
+                                      self._image_set + '.txt')
+        assert os.path.exists(image_set_file), \
+            'Path does not exist: {}'.format(image_set_file)
+        with open(image_set_file) as f:
+            image_index = [x.strip() for x in f.readlines()]
+        return image_index
 
     def _get_default_path(self):
         """
         Return the default path where PASCAL VOC is expected to be installed.
         """
-        return os.path.join(cfg.DATA_DIR, 'Food')
+        return os.path.join(cfg.DATA_DIR, 'school_lunch_dataset' )
 
     def gt_roidb(self):
         """
@@ -240,19 +139,18 @@ class food_meta_imdb(imdb):
 
         This function loads/saves from/to a cache file to speed up future calls.
         """
-        #cache_file = os.path.join(self.cache_path, self.name + '_gt_roidb.pkl')
-        # if os.path.exists(cache_file):
-        #    with open(cache_file, 'rb') as fid:
-        #        roidb = pickle.load(fid)
-        #    print('{} gt roidb loaded from {}'.format(self.name, cache_file))
-        #    return roidb
+        cache_file = os.path.join(self.cache_path, self.name + '_gt_roidb.pkl')
+        if os.path.exists(cache_file):
+            with open(cache_file, 'rb') as fid:
+                roidb = pickle.load(fid)
+            print('{} gt roidb loaded from {}'.format(self.name, cache_file))
+            return roidb
 
-        print("{} gt roidb are reading".format(self.name))
         gt_roidb = [self._load_pascal_annotation(index)
                     for index in self.image_index]
-        # with open(cache_file, 'wb') as fid:
-        #    pickle.dump(gt_roidb, fid, pickle.HIGHEST_PROTOCOL)
-        #print('wrote gt roidb to {}'.format(cache_file))
+        with open(cache_file, 'wb') as fid:
+            pickle.dump(gt_roidb, fid, pickle.HIGHEST_PROTOCOL)
+        print('wrote gt roidb to {}'.format(cache_file))
 
         return gt_roidb
 
@@ -338,22 +236,7 @@ class food_meta_imdb(imdb):
         #     #     print 'Removed {} difficult objects'.format(
         #     #         len(objs) - len(non_diff_objs))
         #     objs = non_diff_objs
-        # exlcude unused cls
-
-        ori_num_objs = len(objs)
-        num_objs = 0
-        for obj in objs:
-            try:
-                cls = self._class_to_ind[obj.find('name').text.lower().strip()]
-                num_objs += 1
-            except:
-                continue
-        # assert num_objs == 0
-        if num_objs == 0:
-            import pdb
-            pdb.set_trace()
-
-        num_objs = num_objs  # len(objs)
+        num_objs = len(objs)
 
         boxes = np.zeros((num_objs, 4), dtype=np.uint16)
         gt_classes = np.zeros((num_objs), dtype=np.int32)
@@ -363,38 +246,23 @@ class food_meta_imdb(imdb):
         ishards = np.zeros((num_objs), dtype=np.int32)
 
         # Load object bounding boxes into a data frame.
-        ix = 0
-        for obj in objs:
+        for ix, obj in enumerate(objs):
             bbox = obj.find('bndbox')
             # Make pixel indexes 0-based
-            # the range of food label is (0, width) which may cause by bugs in labelimg 1.4
-            x1 = max(0.0, float(bbox.find('xmin').text) - 1)
-            y1 = max(0.0, float(bbox.find('ymin').text) - 1)
+            x1 = float(bbox.find('xmin').text) - 1
+            y1 = float(bbox.find('ymin').text) - 1
             x2 = float(bbox.find('xmax').text) - 1
             y2 = float(bbox.find('ymax').text) - 1
 
             diffc = obj.find('difficult')
             difficult = 0 if diffc == None else int(diffc.text)
-
-            try:
-                cls = self._class_to_ind[obj.find('name').text.lower().strip()]
-                # cls = int(obj.find('name').text.strip())
-            except:
-                print("Warning:*******cls can not found in file:******")
-                print(filename)
-                continue
-
-                raise
             ishards[ix] = difficult
+
+            cls = self._class_to_ind[obj.find('name').text.lower().strip()]
             boxes[ix, :] = [x1, y1, x2, y2]
             gt_classes[ix] = cls
-            try:
-                overlaps[ix, cls] = 1.0
-            except:
-                print(filename)
-                raise
+            overlaps[ix, cls] = 1.0
             seg_areas[ix] = (x2 - x1 + 1) * (y2 - y1 + 1)
-            ix += 1
 
         overlaps = scipy.sparse.csr_matrix(overlaps)
 
@@ -404,7 +272,8 @@ class food_meta_imdb(imdb):
                 'gt_overlaps': overlaps,
                 'flipped': False,
                 'rotated': 0,
-                'seg_areas': seg_areas}
+                'seg_areas': seg_areas,
+                }
 
     def _get_comp_id(self):
         comp_id = (self._comp_id + '_' + self._salt if self.config['use_salt']
@@ -416,7 +285,7 @@ class food_meta_imdb(imdb):
         filename = self._get_comp_id() + '_det_' + \
             self._image_set + '_{:s}.txt'
         filedir = os.path.join(
-            self._devkit_path, 'results', 'food' + self._cantee)
+            self._devkit_path, 'results')
         if not os.path.exists(filedir):
             os.makedirs(filedir)
         path = os.path.join(filedir, filename)
@@ -443,19 +312,16 @@ class food_meta_imdb(imdb):
     def _do_python_eval(self, output_dir='output'):
         annopath = os.path.join(
             self._devkit_path,
-            'Food_' + self._cantee,
             'Annotations',
             '{:s}.xml')
         imagesetfile = os.path.join(
             self._devkit_path,
-            'Food_' + self._cantee,
             'ImageSets',
             self._image_set + '.txt')
         cachedir = os.path.join(self._devkit_path, 'annotations_cache')
         aps = []
         # The PASCAL VOC metric changed in 2010
-        # use_07_metric = True if int(self._year) < 2010 else False
-        use_07_metric = False
+        use_07_metric = False #True if int(self._year) < 2010 else False
         print('VOC07 metric? ' + ('Yes' if use_07_metric else 'No'))
         if not os.path.isdir(output_dir):
             os.mkdir(output_dir)
@@ -485,8 +351,6 @@ class food_meta_imdb(imdb):
         print('-- Thanks, The Management')
         print('--------------------------------------------------------------')
 
-        return zip(self._classes[1:], aps), np.mean(aps)
-
     def _do_matlab_eval(self, output_dir='output'):
         print('-----------------------------------------------------')
         print('Computing results with the official MATLAB eval code.')
@@ -507,12 +371,10 @@ class food_meta_imdb(imdb):
         # gt of cls
         annopath = os.path.join(
             self._devkit_path,
-            'Food_' + self._cantee,
             'Annotations',
             '{:s}.xml')
         imagesetfile = os.path.join(
             self._devkit_path,
-            'Food_' + self._cantee,
             'ImageSets',
             self._image_set + '.txt')
 
@@ -587,7 +449,7 @@ class food_meta_imdb(imdb):
 
     def evaluate_detections(self, all_boxes, output_dir):
         self._write_voc_results_file(all_boxes)
-        result = self._do_python_eval(output_dir)
+        self._do_python_eval(output_dir)
         if self.config['matlab_eval']:
             self._do_matlab_eval(output_dir)
         if self.config['cleanup']:
@@ -596,7 +458,6 @@ class food_meta_imdb(imdb):
                     continue
                 filename = self._get_voc_results_file_template().format(cls)
                 os.remove(filename)
-        return result
 
     def competition_mode(self, on):
         if on:

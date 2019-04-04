@@ -104,7 +104,7 @@ class _fasterRCNN(nn.Module):
             pooled_feat = self.RCNN_roi_pool(base_feat, rois.view(-1, 5))
 
         # feed pooled features to top model
-        #(256,1024,7,7)
+        # (256,1024,7,7)
 
         pooled_feat = self._head_to_tail(pooled_feat)
 

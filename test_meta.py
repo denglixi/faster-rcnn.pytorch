@@ -35,48 +35,14 @@ from model.faster_rcnn.prefood_res50_attention import PreResNet50Attention
 from model.faster_rcnn.prefood_res50_2fc import PreResNet502Fc
 from model.faster_rcnn.prefood_res50_hi import PreResNet50Hierarchy
 from model.faster_rcnn.prefood_res50_hi_ca import PreResNet50HierarchyCasecade
-from model.faster_rcnn.prefood_res50_attention_minus import PreResNet50AttentionMinus
-from model.faster_rcnn.prefood_res50_attention_pos import PreResNet50AttentionPos
 from datasets.food_category import get_categories
 from datasets.id2name import id2chn, id2eng
-from datasets.voc_eval import get_gt_recs
 from datasets.sub2main import sub2main_dict
 
 try:
     xrange          # Python 2
 except NameError:
     xrange = range  # Python 3
-
-beehoonid2name = {'1': 'bee hoon', '2': 'fried noodles', '3': 'kway teow', '4': 'kway teow, yellow noodles mix', '5': 'rice', '51': 'fried rice', '7': 'hokkien mee', '8': 'maggie noodle', '9': 'Glutinous rice', '10': 'beehoon and noodle mix', '110': 'stir fry mee tai mak', '11': 'fried egg', '12': 'scrambled egg', '13': 'cabbage', '131': 'hairy gourd with egg', '14': 'french bean/long bean', '141': 'broccoli', '142': 'celery', '143': 'beansprout', '15': 'deep fried beancurd skin', '16':
-                  'fried beancurd/taukwa', '17': 'taupok', '171': 'braised taupok', '18': 'Acar', '181': 'Stir fried eggplant', '19': 'cucumber', '21': 'luncheon meat', '22': 'hashbrown', '23': 'ngoh hiang', '24': 'begedil', '25': 'spring roll', '31': 'otah', '32': 'fish ball/sotong ball', '33': 'white, yellow fish fillet', '331': 'orange, red fish fillet', '34': 'fish cake', '341': 'ngoh hiang fish cake', '35': 'kuning fish (fried small fish)', '351': 'fried fish steak', '36': 'siew mai',
-                  '41': 'hotdog/taiwan sausage', '42': 'seaweed chicken', '43': 'chicken nugget', '44': 'fried chicken / chicken wings', '441': 'fried chicken chopped up', '45': 'fried chicken cutlet (not ground meat)', '55': 'curry mixed veg', '551': 'curry chicken and potato', '61': 'ikan bilis', '62': 'chilli paste', '63': 'green chilli', '64': 'peanut', '65': 'Sweet Sauce', '66': 'red chilli chopped', '71': 'deep fried fish', '91': 'Butter cereal chicken', '92': 'fried wanton/ dumpling', '93':
-                  'Vegetarian meat', '94': 'Fried onions', '95': 'Crabstick'}
-
-schoolid2name = {
-    "21": 'Milk', "2": 'Drinkable yogurt', "3": 'Rice', "4": 'Mixed rice', "5": 'Bread', "6": 'White bread', "7": 'Udon', "8": 'Fish', "9": 'Meat', "10": 'Salad', "11": 'Cherry tomatoes', "12": 'Soups', "13": 'Curry', "14": 'Spicy chili-flavored tofu', "15": 'Bibimbap', "16": 'Fried noodles', "17": 'Spaghetti', "18": 'Citrus', "19": 'Apple', "20": 'Cup desserts', "1": 'Other foods'}
-
-
-def get_det_bbox_with_cls_of_img(all_boxes, img_idx):
-    """get_det_bbox_with_cls_of_img
-
-    :param all_boxes: det result
-    :param img_idx: img idx in imageset.txt
-    :return bboxes: N*6-dim matrix, N is number of bbox, 6 is [x1,y1,x2,y2,score,cls], the cls is the addtion information we get from this function
-    """
-    # get all box of img
-    img_all_boxes = [b[img_idx] for b in all_boxes]
-    # add cls_idx to box_cls
-    bboxes = None
-    for cls_idx_img, boxes_of_cls in enumerate(img_all_boxes):
-        if len(boxes_of_cls) != 0:
-            cls_cloumn = np.zeros(len(boxes_of_cls)) + cls_idx_img
-            # img_all_boxes[cls_idx] = np.c_[boxes_of_cls, cls_cloumn]
-            if bboxes is None:
-                bboxes = np.c_[boxes_of_cls, cls_cloumn]
-            else:
-                bboxes = np.vstack(
-                    (bboxes, np.c_[boxes_of_cls, cls_cloumn]))
-    return bboxes
 
 
 def parse_args():
@@ -90,9 +56,6 @@ def parse_args():
     parser.add_argument('--cfg', dest='cfg_file',
                         help='optional config file',
                         default='cfgs/vgg16.yml', type=str)
-    parser.add_argument('--imgset', dest='imgset',
-                        help='val, test',
-                        default='val', type=str)
     parser.add_argument('--net', dest='net',
                         help='vgg16, res50, res101, res152',
                         default='res101', type=str)
@@ -142,12 +105,10 @@ momentum = cfg.TRAIN.MOMENTUM
 weight_decay = cfg.TRAIN.WEIGHT_DECAY
 
 
-def get_data2imdbval_dict(imgset):
+def get_data2imdbval_dict():
     # create canttens
-
-    assert imgset in ['val', 'test']
     collected_cts = ["Arts", "Science", "YIH",
-                     "UTown", "TechChicken", "TechMixedVeg", "EconomicBeeHoon"]
+                     "UTown", "TechChicken", "TechMixedVeg"]
     excl_cts = ["excl"+x for x in collected_cts]
     all_canteens = collected_cts + excl_cts + ['All']
 
@@ -158,17 +119,11 @@ def get_data2imdbval_dict(imgset):
     data2imdbval_dict = {}
 
     for ct in all_canteens:
-        dataset = "food{}".format(ct)
-        imdbval_name = "food_{}_{}_{}_train".format(
-            ct, imgset, ct)
-        data2imdbval_dict[dataset] = imdbval_name
-
-    for ct in all_canteens:
         for mtN in [0, 10]:
             if mtN == 0:
-                ct_sp = imgset
+                ct_sp = "val"
             else:
-                ct_sp = "{}mt{}".format(imgset, mtN)
+                ct_sp = "valmt{}".format(mtN)
 
             # datasets here only support mtN format
             dataset = "food{}mt{}".format(ct, mtN)
@@ -195,11 +150,11 @@ def get_data2imdbval_dict(imgset):
                     ct, mtN_str, ct,  fewN_str)
 
                 if fewN == 0:
-                    imdbval_name = "food_{}_inner{}{}_excl{}_train_mt{}".format(
-                        ct, mtN_str, imgset, ct, mtN)  # innermt10val or innermt10test
+                    imdbval_name = "food_{}_inner{}_excl{}_train_mt{}".format(
+                        ct, mtN_str, ct, mtN)
                 else:
                     imdbval_name = "food_{}_inner{}{}val_excl{}_train_mt{}".format(
-                            ct, fewN_str, mtN_str, ct, mtN) # it not working anymore . it is like innerfew1mt10val: TODO spliting to val and test
+                        ct, fewN_str, mtN_str, ct, mtN)
                 data2imdbval_dict[dataset] = imdbval_name
     # 3. create exclcanteen_finecanteenfewN -> canteenfewN
     for ct in collected_cts:
@@ -211,13 +166,11 @@ def get_data2imdbval_dict(imgset):
                     ct, fewN, mtN, ct, mtN)
                 data2imdbval_dict[dataset] = imdbval_name
 
-    # 4. extra
-    data2imdbval_dict['schoollunch'] = 'schoollunch_val'
     return data2imdbval_dict
 
 
 def set_imdbval_name(args):
-    data2imdbval_dict = get_data2imdbval_dict(args.imgset)
+    data2imdbval_dict = get_data2imdbval_dict()
     args.imdbval_name = data2imdbval_dict[args.dataset]
     return args
 
@@ -304,7 +257,6 @@ if __name__ == '__main__':
     imdb.competition_mode(on=True)
 
     print('{:d} roidb entries'.format(len(roidb)))
-    # for Data_few
     if len(args.dataset.split('_')) > 1:
         model_name = "_".join(args.dataset.split('_')[0:-1])
     else:
@@ -317,9 +269,119 @@ if __name__ == '__main__':
     load_name = os.path.join(input_dir,
                              'faster_rcnn_{}_{}_{}.pth'.format(args.checksession, args.checkepoch, args.checkpoint))
 
+    # initilize the network here.
+    if args.net == 'vgg16':
+        fasterRCNN = vgg16(imdb.classes, pretrained=False,
+                           class_agnostic=args.class_agnostic)
+    elif args.net == 'res101':
+        fasterRCNN = resnet(imdb.classes, 101, pretrained=False,
+                            class_agnostic=args.class_agnostic)
+    elif args.net == 'res50':
+        fasterRCNN = resnet(imdb.classes, 50, pretrained=False,
+                            class_agnostic=args.class_agnostic)
+    elif args.net == 'res152':
+        fasterRCNN = resnet(imdb.classes, 152, pretrained=False,
+                            class_agnostic=args.class_agnostic)
+    elif args.net == 'foodres50':
+        fasterRCNN = PreResNet50(imdb.classes, pretrained=True,
+                                 class_agnostic=args.class_agnostic)
+    elif args.net == 'foodres50attention':
+        fasterRCNN = PreResNet50Attention(imdb.classes, pretrained=True,
+                                          class_agnostic=args.class_agnostic)
+    elif args.net == 'foodres502fc':
+        fasterRCNN = PreResNet502Fc(imdb.classes, pretrained=True,
+                                    class_agnostic=args.class_agnostic)
+
+    elif args.net == 'foodres50_hierarchy':
+        def get_main_cls(sub_classes):
+            main_classes = []
+            for i in sub_classes:
+                main_classes.append(sub2main_dict[i])
+            main_classes = set(main_classes)
+            main_classes = list(main_classes)
+            return main_classes
+
+        main_classes = get_main_cls(imdb.classes)
+        fasterRCNN = PreResNet50Hierarchy(main_classes, imdb.classes,
+                                          pretrained=True,
+                                          class_agnostic=args.class_agnostic,
+                                          )
+    elif 'foodres50_hierarchy_casecade' in args.net:
+        nets_param = args.net.split('_')
+        if len(nets_param) == 3:
+            casecade_type = 'add_score'
+            alpha = 0.5
+        elif len(nets_param) == 5:
+            casecade_type = "".join(nets_param[3:5])
+            alpha = 0.5
+        elif len(nets_param) == 6:
+            casecade_type = "".join(nets_param[3:5])
+            alpha = float(nets_param[5])
+
+        main_classes = get_main_cls(imdb.classes)
+        fasterRCNN = PreResNet50HierarchyCasecade(main_classes, imdb.classes,
+                                                  pretrained=True,
+                                                  class_agnostic=args.class_agnostic,
+                                                  casecade_type=casecade_type,
+                                                  alpha=alpha
+                                                  )
+    else:
+        print("network is not defined")
+        pdb.set_trace()
+
+    fasterRCNN.create_architecture()
+
+    print("load checkpoint %s" % (load_name))
+    checkpoint = torch.load(load_name)
+    fasterRCNN.load_state_dict(checkpoint['model'])
+    if 'pooling_mode' in checkpoint.keys():
+        cfg.POOLING_MODE = checkpoint['pooling_mode']
+    print('load model successfully!')
+
+    # initilize the tensor holder here.
+    im_data = torch.FloatTensor(1)
+    im_info = torch.FloatTensor(1)
+    num_boxes = torch.LongTensor(1)
+    gt_boxes = torch.FloatTensor(1)
+
+    # ship to cuda
+    if args.cuda:
+        im_data = im_data.cuda()
+        im_info = im_info.cuda()
+        num_boxes = num_boxes.cuda()
+        gt_boxes = gt_boxes.cuda()
+
+    # make variable
+    im_data = Variable(im_data)
+    im_info = Variable(im_info)
+    num_boxes = Variable(num_boxes)
+    gt_boxes = Variable(gt_boxes)
+
+    if args.cuda:
+        cfg.CUDA = True
+
+    if args.cuda:
+        fasterRCNN.cuda()
+
+    start = time.time()
+    max_per_image = 100
+
+    vis = args.vis
+
+    if vis:
+        thresh = 0.0005
+    else:
+        thresh = 0.0
+
     save_name = 'faster_rcnn_{}_{}_{}'.format(
         args.checksession, args.checkepoch, args.checkpoint)
+    num_images = len(imdb.image_index)
+    all_boxes = [[[] for _ in xrange(num_images)]
+                 for _ in xrange(imdb.num_classes)]
+
     output_dir = get_output_dir(imdb, save_name)
+
+    _t = {'im_detect': time.time(), 'misc': time.time()}
     det_file = os.path.join(output_dir, 'detections.pkl')
 
     if(args.test_cache):
@@ -337,122 +399,6 @@ if __name__ == '__main__':
         #        #
 
     else:
-        # initilize the network here.
-        if args.net == 'vgg16':
-            fasterRCNN = vgg16(imdb.classes, pretrained=False,
-                               class_agnostic=args.class_agnostic)
-        elif args.net == 'res101':
-            fasterRCNN = resnet(imdb.classes, 101, pretrained=False,
-                                class_agnostic=args.class_agnostic)
-        elif args.net == 'res50':
-            fasterRCNN = resnet(imdb.classes, 50, pretrained=False,
-                                class_agnostic=args.class_agnostic)
-        elif args.net == 'res152':
-            fasterRCNN = resnet(imdb.classes, 152, pretrained=False,
-                                class_agnostic=args.class_agnostic)
-        elif args.net == 'foodres50':
-            fasterRCNN = PreResNet50(imdb.classes, pretrained=True,
-                                     class_agnostic=args.class_agnostic)
-        elif args.net == 'foodres50attentionMinus':
-            fasterRCNN = PreResNet50AttentionMinus(imdb.classes, pretrained=True,
-                                                   class_agnostic=args.class_agnostic)
-        elif args.net == 'foodres50attentionPos':
-            fasterRCNN = PreResNet50AttentionPos(imdb.classes, pretrained=True,
-                                                 class_agnostic=args.class_agnostic)
-
-        elif args.net == 'foodres50attention':
-            fasterRCNN = PreResNet50Attention(imdb.classes, pretrained=True,
-                                              class_agnostic=args.class_agnostic)
-        elif args.net == 'foodres502fc':
-            fasterRCNN = PreResNet502Fc(imdb.classes, pretrained=True,
-                                        class_agnostic=args.class_agnostic)
-
-        elif args.net == 'foodres50_hierarchy':
-            def get_main_cls(sub_classes):
-                main_classes = []
-                for i in sub_classes:
-                    main_classes.append(sub2main_dict[i])
-                main_classes = set(main_classes)
-                main_classes = list(main_classes)
-                return main_classes
-
-            main_classes = get_main_cls(imdb.classes)
-            fasterRCNN = PreResNet50Hierarchy(main_classes, imdb.classes,
-                                              pretrained=True,
-                                              class_agnostic=args.class_agnostic,
-                                              )
-        elif 'foodres50_hierarchy_casecade' in args.net:
-            nets_param = args.net.split('_')
-            if len(nets_param) == 3:
-                casecade_type = 'add_score'
-                alpha = 0.5
-            elif len(nets_param) == 5:
-                casecade_type = "".join(nets_param[3:5])
-                alpha = 0.5
-            elif len(nets_param) == 6:
-                casecade_type = "".join(nets_param[3:5])
-                alpha = float(nets_param[5])
-
-            main_classes = get_main_cls(imdb.classes)
-            fasterRCNN = PreResNet50HierarchyCasecade(main_classes, imdb.classes,
-                                                      pretrained=True,
-                                                      class_agnostic=args.class_agnostic,
-                                                      casecade_type=casecade_type,
-                                                      alpha=alpha
-                                                      )
-        else:
-            print("network is not defined")
-            pdb.set_trace()
-
-        fasterRCNN.create_architecture()
-        print("load checkpoint %s" % (load_name))
-        checkpoint = torch.load(load_name)
-        fasterRCNN.load_state_dict(checkpoint['model'])
-        if 'pooling_mode' in checkpoint.keys():
-            cfg.POOLING_MODE = checkpoint['pooling_mode']
-        print('load model successfully!')
-
-        # initilize the tensor holder here.
-        im_data = torch.FloatTensor(1)
-        im_info = torch.FloatTensor(1)
-        num_boxes = torch.LongTensor(1)
-        gt_boxes = torch.FloatTensor(1)
-
-        # ship to cuda
-        if args.cuda:
-            im_data = im_data.cuda()
-            im_info = im_info.cuda()
-            num_boxes = num_boxes.cuda()
-            gt_boxes = gt_boxes.cuda()
-
-        # make variable
-        im_data = Variable(im_data)
-        im_info = Variable(im_info)
-        num_boxes = Variable(num_boxes)
-        gt_boxes = Variable(gt_boxes)
-
-        if args.cuda:
-            cfg.CUDA = True
-
-        if args.cuda:
-            fasterRCNN.cuda()
-
-        start = time.time()
-        max_per_image = 100
-
-        vis = args.vis
-
-        if vis:
-            thresh = 0.0005
-        else:
-            thresh = 0.0
-
-        num_images = len(imdb.image_index)
-        all_boxes = [[[] for _ in xrange(num_images)]
-                     for _ in xrange(imdb.num_classes)]
-
-        _t = {'im_detect': time.time(), 'misc': time.time()}
-
         dataset = roibatchLoader(roidb, ratio_list, ratio_index, 1,
                                  imdb.num_classes, training=False, normalize=False)
         dataloader = torch.utils.data.DataLoader(dataset, batch_size=1,
@@ -461,7 +407,7 @@ if __name__ == '__main__':
         data_iter = iter(dataloader)
         fasterRCNN.eval()
         empty_array = np.transpose(np.array([[], [], [], [], []]), (1, 0))
-        for img_index in range(num_images):
+        for i in range(num_images):
             data_tic = time.time()
             data = next(data_iter)
             # if imdb.image_index[i] == '11oct_DONE328IMG_20181011_115438':
@@ -523,14 +469,8 @@ if __name__ == '__main__':
             misc_tic = time.time()
             im2show = None
             if vis or args.save_for_vis:
-                im = cv2.imread(imdb.image_path_at(img_index))
+                im = cv2.imread(imdb.image_path_at(i))
                 im2show = np.copy(im)
-
-            # unknown chn name categories
-            for unknown_id in range(1000):
-                str_i = "{}".format(unknown_id)
-                if str_i not in id2chn:
-                    id2chn[str_i] = str_i
 
             def get_all_boxes(classes, im2show):
                 for j in xrange(1, imdb.num_classes):
@@ -552,10 +492,10 @@ if __name__ == '__main__':
                         cls_dets = cls_dets[keep.view(-1).long()]
                         if vis or args.save_for_vis:
                             im2show = vis_detections(
-                                im2show, schoolid2name[imdb.classes[j]], np.array([cls_dets.cpu().numpy()[0, :]]), 0.5)
-                        all_boxes[j][img_index] = cls_dets.cpu().numpy()
+                                im2show, id2chn[imdb.classes[j]], np.array([cls_dets.cpu().numpy()[0, :]]), 0.5)
+                        all_boxes[j][i] = cls_dets.cpu().numpy()
                     else:
-                        all_boxes[j][img_index] = empty_array
+                        all_boxes[j][i] = empty_array
                 return all_boxes, im2show
 
             all_boxes, im2show = get_all_boxes(imdb.classes, im2show)
@@ -563,21 +503,21 @@ if __name__ == '__main__':
             # Limit to max_per_image detections *over all classes*
             # max_per_image = 1
             if max_per_image > 0:
-                image_scores = np.hstack([all_boxes[j][img_index][:, -1]
+                image_scores = np.hstack([all_boxes[j][i][:, -1]
                                           for j in xrange(1, imdb.num_classes)])
                 if len(image_scores) > max_per_image:
                     image_thresh = np.sort(image_scores)[-max_per_image]
                     for j in xrange(1, imdb.num_classes):
                         keep = np.where(
-                            all_boxes[j][img_index][:, -1] >= image_thresh)[0]
-                        all_boxes[j][img_index] = all_boxes[j][img_index][keep, :]
+                            all_boxes[j][i][:, -1] >= image_thresh)[0]
+                        all_boxes[j][i] = all_boxes[j][i][keep, :]
 
             # save images by gt for analysis
             misc_toc = time.time()
             nms_time = misc_toc - misc_tic
 
             sys.stdout.write('im_detect: {:d}/{:d} dataload:{:.3f}s det:{:.3f}s nms:{:.3f}s  \r'
-                             .format(img_index + 1, num_images, data_load_time,  detect_time, nms_time))
+                             .format(i + 1, num_images, data_load_time,  detect_time, nms_time))
             sys.stdout.flush()
 
             if vis:
@@ -594,17 +534,16 @@ if __name__ == '__main__':
                 threshold_of_vis = 0.1
                 all_boxes_save_for_vis = all_boxes.copy()
                 if max_per_image > 0:
-                    image_scores = np.hstack([all_boxes_save_for_vis[j][img_index][:, -1]
+                    image_scores = np.hstack([all_boxes_save_for_vis[j][i][:, -1]
                                               for j in xrange(1, imdb.num_classes)])
                     # np.sort(image_scores)[-max_per_image]
                     image_thresh = threshold_of_vis
                     for j in xrange(1, imdb.num_classes):
                         keep = np.where(
-                            all_boxes_save_for_vis[j][img_index][:, -1] >= image_thresh)[0]
-                        all_boxes_save_for_vis[j][img_index] = all_boxes_save_for_vis[j][img_index][keep, :]
+                            all_boxes_save_for_vis[j][i][:, -1] >= image_thresh)[0]
+                        all_boxes_save_for_vis[j][i] = all_boxes_save_for_vis[j][i][keep, :]
 
-                boxes_of_i = np.array([_[img_index]
-                                       for _ in all_boxes_save_for_vis])
+                boxes_of_i = np.array([_[i] for _ in all_boxes_save_for_vis])
 
                 # filter boxes with lower score
                 # It is 0 for batch size is 1
@@ -635,7 +574,7 @@ if __name__ == '__main__':
                         # im2vis_analysis = vis_detections(
                         #    im2show, imdb.classes[int(gt_b[-1])], gt_b[np.newaxis,:], 0.1, (204, 0, 0))
                         cv2.imwrite(os.path.join(save_vis_path,
-                                                 imdb.image_index[img_index]+'.jpg'), im2show)
+                                                 imdb.image_index[i]+'.jpg'), im2show)
 
                 gt_classes = [int(_[-1]) for _ in gt_boxes_cpu]
                 # 3. FP
@@ -647,7 +586,7 @@ if __name__ == '__main__':
                             if not os.path.exists(save_vis_path):
                                 os.makedirs(save_vis_path)
                             cv2.imwrite(os.path.join(save_vis_path,
-                                                     imdb.image_index[img_index]+'.jpg'), im2show)
+                                                     imdb.image_index[i]+'.jpg'), im2show)
 
         with open(det_file, 'wb') as f:
             pickle.dump(all_boxes, f, pickle.HIGHEST_PROTOCOL)
@@ -663,14 +602,14 @@ if __name__ == '__main__':
             recall_imgs, accuracy_imgs, threshold_for_img))
 
     # topk recall
-    if True:
 
-        for topk in range(1, 6):
-            recall, precision = imdb.evaluate_rec_pre_for_image_topk(
-                all_boxes, imdb.classes, topk)
-            print("topk:{}".format(topk))
-            print("recall {}".format(recall))
-            print("precision {}".format(precision))
+    # recall, precision = imdb.evaluate_rec_pre_for_image_topk(
+    #    all_boxes, imdb.classes, 5)
+
+    # print(recall)
+
+    # print("recall {}".format(recall))
+    # print("precision {}".format(precision))
 
     # topk_accu5, topk_alarm5 = imdb.evalute_topk_acc(all_boxes, 5)
     # topk_accu10, topk_alarm10 = imdb.evalute_topk_acc(all_boxes, 10)
@@ -695,10 +634,8 @@ if __name__ == '__main__':
         cls_ap = list(cls_ap_zip)
 
         # create save dir
-        results_save_dir = "test_result/model_{}/{}_{}/session_{}".format(
-            model_name,
-            args.imgset,
-            "_".join(args.imdbval_name.split('_')[1:3]),
+        results_save_dir = "test_result/model_{}/val_{}/session_{}".format(
+            model_name, "_".join(args.imdbval_name.split('_')[1:3]),
             args.checksession)
         if not os.path.exists(results_save_dir):
             os.makedirs(results_save_dir)
@@ -725,7 +662,7 @@ if __name__ == '__main__':
             # elif metrics == '15fp':
             #    itertor = topk_alarm15
             results_filename = "epoch" + \
-                str(args.checkepoch) + "{}".format(metrics)
+               str(args.checkepoch) + "{}".format(metrics)
 
             # filter results
             val_names = args.imdbval_name.split("_")
@@ -758,52 +695,3 @@ if __name__ == '__main__':
 
             end = time.time()
             print("test time: %0.4fs" % (end - start))
-
-    ##########################
-    # write result for CRF   #
-    ##########################
-    CRF_results_save_dir = "crf_result/model_{}/{}_{}/session_{}".format(
-        model_name,
-        args.imgset,
-        "_".join(args.imdbval_name.split('_')[1:3]),
-        args.checksession)
-    co_matrix_cls_f = "./tools/co/matrix_name_sl.txt"
-
-    if not os.path.exists(CRF_results_save_dir):
-        os.makedirs(CRF_results_save_dir)
-
-    imagenames, recs = get_gt_recs(
-        imdb.cachedir, imdb.imagesetfile, imdb.annopath)
-
-    with open(co_matrix_cls_f, 'r') as f:
-        co_matrix_cls = [x.strip() for x in f.readlines()]
-
-    pred_f = open(os.path.join(CRF_results_save_dir,
-                               'predict_{}.txt'.format(args.imgset)), 'w')
-    gt_f = open(os.path.join(CRF_results_save_dir,
-                             'gt_{}.txt'.format(args.imgset)), 'w')
-
-    for i in range(num_images):
-        det_result = np.zeros(len(co_matrix_cls))
-        gt_result = np.zeros(len(co_matrix_cls))
-        bboxes = get_det_bbox_with_cls_of_img(all_boxes, i)
-        recs[imagenames[i]]
-        for rec in recs[imagenames[i]]:
-            gt_result[co_matrix_cls.index(rec['name'])] = 1
-
-        if bboxes is not None:
-            bboxes = bboxes[bboxes[:, 4].argsort()]
-            #bboxes = bboxes[::-1]
-            bboxes = bboxes[np.where(bboxes[:, 4] >= 0.001)]
-
-            for box in bboxes:
-                det_result[co_matrix_cls.index(
-                    imdb.classes[int(box[5])])] = box[4]
-
-        for gt_item in gt_result.tolist():
-            gt_f.write(str(gt_item) + '\t')
-        gt_f.write('\n')
-
-        for bbox_item in det_result.tolist():
-            pred_f.write(str(bbox_item) + '\t')
-        pred_f.write('\n')

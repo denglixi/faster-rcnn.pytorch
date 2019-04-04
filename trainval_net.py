@@ -37,6 +37,8 @@ from model.faster_rcnn.prefood_res50_hi import PreResNet50Hierarchy
 from model.faster_rcnn.prefood_res50_hi_ca import PreResNet50HierarchyCasecade
 from model.faster_rcnn.prefood_res50_2fc import PreResNet502Fc
 from model.faster_rcnn.prefood_res50_attention import PreResNet50Attention
+from model.faster_rcnn.prefood_res50_attention_minus import PreResNet50AttentionMinus
+from model.faster_rcnn.prefood_res50_attention_pos import PreResNet50AttentionPos
 
 from model.utils.net_utils import vis_detections
 from datasets.id2name import id2chn, id2eng
@@ -191,7 +193,7 @@ class sampler(Sampler):
 def get_data2imdb_dict():
     # create canttens
     collected_cts = ["Arts", "Science", "YIH",
-                     "UTown", "TechChicken", "TechMixedVeg"]
+                     "UTown", "TechChicken", "TechMixedVeg", "EconomicBeeHoon"]
     excl_cts = ["excl"+x for x in collected_cts]
     all_canteens = collected_cts + excl_cts + ['All']
 
@@ -202,12 +204,17 @@ def get_data2imdb_dict():
     for ct in all_canteens:
         for mtN in [0, 10]:
             if mtN == 0:
-                ct_sp = "train"
+                mtNstr = ""
             else:
-                ct_sp = "trainmt{}".format(mtN)
+                mtNstr = "mt{}".format(mtN)
+            ct_sp = "train{}".format(mtNstr)
 
-            imdb_name = "food_{}_{}_{}_train_mt{}".format(ct, ct_sp, ct, mtN)
-            dataset = "food{}mt{}".format(ct, mtN)
+            if mtN == 0:
+                imdb_name = "food_{}_{}_{}_train".format(ct, ct_sp, ct)
+            else:
+                imdb_name = "food_{}_{}_{}_train_mt{}".format(
+                    ct, ct_sp, ct, mtN)
+            dataset = "food{}{}".format(ct, mtNstr)
             data2imdb_dict[dataset] = imdb_name
 
     # 2. trian on fine
@@ -224,6 +231,9 @@ def get_data2imdb_dict():
         dataset = "food_meta_{}_train".format(ct)
         imdb_name = dataset
         data2imdb_dict[dataset] = imdb_name
+
+    # 4. extra
+    data2imdb_dict['schoollunch'] = 'schoollunch_train'
     return data2imdb_dict
 
 
@@ -371,6 +381,17 @@ if __name__ == '__main__':
                                  weight_file=args.weight_file,
                                  fixed_layer=args.fixed_layer)
 
+    elif args.net == 'foodres50attentionMinus':
+        fasterRCNN = PreResNet50AttentionMinus(imdb.classes, pretrained=args.pretrained,
+                                               class_agnostic=args.class_agnostic,
+                                               weight_file=args.weight_file,
+                                               fixed_layer=args.fixed_layer)
+
+    elif args.net == 'foodres50attentionPos':
+        fasterRCNN = PreResNet50AttentionPos(imdb.classes, pretrained=args.pretrained,
+                                             class_agnostic=args.class_agnostic,
+                                             weight_file=args.weight_file,
+                                             fixed_layer=args.fixed_layer)
     elif args.net == 'foodres50attention':
         fasterRCNN = PreResNet50Attention(imdb.classes, pretrained=args.pretrained,
                                           class_agnostic=args.class_agnostic,
@@ -442,7 +463,8 @@ if __name__ == '__main__':
         fasterRCNN.cuda()
 
     if args.resume:
-        resume_dir = args.save_dir + "/" + args.net + "/" + args.dataset.split("_")[0]
+        resume_dir = args.save_dir + "/" + \
+            args.net + "/" + args.dataset.split("_")[0]
         load_name = os.path.join(resume_dir,
                                  'faster_rcnn_{}_{}_{}.pth'.format(args.checksession,
                                                                    args.checkepoch, args.checkpoint))
@@ -459,8 +481,8 @@ if __name__ == '__main__':
         #    cfg.POOLING_MODE = checkpoint['pooling_mode']
         print("loaded checkpoint %s" % (load_name))
 
-    #if args.mGPUs:
-    #    fasterRCNN = nn.DataParallel(fasterRCNN)
+    if args.mGPUs:
+        fasterRCNN = nn.DataParallel(fasterRCNN)
 
     iters_per_epoch = int(train_size / args.batch_size)
 

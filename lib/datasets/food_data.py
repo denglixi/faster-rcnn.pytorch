@@ -326,7 +326,7 @@ class food_merge_imdb(imdb):
         for cls_ind, cls in enumerate(self.classes):
             if cls == '__background__':
                 continue
-            print('Writing {} VOC results file'.format(cls))
+            #print('Writing {} VOC results file'.format(cls))
             filename = self._get_voc_results_file_template().format(cls)
             with open(filename, 'wt') as f:
                 for im_ind, index in enumerate(self.image_index):
@@ -356,7 +356,7 @@ class food_merge_imdb(imdb):
         # The PASCAL VOC metric changed in 2010
         # use_07_metric = True if int(self._year) < 2010 else False
         use_07_metric = False
-        print('VOC07 metric? ' + ('Yes' if use_07_metric else 'No'))
+        #print('VOC07 metric? ' + ('Yes' if use_07_metric else 'No'))
         if not os.path.isdir(output_dir):
             os.mkdir(output_dir)
         for i, cls in enumerate(self._classes):
@@ -367,23 +367,23 @@ class food_merge_imdb(imdb):
                 filename, annopath, imagesetfile, cls, cachedir, ovthresh=0.5,
                 use_07_metric=use_07_metric)
             aps += [ap]
-            print('AP for {} = {:.4f}'.format(cls, ap))
+            #print('AP for {} = {:.4f}'.format(cls, ap))
             with open(os.path.join(output_dir, cls + '_pr.pkl'), 'wb') as f:
                 pickle.dump({'rec': rec, 'prec': prec, 'ap': ap}, f)
         print('Mean AP = {:.4f}'.format(np.mean(aps)))
-        print('~~~~~~~~')
-        print('Results:')
-        for ap in aps:
-            print('{:.3f}'.format(ap))
-        print('{:.3f}'.format(np.mean(aps)))
-        print('~~~~~~~~')
-        print('')
-        print('--------------------------------------------------------------')
-        print('Results computed with the **unofficial** Python eval code.')
-        print('Results should be very close to the official MATLAB eval code.')
-        print('Recompute with `./tools/reval.py --matlab ...` for your paper.')
-        print('-- Thanks, The Management')
-        print('--------------------------------------------------------------')
+        #print('~~~~~~~~')
+        #print('Results:')
+        #for ap in aps:
+        #    print('{:.3f}'.format(ap))
+        #print('{:.3f}'.format(np.mean(aps)))
+        #print('~~~~~~~~')
+        #print('')
+        #print('--------------------------------------------------------------')
+        #print('Results computed with the **unofficial** Python eval code.')
+        #print('Results should be very close to the official MATLAB eval code.')
+        #print('Recompute with `./tools/reval.py --matlab ...` for your paper.')
+        #print('-- Thanks, The Management')
+        #print('--------------------------------------------------------------')
 
         return zip(self._classes[1:], aps), np.mean(aps)
 

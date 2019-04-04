@@ -527,7 +527,7 @@ if __name__ == '__main__':
     num_boxes_meta = Variable(num_boxes_meta)
     gt_boxes_meta = Variable(gt_boxes_meta)
 
-    num_of_task = 10
+    num_of_task = 1000
     for epoch in range(num_of_task):
         print("task {}".format(epoch))
         # dataset
@@ -620,15 +620,11 @@ if __name__ == '__main__':
         RCNN_bbox_pred_weight = list(map(
             lambda p: p[1] - update_lr * p[0], zip(grad_RCNN_reg, fasterRCNN.RCNN_bbox_pred.parameters())))
 
-        loss_meta = 0
-
-        for base_update_epoch in range(5):
+        for base_update_epoch in range(10):
             data_iter = iter(dataloader)
+            print('loss base', loss_temp / 20)
+            loss_temp = 0
             for update_base_step in range(1, iters_per_base):
-                if(update_base_step % 20 == 0):
-                    print('loss', loss_temp / 20)
-                    loss_temp = 0
-
                 data = next(data_iter)
                 im_data.data.resize_(data[0].size()).copy_(data[0])
                 im_info.data.resize_(data[1].size()).copy_(data[1])
@@ -678,6 +674,7 @@ if __name__ == '__main__':
                     lambda p: p[1] - update_lr * p[0], zip(grad_RCNN_reg, RCNN_bbox_pred_weight)))
 
         data_iter_meta = iter(dataloader_meta)
+
         for update_meta_step in range(iters_per_meta):
             data_meta = next(data_iter_meta)
             im_data_meta.data.resize_(data_meta[0].size()).copy_(data_meta[0])
@@ -686,34 +683,30 @@ if __name__ == '__main__':
             num_boxes_meta.data.resize_(
                 data_meta[3].size()).copy_(data_meta[3])
 
-            loss_meta_taski, loss_temp = forward_faster(fasterRCNN,
-                                                        im_data_meta, im_info_meta,
-                                                        gt_boxes_meta, num_boxes_meta,
-                                                        loss_temp,
-                                                        [
-                                                            RCNN_top_fast_weight,
-                                                            RCNN_cls_score_weight,
-                                                            RCNN_bbox_pred_weight
-                                                        ])
-            loss_meta += loss_meta_taski
-            print("loss meta:{}".format(loss_meta))
-
+            loss_meta, loss_temp = forward_faster(fasterRCNN,
+                                                  im_data_meta, im_info_meta,
+                                                  gt_boxes_meta, num_boxes_meta,
+                                                  loss_temp,
+                                                  [
+                                                      RCNN_top_fast_weight,
+                                                      RCNN_cls_score_weight,
+                                                      RCNN_bbox_pred_weight
+                                                  ])
+            #loss_meta += loss_meta_taski
             optimizer.zero_grad()
             loss_meta.backward()
             optimizer.step()
-            pdb.set_trace()
-        print(sum(sum(list(fasterRCNN.RCNN_cls_score.parameters())[0])))
-
-        pdb.set_trace()
+            print("loss meta:{}".format(loss_meta))
+        # print(sum(sum(list(fasterRCNN.RCNN_cls_score.parameters())[0])))
 
         save_name = os.path.join(
             output_dir, 'faster_rcnn_{}.pth'.format(args.session))
         if args.save_model:
-        #if (epoch+1) % args.save_epoch == 0:
+            # if (epoch+1) % args.save_epoch == 0:
             save_checkpoint({
                 'session': args.session,
                 'epoch': epoch + 1,
-                #'model': fasterRCNN.module.state_dict() if args.mGPUs else fasterRCNN.state_dict(),
+                # 'model': fasterRCNN.module.state_dict() if args.mGPUs else fasterRCNN.state_dict(),
                 'model': fasterRCNN.state_dict(),
                 'optimizer': optimizer.state_dict(),
                 'pooling_mode': cfg.POOLING_MODE,

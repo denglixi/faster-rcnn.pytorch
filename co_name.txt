@@ -1,0 +1,164 @@
+玉米	corn
+白饭	rice
+咸鸭蛋	salted egg
+翻炒蛋	scrambled egg
+番茄蛋	tomato egg
+糙米	brown rice
+瘦肉	lean pork
+凉拌豆腐 (小方块）	tofu cubes (small)
+豆腐丝/豆皮	beancurd skin strips (cold dish)
+凉拌黑木耳	black fungus
+凉拌黄瓜	cucumber
+小白菜（绿）	xiao bai cai
+包菜	cabbage
+苦瓜	bittergourd with little bit of scrambled egg
+芹菜	celery stir fried
+番薯葉	green potato leaves stir fried
+凉拌豆干＆胡萝卜片	taukwa(tofu) strips, carrot, cucumber
+凉拌黄瓜片＆豆腐 (素肉)	素肉 fake meat with cucumber
+凉皮	凉皮 (looks like horfun/kwaytiao)
+凉拌猪耳	pig ear YIH
+炒面	fried noodles YIH
+豆芽	beansprouts
+白萝卜	white radish
+长豆/豇豆	long beans
+西兰花和花菜	caulliflower and brocolli stir fried
+酸辣羊角豆/秋葵	chilli okra
+花菜&黑木耳	caulliflower with black fungus
+炒大白菜	Fried cabbage
+烩白豆腐虾仁	tofu and shelled prawns
+鲍菇	mushroom
+炒西兰花＆玉米笋＆黑木耳＆藕片/西蓝花&鱿鱼	lotus root, black fungus, brocolli
+炒豆腐	tofu stir fried
+猪肝	pork liver
+土豆炒番茄酱豆	potato and beans
+茄子	brinjal
+滷豆腐	braised tofu
+鸭肉	braised duck
+小炒肉（猪肉片＆青椒＆豆腐）	pork, green capsicum, tofu
+凉拌猪肉片	cold pork
+土豆烧鸡（大盘鸡）	potato chicken
+西兰花& 虾	brocolli and shelled prawn
+咖喱鸡	curry chicken
+红酱。酸甜肉	sweet and sour pork
+肉碎	minced pork
+卤鸡/红烧鸡块	braised chicken
+猪脚	braised pork trotter
+炖排骨	stewed pork ribs
+红烧五花肉/	braised pork belly
+黑酱猪肉	black sauce pork
+灰褐色肉球	brown meat ball
+清蒸鱼块	YIH steamed segmented fish
+炸鱼。整只	fried whole fish
+炸鱼片	fried fish fillet
+章鱼，鱿鱼。O型	sotong
+红烧鱼肉	red sauce fish
+炸鱼片，粉红酱汁	fried fish fillet with pink sauce
+煎蛋	fried egg
+白色鱼片/酸菜鱼	fish skinless small pieces
+红烧猪扒（黑色肉扒/各种扒	pork cutlet, black sauce big piece
+鸡腿	whole drumstick separate bowl
+	
+麻油鸡	sesame chicken
+炸脆鸡扒	fried crispy chicken cutlet
+毛瓜丝	hairy gourd stir fried
+咸菜	salted vegetable
+冬粉	glass noodles
+胡辣汤	dark soup separate bowl
+紫菜蛋花汤	clear soup separate bowl
+馒头	steamed bread
+烧饼	Biscuits
+画卷	Picture
+红米粥	Red rice porridge
+牛肉土豆	beef potato
+茄子炒肉 （瘦肉）	brinjal lean pork
+肉+土豆+长豆？？？	Meat + potatoes + long beans ???
+豆干	Dried bean
+海带	seaweed kelp
+红薯/地瓜	sweet potato
+土豆丝	potato floss
+炒猪肉（看reference）	Fried pork (see reference)
+螃蟹	crab
+凉拌西红柿	Salad with tomatoes
+YIH鱿鱼	cuttlefish
+南瓜	pumpkin
+空心菜	kangkong
+牛肚，红萝卜	beef stomach, carrot
+YIH 豆芽 黃瓜斯	YIH beansprouts and shredded cucumber
+红烧菜花/花菜	Braised Cauliflower / Cauliflower
+蘑菇 (	dong gu mushrooms
+炒藕片&木耳	Fried oysters and fungus
+肉末炒豆腐（小方块，深色）	Fried pork with tofu (small cubes, dark)
+蛋饼（三角状，一整块）	Quiche (triangular, one piece)
+白菜&日本豆腐（圆形）	Cabbage & Japanese Tofu (round)
+YIH 炸鱼	YIH fried segmented fish
+YIH 蒸炸魚	YIH fried and then steamed segmented fish
+炸鱼块（有点像猪肉块）	Fried fish fillet (a bit like pork)
+粉丝(白)＆虾仁	Fans (White) & Shrimp
+土豆胡萝卜排骨汤	Potato carrot ribs soup
+卷饼（里面有菜）	Burrito (with vegetables inside)
+肉夹馍	Meat folder
+花生	peanut
+胡萝卜炒肉	Carrot fried meat
+红色（辣）千张	Red (spicy) thousand sheets
+白色柱状的，质地类似红薯（看reference）	White columnar, texture similar to sweet potato (see reference)
+烧豆腐炒肉？？？	Fried tofu fried meat ???
+芋头	taro
+西红柿蛋花汤	Tomato egg soup
+大块猪肉？？	Big chunks of pork?
+香肠圆葱土豆	Sausage, round onion, potato
+不知道啥，像汤	I dont know, like soup
+排骨汤	Pork ribs soup
+炒豆子炒蛋	scrambled egg with baked beans
+水煮蛋	hard boiled egg
+蒸水蛋	steamed water egg
+混合蔬菜黑木耳，豌豆，芹菜，蘑菇	mixed vegetable-black fungus, peas, celery, mushroom
+petai豆与虾	petai beans with prawn
+虾芹菜	prawn celery
+土豆切片	potato slices
+炸薯条	french fries
+方块豆腐	cube tofu
+黑酱taupok用碎肉在上面	black sauce taupok with minced meat on top
+咖喱鸡块	curry chicken chunks
+har cheong gai	har cheong gai
+炸鸡（半弹簧）或其他部分，黄色	fried chicken(half spring) or other parts, yellow
+谷物鱼	cereal fish
+蒸鱼片	steamed fish fillet
+油煎的鱼用桃红色和白汁	fried fish with pink and white sauce
+鸡爪	chicken feet
+咖喱蔬菜	curry vegetables
+马铃薯条	potato strips
+taupok	taupok
+釉面浅棕色肉排	glazed light brown meat cutlet
+炸猪肉酱	fried pork brown sauce
+切碎的鸡肉淡黄酱	chopped chicken yellowish sauce
+猪肚整块差异酱	pork belly whole piece diff sauce
+炸猪肚片，橙皮	fried pork belly slices, orange skin
+猪肚片未炸	pork belly slices unfried
+猪肉片	pork slices
+午餐肉	luncheon meat
+糖醋鱼	sweet and sour fish
+炸鱼	fried fish
+海藻鸡（紫菜鸡）	seaweed chicken
+炸土豆饼	hashbrown
+炸鸡块	nugget
+五香肉卷	ngioh hiang
+鸡米花	chicken popcorn
+豆腐皮（腐竹）	beancurd skin
+咖喱鸡	curry chicken
+鸡排	chicken cutlet
+红烧豆腐	braised beancurd
+煎鸡蛋	fried egg
+清蒸鱼	steamed fish
+大鸡块	Big chicken
+木耳鸡	Fungus chicken
+炸鱼片2（arts	Fish fillet 2 (first)
+烧肉	roasted pork
+炒饭。褐色。带冷冻菜青豆	fried rice
+清汤	soup
+叉烧	char siew
+鸭翅膀	duck wing
+烤鸭	roasted duck
+白鸡	steamed chicken
+辣椒酱	chilli
+长片sasame红肉	long piece sasame red meat

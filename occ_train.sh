@@ -3,7 +3,7 @@ GPU_ID=1
 WORKER_NUMBER=10
 LEARNING_RATE=0.001
 DECAY_STEP=5
-BATCH_SIZE=4
+BATCH_SIZE=6
 # resume from
 RESUME=  #null is for false
 #session is training session
@@ -11,8 +11,7 @@ SESSION=1  # 2 is for food_YIH
 CHECKSESSION=1
 EPOCH=7
 CHECKPOINT=10021
-CUDA_VISIBLE_DEVICES=$GPU_ID
-python trainval_net.py \
+CUDA_VISIBLE_DEVICES=$GPU_ID python trainval_net.py \
                    --dataset foodAllmt10 --net vgg16 \
                    --s $SESSION \
                    --r=$RESUME \

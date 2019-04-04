@@ -258,7 +258,30 @@ def create_inner_imagesets():
                     f.write(x_name + '\n')
 
 
-def create_train_and_val_imagesets(canteen, train_content, val_content):
+def create_half_val_test_imagesets(canteen, val_content, test_content, imageset):
+    """create_train_and_val_imagesets
+    create train.txt and val.txt for canteen
+    :param canteen:
+    :param train_content:
+    :param val_content:
+    """
+
+    print("------processing {}-----------".format(canteen))
+    root_path = '../data/Food/Food_{}/'.format(canteen)
+    imgsets_path = os.path.join(root_path, 'ImageSets')
+
+    val_content = [x+'\n' for x in val_content]
+    test_content = [x+'\n' for x in test_content]
+
+    print("saving val sets:{}".format(len(val_content)))
+    with open(os.path.join(imgsets_path, imageset + "val.txt"), 'w') as f:
+        f.writelines(val_content)
+
+    print("saving test sets:{}".format(len(test_content)))
+    with open(os.path.join(imgsets_path, imageset +  "test.txt"), 'w') as f:
+        f.writelines(test_content)
+
+def create_train_and_val_imagesets(canteen, train_content, val_content, test_content):
     """create_train_and_val_imagesets
     create train.txt and val.txt for canteen
     :param canteen:
@@ -272,6 +295,7 @@ def create_train_and_val_imagesets(canteen, train_content, val_content):
 
     train_content = [x+'\n' for x in train_content]
     val_content = [x+'\n' for x in val_content]
+    test_content = [x+'\n' for x in test_content]
     print("saving train sets:{}".format(len(train_content)))
     with open(os.path.join(imgsets_path, "train.txt"), 'w') as f:
         f.writelines(train_content)
@@ -280,8 +304,27 @@ def create_train_and_val_imagesets(canteen, train_content, val_content):
     with open(os.path.join(imgsets_path, "val.txt"), 'w') as f:
         f.writelines(val_content)
 
+    print("saving test sets:{}".format(len(test_content)))
+    with open(os.path.join(imgsets_path, "test.txt"), 'w') as f:
+        f.writelines(test_content)
 
-def split_dishes2train_val(dishes):
+def split_dishes2val_test(dishes):
+    """splist_dishes2train_val
+
+    :param dishes:
+    :return (train_content: list, val_content: list)
+    """
+    val_content = []
+    test_content = []
+    for i, dish in enumerate(dishes):
+        if i % 2:
+            val_content += dish
+        else:
+            test_content += dish
+    return val_content, test_content
+
+
+def split_dishes2train_val_test(dishes):
     """splist_dishes2train_val
 
     :param dishes:
@@ -289,13 +332,52 @@ def split_dishes2train_val(dishes):
     """
     train_content = []
     val_content = []
+    test_content = []
     for i, dish in enumerate(dishes):
         if i % 5:
             train_content += dish
-        else:
+        elif i % 10:
             val_content += dish
-    return train_content, val_content
+        else:
+            test_content += dish
 
+    return train_content, val_content, test_content
+
+
+def create_mtN_imageset_economic(canteen, imgset, N: int):
+    """create_mtN_imageset
+
+    :param canteen:
+    :param imgset: only support train or val
+    :param N:
+    :type N: int
+    """
+
+    assert imgset != 'train' or imgset != 'val' or imgset != 'test'
+    print("---processing {} mt {} {} ------".format(canteen, imgset, N))
+
+    imgsets_path = "../data/EconomicBeeHoon/ImageSets".format(canteen)
+    anno_path = "../data/EconomicBeeHoon/Annotations".format(canteen)
+    with open(os.path.join(imgsets_path, "{}.txt").format(imgset), 'r') as f:
+        xml_files = [x.strip("\n")+'.xml' for x in f.readlines()]
+        content = []
+        for xf in xml_files:
+            objects = parse_rec(os.path.join(anno_path, xf))
+            for obj in objects:
+                # only reserve the !!! training sample whose count is larger than 10
+                if N != 0:
+                    match_categories = get_categories(
+                        canteen+"_train_mt{}".format(N))
+                else:
+                    match_categories = get_categories(canteen+"_train")
+
+                if obj['name'] in match_categories:
+                    content.append(xf.split(".")[0] + '\n')
+                    break
+
+        print("saving {} sets:{}_mt{}".format(imgset, len(content), N))
+        with open(os.path.join(imgsets_path, "{}mt{}.txt".format(imgset, N)), 'w') as f:
+            f.writelines(content)
 
 def create_mtN_imageset(canteen, imgset, N: int):
     """create_mtN_imageset
@@ -306,7 +388,7 @@ def create_mtN_imageset(canteen, imgset, N: int):
     :type N: int
     """
 
-    assert imgset != 'train' or imgset != 'val'
+    assert imgset != 'train' or imgset != 'val' or imgset != 'test'
     print("---processing {} mt {} {} ------".format(canteen, imgset, N))
 
     imgsets_path = "../data/Food/Food_{}/ImageSets".format(canteen)
@@ -356,8 +438,20 @@ def create_all_canteen_train_and_val_imageset():
 
     for ct in canteen:
         dishes_of_ct = create_dishes(ct)
-        train_content, val_content = split_dishes2train_val(dishes_of_ct)
-        create_train_and_val_imagesets(ct, train_content, val_content)
+        train_content, val_content, test_content = split_dishes2train_val_test(dishes_of_ct)
+        create_train_and_val_imagesets(ct, train_content, val_content, test_content)
+
+def create_origin_canteen_half_val_test_imagesets():
+    canteen = ['Arts', 'Science', 'TechMixedVeg',
+               'TechChicken', 'UTown', 'YIH']
+
+    imageset = 'innermt10'  #decide on which dataset the spliting based
+    for ct in canteen:
+        dishes_of_ct = create_dishes(ct, imageset)
+        val_content, test_content = split_dishes2val_test(dishes_of_ct)
+        create_half_val_test_imagesets(ct, val_content, test_content, imageset)
+
+
 
 
 def create_all_canteen_mtN_train_and_val_imageset(N):
@@ -368,7 +462,7 @@ def create_all_canteen_mtN_train_and_val_imageset(N):
     canteen += ["All"]
 
     for ct in canteen:
-        for imgset in ['train', 'val']:
+        for imgset in ['train', 'val', 'test']:
             create_mtN_imageset(ct, imgset, N)
 
 
@@ -383,6 +477,17 @@ def create_all_few_inner():
 
 
 if __name__ == '__main__':
+    #dishes_of_ct = create_dishes("EconomicBeeHoon")
+
+    #train_content, val_content = split_dishes2train_val(dishes_of_ct)
+    #create_train_and_val_imagesets("EconomicBeeHoon", train_content, val_content)
+    #exit()
+
+
+
+    create_origin_canteen_half_val_test_imagesets()
+    exit()
+
     create_all_canteen_train_and_val_imageset()
     for N in [10, 30, 50, 100]:
         create_all_canteen_mtN_train_and_val_imageset(N)

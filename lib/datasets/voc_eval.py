@@ -212,14 +212,14 @@ def rec_pre_eval_for_image_hierarchy(all_boxes,
     return np.mean(recall_all), np.mean(accuracy_all)
 
 
-def rec_pre_eval_for_image_topk(all_boxes,
-                                annopath,
-                                imagesetfile,
-                                classes,
-                                cachedir,
-                                threshold,
-                                ovthresh,
-                                k):
+def rec_pre_eval_for_image_topk_back(all_boxes,
+                                     annopath,
+                                     imagesetfile,
+                                     classes,
+                                     cachedir,
+                                     threshold,
+                                     ovthresh,
+                                     k):
 
     imagenames, recs = get_gt_recs(cachedir, imagesetfile, annopath)
 
@@ -287,6 +287,114 @@ def rec_pre_eval_for_image_topk(all_boxes,
                     FP += 1
 
             recall = TP / np.float32(npos_img)
+
+            if TP + FP == 0:
+                accuracy = 0
+            else:
+                accuracy = TP / np.float32(TP+FP)
+
+        recall_all.append(recall)
+        accuracy_all.append(accuracy)
+
+    # use np to return nan while the npos is zero
+    return np.mean(recall_all), np.mean(accuracy_all)
+
+
+def rec_pre_eval_for_image_topk(all_boxes,
+                                annopath,
+                                imagesetfile,
+                                classes,
+                                cachedir,
+                                threshold,
+                                ovthresh,
+                                k):
+
+    imagenames, recs = get_gt_recs(cachedir, imagesetfile, annopath)
+
+    recall_all = []
+    accuracy_all = []
+
+    for img_idx, imagename in enumerate(imagenames):
+        TP = 0
+        FP = 0
+        # get gt of image
+        try:
+            img_gt_recs = recs[imagename]
+        except:
+            print(imagename)
+            continue
+
+        img_categories = []
+        for recs_img in img_gt_recs:
+            if recs_img['name'] not in img_categories:
+                img_categories.append(recs_img['name'])
+
+        npos_img = len(img_gt_recs)
+
+        # exlucde rice('1') from npos_img
+        if npos_img == 0:
+            continue
+
+        if k is None:
+            topk = npos_img
+        else:
+            topk = k
+        # get det result of image [ [boxes of class1], ...[ boxes of clsN ] ]
+        img_all_boxes = [b[img_idx] for b in all_boxes]
+
+        # add cls_idx to box_cls
+
+        bboxes = None
+
+        for cls_idx, boxes_of_cls in enumerate(img_all_boxes):
+            if len(boxes_of_cls) != 0:
+
+                # only access top 1 of each categories
+                cls_cloumn = np.zeros(len(boxes_of_cls)) + cls_idx
+                #cls_cloumn = cls_idx
+
+                #boxes_of_cls =  boxes_of_cls[np.argmax(boxes_of_cls[:, 4])]
+                if bboxes is None:
+                    #i bboxes = np.r_[boxes_of_cls, cls_cloumn + np.zeros(1)]
+                    bboxes = np.c_[boxes_of_cls, cls_cloumn ]
+                else:
+                    #bboxes = np.vstack(
+                    #    (bboxes, np.r_[boxes_of_cls, cls_cloumn + np.zeros(1) ]))
+                    bboxes = np.vstack(
+                        (bboxes, np.c_[boxes_of_cls, cls_cloumn ]))
+
+
+        if bboxes is None:
+            recall = 0
+            accuracy = 0
+        else:
+            bboxes = bboxes[bboxes[:, 4].argsort()]
+            bboxes = bboxes[::-1]
+            topn_used = 0
+            for det_box in bboxes:
+                if topn_used == topk:
+                    break
+                cls_name = classes[int(det_box[5])]
+                topn_used += 1
+                if str(cls_name) in img_categories:
+                    TP += 1
+                else:
+                    FP += 1
+                #R = [obj for obj in recs[imagename] if obj['name'] == cls_name]
+                #bbox = np.array([x['bbox'] for x in R])
+                #if len(bbox) > 0:
+                #    omax, jmax = cal_overlap(bbox, det_box)
+                #    if omax > ovthresh:
+                #        TP += 1
+                #    else:
+                #        FP += 1
+                #else:
+                #    FP += 1
+
+            recall = TP / np.float32(len(img_categories))
+            if recall > 1:
+                recall = 1
+
 
             if TP + FP == 0:
                 accuracy = 0

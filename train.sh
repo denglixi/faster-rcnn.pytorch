@@ -4,33 +4,41 @@ GPU_ID=1
 WORKER_NUMBER=8
 
 # basic set
-#DATASET=foodexclArtsmt10
+# DATASET=foodAllmt10
 
 #DATASET=foodexclYIHmt10
 #DATASET=foodexclUTownmt10
-#DATASET=foodexclUTownmt10_fineUTownfew5
-DATASET=food_meta_Arts_train
+#DATASET=foodexclArtsmt10
+#DATASET=foodexclTechMixedVegmt10
+DATASET=foodexclTechChickenmt10
 
-NET=foodres50 #{foodres50, res101, vgg16}
+#DATASET=foodexclUTownmt10_fineUTownfew5
+#DATASET=food_meta_Arts_train
+#DATASET=foodEconomicBeeHoon
+
+#DATASET=foodexclTechMixedVegmt10
+#DATASET=foodAllmt10
+
+NET=foodres50attention #foodres50 #{foodres50, res101, vgg16}
 #NET=foodres50_hierarchy_casecade_add_prob_0.5 #_casecade #{foodres50, res101, vgg16 , foodres50_hierarchy foodres50attention, foodres502fc, foodres50_hierarchy_casecade}
 
-SESSION=9
+SESSION=51
 FIXED_LAYER=4
 PRETRAIN=true
-WEIGHT_FILE=prefood #{ prefood, imagenet } only for res50
-MAXEPOCHS=60
+WEIGHT_FILE=imagenet #{ prefood, imagenet } only for res50
+MAXEPOCHS=18
 SAVE_EPOCH=3
 
 # optimizer setting
 OPTIMIZER=sgd
 LEARNING_RATE=0.001
-DECAY_STEP=5
+DECAY_STEP=10
 IS_WARMING_UP=false
 WARMING_UP_LR=0.0000001
 BATCH_SIZE=1
 
 # resume from
-RESUME=1 # null is for false
+RESUME= # null is for false
 RESUME_OPT= # null for false
 RESUME_SESS_EPOCH= #null for false
 CHECKSESSION=444

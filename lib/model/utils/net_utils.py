@@ -54,29 +54,32 @@ def clip_gradient(model, clip_norm):
             p.grad.mul_(norm)
 
 
-def vis_detections(im, class_name, dets, thresh=0.8, color=(0, 204, 0)):
+def vis_detections(im, class_name, dets, thresh=0.1, color=(233, 174, 61)):
+    # color  BGR
     """Visual debugging of detections."""
     for i in range(np.minimum(10, dets.shape[0])):
         # for i in range(1990, 2000):
         bbox = tuple(int(np.round(x)) for x in dets[i, :4])
         score = dets[i, -1]
         if score > thresh:
-            cv2.rectangle(im, bbox[0:2], bbox[2:4], color, 5)
+            cv2.rectangle(im, bbox[0:2], bbox[2:4], color, 25)
+            textColor = (color[2], color[1], color[0])
             im = cv2ImgAddText(im, class_name + ":" + "{:.2f}".format(score),
-                               bbox[0], bbox[1] + 100, textColor=color)
+                               bbox[0], bbox[1] + 20, textColor=textColor)
             # cv2.putText(im, '%s: %.3f' %
             #            (class_name, score), (bbox[0], bbox[1] +
             # 15), cv2.FONT_HERSHEY_PLAIN, 1.0, (0, 0, 255), thickness=1)
     return im
 
 
-def cv2ImgAddText(img, text, left, top, textColor=(0, 255, 0), textSize=90):
+def cv2ImgAddText(img, text, left, top, textColor=(0, 0, 255), textSize=140):
+    # GRB
     if (isinstance(img, numpy.ndarray)):  # 判断是否OpenCV图片类型
         img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
     draw = ImageDraw.Draw(img)
     fontText = ImageFont.truetype(
         "/home/d/denglixi/faster-rcnn.pytorch/simsun.ttc", textSize, encoding="utf-8")
-    draw.text((left, top), text, textColor, font=fontText)
+    #draw.text((left, top), text, textColor, font=fontText)
     return cv2.cvtColor(numpy.asarray(img), cv2.COLOR_RGB2BGR)
 
 

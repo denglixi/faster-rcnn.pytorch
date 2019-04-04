@@ -16,6 +16,7 @@ from datasets.imagenet import imagenet
 from datasets.vg import vg
 from datasets.food import food
 from datasets.food_data import food_merge_imdb
+from datasets.school_lunch import school_lunch
 from datasets.food_meta_data import food_meta_imdb
 
 __sets = {}
@@ -28,24 +29,31 @@ for canteen in ["Arts"]:
                         food_meta_imdb(split, canteen, categories))
 
 # Set up food_<canteen>_<split>_<trainingcategories>
-splits = ['train', 'val', 'trainval', 'inner']
+splits = ['train', 'val', 'trainval', 'inner', 'test']
 mt_splits = []
 for n in [0, 10, 30, 50, 100]:
     for s in splits:
         mt_splits += [s+"mt{}".format(n)]
 splits += mt_splits
 
+innersplit = []
+for sp in ['val', 'test']:
+    for m in [10, 30, 50]:
+        innersplit.append('innermt{}{}'.format(m, sp))
+
+splits += innersplit
+
 # take few sample in inner between dataset of canteen and dataset of excl canteen as training data. And regard the lefts as validation.
 inner_few = []
 for fewN in [0, 1, 3, 5, 10]:
     for mtN in [10]:
-        for d in ['train', 'val']:
+        for d in ['train', 'val', 'test']:
             inner_few += ["innerfew{}mt{}{}".format(fewN, mtN, d)]
 splits += inner_few
 
-for cantee in ['exclYIH', "All", "exclArts", "exclUTown", "Science", "exclScience", "exclTechChicken", "exclTechMixedVeg", "YIH", "Arts", "TechChicken", "TechMixedVeg", "UTown"]:
+for cantee in ['exclYIH', "All", "exclArts", "exclUTown", "Science", "exclScience", "exclTechChicken", "exclTechMixedVeg", "YIH", "Arts", "TechChicken", "TechMixedVeg", "UTown", "EconomicBeeHoon"]:
     for split in splits:
-        for category in ['exclYIH', "All", "exclArts", "exclUTown", "Science", "exclScience", "exclTechChicken", "exclTechMixedVeg", "YIH", "Arts", "TechChicken", "TechMixedVeg", "UTown"]:
+        for category in ['exclYIH', "All", "exclArts", "exclUTown", "Science", "exclScience", "exclTechChicken", "exclTechMixedVeg", "YIH", "Arts", "TechChicken", "TechMixedVeg", "UTown", "EconomicBeeHoon"]:
             category_train = category + '_train'
             name = 'food_{}_{}_{}'.format(cantee, split, category_train)
             __sets[name] = (lambda split=split,
@@ -56,6 +64,12 @@ for cantee in ['exclYIH', "All", "exclArts", "exclUTown", "Science", "exclScienc
                 __sets[name] = (lambda split=split,
                                 cantee=cantee, category_mt10=category_mt10: food_merge_imdb(split, cantee, category_mt10))
 
+#__sets["Food_EconomicBeeHoon_train"] = food_meta_imdb(train, )
+
+# Set up school lunch
+for split in ['train', 'val', 'trainval', 'test']:
+    name = 'schoollunch_{}'.format(split)
+    __sets[name] = (lambda split=split: school_lunch(split))
 # Set up voc_<year>_<split>
 for year in ['2007', '2012']:
     for split in ['train', 'val', 'trainval', 'test']:
