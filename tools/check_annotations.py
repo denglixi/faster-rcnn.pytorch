@@ -38,6 +38,8 @@ def get_all_xml_files_from_path(root_path):
             f_name, f_ext = os.path.splitext(x_f)
             if f_ext == '.xml':
                 objs = parse_rec(os.path.join(root, x_f))
+                import pdb
+                pdb.set_trace()
                 img_path = os.path.join(
                     "/home/lixi/data/FoodDataset/Food_All/JPEGImages", f_name + '.jpg')
                 width, height = Image.open(img_path).size

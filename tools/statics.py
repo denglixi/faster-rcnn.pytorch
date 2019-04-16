@@ -19,6 +19,45 @@ from id2name import id2chn, id2eng
 from xml_process import parse_rec
 
 from food_category import get_categories
+import numpy as np
+import torch
+
+
+
+def cal_overlap(gt_boxes_array, det_boxes):
+    """cal_overlap
+    :param gt_boxes_array: np array
+    :param det_boxes: two dim
+    """
+
+    det_overlaps = np.zeros(len(det_boxes))
+    if gt_boxes_array is None or len(gt_boxes_array) == 0:
+        return det_overlaps
+    boxes_array = gt_boxes_array
+    for b_i, box in enumerate(det_boxes):
+        ixmin = np.maximum(boxes_array[:, 0], box[0])
+        iymin = np.maximum(boxes_array[:, 1], box[1])
+        ixmax = np.minimum(boxes_array[:, 2], box[2])
+        iymax = np.minimum(boxes_array[:, 3], box[3])
+        iw = np.maximum(ixmax - ixmin + 1., 0.)
+        ih = np.maximum(iymax - iymin + 1., 0.)
+        inters = iw * ih
+
+        uni = ((box[2] - box[0] + 1.) * (box[3] - box[1] + 1.) + (boxes_array[:, 2] -
+                                                                  boxes_array[:, 0] + 1.) * (boxes_array[:, 3] - boxes_array[:, 1] + 1.) - inters)
+
+        overlaps = inters / uni
+        try:
+            if type(overlaps) == torch.Tensor:
+                overlaps = overlaps.numpy()
+
+            ovmax = np.max(overlaps)
+        except:
+            pdb.set_trace()
+
+        det_overlaps[b_i] = ovmax
+    # jmax = np.argmax(overlaps)
+    return det_overlaps
 
 
 def get_all_xml_files_from_dir(dir_path):
@@ -95,6 +134,70 @@ def get_xml_from_file(file_path, xml_dir):
         raise Exception
     stats = sorted(stats.items(), key=lambda t: t[0])
     return stats
+
+def get_overlaps_with_xml_from_file(file_path, xml_dir):
+    """get_xml_from_file
+
+    :param file_path: train.txt
+    :param xml_dir: Annotation dir
+    """
+    overlaps = []
+    with open(file_path) as f:
+        all_xml_name = [x.strip()+".xml" for x in f.readlines()]
+    try:
+        for x_f in all_xml_name:
+            objs = parse_rec(os.path.join(xml_dir, x_f))
+            boxes = []
+            for obj in objs:
+                bbox = obj['bbox']
+                boxes.append(bbox)
+
+            boxes = np.array(boxes)
+            for obj in objs:
+                bbox = obj['bbox']
+                exbox = []
+                # exlude the bbox itself in boxes
+                for bb in boxes:
+                    if (bbox == bb).all():
+                        continue
+                    exbox.append(bb)
+                exbox = np.array(exbox)
+                ov = cal_overlap(exbox , [bbox])
+                overlaps.append(ov[0])
+
+    except Exception:
+        print("--------------")
+        print(os.path.join(xml_dir, x_f))
+        raise Exception
+    return overlaps
+
+def get_sizes_with_xml_from_file(file_path, xml_dir):
+    """get_xml_from_file
+
+    :param file_path: train.txt
+    :param xml_dir: Annotation dir
+    """
+    sizes = []
+    with open(file_path) as f:
+        all_xml_name = [x.strip()+".xml" for x in f.readlines()]
+    try:
+        for x_f in all_xml_name:
+            objs = parse_rec(os.path.join(xml_dir, x_f))
+            for obj in objs:
+                bbox = obj['bbox']
+                width = obj['width']
+                height = obj['height']
+                long_edge = max(width, height)
+                #sclaed = long_edge / 800
+                size = (bbox[2] - bbox[0]) * (bbox[3] - bbox[1])
+                size = size / int(width) / int(height)
+                sizes.append(size)
+
+    except Exception:
+        print("--------------")
+        print(os.path.join(xml_dir, x_f))
+        raise Exception
+    return sizes
 
 
 def printdict(d):
@@ -225,9 +328,9 @@ def statistic_all():
 
     for ct in canttens:
         # construct imagesets
-        imagesets = ['trainval']#, 'train', 'val', 'inner']
+        imagesets = ['trainval']  # , 'train', 'val', 'inner']
         imagesets_mt = []
-        for N in [0]:#, 10, 30, 50, 100]:
+        for N in [0]:  # , 10, 30, 50, 100]:
             if N == 0:
                 imagesets_mt += [x for x in imagesets]
             else:
@@ -239,20 +342,31 @@ def statistic_all():
             if "inner" in img_set and ct not in ["Arts", "YIH", "UTown", "Science", "TechChicken", "TechMixedVeg"]:
                 continue
             print("ct:{}, img_set:{}".format(ct, img_set))
-            get_statis(food_dataset_root, ct, img_set, "{}_{}".format(ct, img_set))
+            get_statis(food_dataset_root, ct, img_set,
+                       "{}_{}".format(ct, img_set))
 
 
 def main():
     """main"""
-    #statistic_all()
+    # statistic_all()
 
+    all_set = "/home/d/denglixi/faster-rcnn.pytorch/data/Food/Food_All/ImageSets/trainval.txt"
+    all_xml_dir = "/home/d/denglixi/faster-rcnn.pytorch/data/Food/Food_All/Annotations"
+
+    all_set = "/home/d/denglixi/faster-rcnn.pytorch/data/VOCdevkit/VOC2007/ImageSets/Main/trainval.txt"
+    all_xml_dir = "/home/d/denglixi/faster-rcnn.pytorch/data/VOCdevkit/VOC2007/Annotations/"
+    sizes = get_overlaps_with_xml_from_file(all_set, all_xml_dir)
+    with open('sizes.txt', 'w') as f:
+        for size in sizes:
+            f.write(str(size) + '\n')
+
+    exit()
     food_dataset_root = "/home/d/denglixi/faster-rcnn.pytorch/data/Food/"
-    for ct in [ 'YIH', 'Arts', 'Science', 'UTown',
-            'TechChicken', 'TechMixedVeg']:
-       for sp in ['innermt10val', 'innermt10test']:
-           get_statis(food_dataset_root, ct, sp, 'excl'+ct+'_trainmt10')
+    for ct in ['YIH', 'Arts', 'Science', 'UTown',
+               'TechChicken', 'TechMixedVeg']:
+        for sp in ['innermt10val', 'innermt10test']:
+            get_statis(food_dataset_root, ct, sp, 'excl'+ct+'_trainmt10')
     #get_statis(food_dataset_root, 'YIH', 'innerfew1mt10train', 'trainmt10')
-
     # get_statis(food_dataset_root, 'YIH', 'innerfew5mt10train', 'exclYIH_trainmt10')
     # get_statis(food_dataset_root, 'Arts', 'innerfew1mt10val', 'exclArts_trainmt10')
     # get_statis(food_dataset_root, 'exclArts', 'trainmt10', 'Arts_inner')

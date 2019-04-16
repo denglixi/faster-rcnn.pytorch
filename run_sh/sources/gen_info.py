@@ -43,6 +43,8 @@ from datasets.id2name import id2chn, id2eng
 from datasets.voc_eval import get_gt_recs
 from datasets.sub2main import sub2main_dict
 
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+
 try:
     xrange          # Python 2
 except NameError:
@@ -309,20 +311,19 @@ def pred_boxes_regression(boxes, bbox_pred, scores, classes, cfg, args):
 if __name__ == '__main__':
 
     cfg.TRAIN.USE_FLIPPED = False
+    np.random.seed(cfg.RNG_SEED)
     imdbval_name = 'food_All_trainval_All_train'
     imdb, roidb, ratio_list, ratio_index = combined_roidb(
         imdbval_name, False)
     imdb.competition_mode(on=True)
-    import pdb
-    pdb.set_trace()
     num_images = len(imdb.image_index)
 
     dataset = roibatchLoader(roidb, ratio_list, ratio_index, 1,
                              imdb.num_classes, training=False, normalize=False)
-    dataloader = torch.utils.data.DataLoader(dataset, batch_size=1,
-                                             shuffle=False, num_workers=5,
-                                             pin_memory=True)
-    data_iter = iter(dataloader)
+    #dataloader = torch.utils.data.DataLoader(dataset, batch_size=1,
+    #                                         shuffle=False, num_workers=0,
+    #                                         pin_memory=True)
+    #data_iter = iter(dataloader)
     # size, overlap,
     sizes = []
     overlaps = []
@@ -330,7 +331,12 @@ if __name__ == '__main__':
         if img_index % 100 == 99:
             print(img_index)
 
-        data = next(data_iter)
+        if img_index == 3:
+            break
+
+        #data = next(data_iter)
+        data = dataset[img_index]
+
         im_data = data[0]
         im_info = data[1]
         gt_boxes = data[2]
@@ -338,5 +344,9 @@ if __name__ == '__main__':
         for gt in gt_boxes:
             size = (gt[3] - gt[1]) * (gt[2] - gt[0])
             sizes.append(size)
-            overlaps.append(cal_overlap(gt_boxes, [gt]))
+            #overlaps.append(cal_overlap(gt_boxes, [gt]))
+    import pdb
     pdb.set_trace()
+    with open('size.txt', 'w') as f:
+        for size in sizes:
+            f.write(size + '\n')

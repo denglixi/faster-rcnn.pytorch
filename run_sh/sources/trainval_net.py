@@ -236,6 +236,9 @@ def get_data2imdb_dict():
     data2imdb_dict['schoollunch'] = 'schoollunch_train'
     return data2imdb_dict
 
+    # 5.voc
+    data2imdb_dict[''] = 'voc'
+
 
 def set_imdb_name(args):
     data2imdb_dict = get_data2imdb_dict()
@@ -258,42 +261,6 @@ if __name__ == '__main__':
 
     print('Called with args:')
     print(args)
-
-    # elif args.dataset == "foodAllmt50":
-    #    args.imdb_name = "food_All_trainmt50_All_train_mt50"
-    #    args.imdbval_name = "food_All_val_All_train"
-    #    args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-    #                     'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    # elif args.dataset == "foodAllmt100":
-    #    args.imdb_name = "food_All_trainmt100_All_train_mt100"
-    #    args.imdbval_name = "food_All_val_All_train"
-    #    args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-    #                     'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    # elif args.dataset == "foodexclYIHmt10":
-    #    args.imdb_name = "food_exclYIH_trainmt10_exclYIH_train_mt10"
-    #    args.imdbval_name = "food_All_val_All_train"
-    #    args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-    #                     'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    # elif args.dataset == "foodexclUTownmt10":
-    #    args.imdb_name = "food_exclUTown_trainmt10_exclUTown_train_mt10"
-    #    args.imdbval_name = "food_All_val_All_train"
-    #    args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-    #                     'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    # elif args.dataset == "foodexclYIH_fineYIH":
-    #    args.imdb_name = "food_YIH_innerfew1mt10train_exclYIH_train_mt10"
-    #    args.imdbval_name = "food_All_val_All_train"
-    #    args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-    #                     'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
-
-    # elif args.dataset == "foodexclYIH_fineYIHfew5":
-    #    args.imdb_name = "food_YIH_innerfew5mt10train_exclYIH_train_mt10"
-    #    args.imdbval_name = "food_All_val_All_train"
-    #    args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]',
-    #                     'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
 
     args = set_imdb_name(args)
 

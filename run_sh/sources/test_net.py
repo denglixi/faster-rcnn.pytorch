@@ -212,7 +212,7 @@ def get_data2imdbval_dict(imgset):
                 data2imdbval_dict[dataset] = imdbval_name
 
     # 4. extra
-    data2imdbval_dict['schoollunch'] = 'schoollunch_val'
+    data2imdbval_dict['schoollunch'] = 'schoollunch_{}'.format(args.imgset)
     return data2imdbval_dict
 
 
@@ -663,7 +663,7 @@ if __name__ == '__main__':
             recall_imgs, accuracy_imgs, threshold_for_img))
 
     # topk recall
-    if True:
+    if False:
 
         for topk in range(1, 6):
             recall, precision = imdb.evaluate_rec_pre_for_image_topk(
@@ -682,7 +682,7 @@ if __name__ == '__main__':
         topk_alarm15 = imdb.evalute_topk_falsealarm(all_boxes, 15)
     # print(topk_false_alarm)
 
-    test_cls_loc = True
+    test_cls_loc = False
     if test_cls_loc:
         # get loc cls results
         threshold = 0.5
@@ -767,7 +767,7 @@ if __name__ == '__main__':
         args.imgset,
         "_".join(args.imdbval_name.split('_')[1:3]),
         args.checksession)
-    co_matrix_cls_f = "./tools/co/matrix_name_sl.txt"
+    co_matrix_cls_f = "../tools/co/matrix_name_sl.txt"
 
     if not os.path.exists(CRF_results_save_dir):
         os.makedirs(CRF_results_save_dir)
@@ -783,6 +783,7 @@ if __name__ == '__main__':
     gt_f = open(os.path.join(CRF_results_save_dir,
                              'gt_{}.txt'.format(args.imgset)), 'w')
 
+    num_images = len(imdb.image_index)
     for i in range(num_images):
         det_result = np.zeros(len(co_matrix_cls))
         gt_result = np.zeros(len(co_matrix_cls))

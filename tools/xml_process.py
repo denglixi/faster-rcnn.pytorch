@@ -24,6 +24,9 @@ def parse_rec(filename):
         obj_struct['pose'] = obj.find('pose').text
         obj_struct['truncated'] = int(obj.find('truncated').text)
         obj_struct['difficult'] = int(obj.find('difficult').text)
+        obj_struct['height'] = int(tree.find('size').find('height').text)
+        obj_struct['width'] = int(tree.find('size').find('width').text)
+
         bbox = obj.find('bndbox')
         obj_struct['bbox'] = [int(bbox.find('xmin').text),
                               int(bbox.find('ymin').text),

@@ -218,5 +218,14 @@ statistics
 #pyenv-
 .python-version
 case_study
-crf_result
 tools/co
+clear
+run_sh/models
+run_sh/crf_result
+run_sh/output
+run_sh/images
+run_sh/logs
+run_sh/Experiments
+run_sh/savevis
+run_sh/test_result
+run_sh/statistics
