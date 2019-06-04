@@ -132,7 +132,7 @@ def filter_clo(reserver_class):
     return filter_xml1
 
 
-def create_inner_imageset(ct, N):
+def create_inner_imageset(ct, excl_train_mtN):
     '''
     inner is the inner set between train of excl{dataset} and trainval of {dataset}
     '''
@@ -140,10 +140,11 @@ def create_inner_imageset(ct, N):
     imgsets_path = "../data/Food/Food_{}/ImageSets".format(ct)
     anno_path = "../data/Food/Food_{}/Annotations".format(ct)
 
-    if N == 0:
+    if excl_train_mtN == 0:
         excl_class = get_categories("excl"+ct+"_train")
     else:
-        excl_class = get_categories("excl"+ct+"_trainmt{}".format(N))
+        excl_class = get_categories(
+            "excl"+ct+"_trainmt{}".format(excl_train_mtN))
     # 3种方法实现通过回调函数，对xml进行筛选
     # 1. save extra info of callback with class
 
@@ -153,12 +154,13 @@ def create_inner_imageset(ct, N):
     filter_xmls = fx.reserver_xmls
 
     # 保存筛选信息
-    print("saving inner mt {} sets:{}".format(N, len(filter_xmls)))
+    print("saving inner mt {} sets:{}".format(
+        excl_train_mtN, len(filter_xmls)))
     print(imgsets_path)
-    if N == 0:
+    if excl_train_mtN == 0:
         saving_file = "inner.txt"
     else:
-        saving_file = "innermt{}.txt".format(N)
+        saving_file = "innermt{}.txt".format(excl_train_mtN)
     with open(os.path.join(imgsets_path, saving_file), 'w') as f:
         for i in filter_xmls:
             x_name = os.path.split(i)[1]
@@ -278,8 +280,9 @@ def create_half_val_test_imagesets(canteen, val_content, test_content, imageset)
         f.writelines(val_content)
 
     print("saving test sets:{}".format(len(test_content)))
-    with open(os.path.join(imgsets_path, imageset +  "test.txt"), 'w') as f:
+    with open(os.path.join(imgsets_path, imageset + "test.txt"), 'w') as f:
         f.writelines(test_content)
+
 
 def create_train_and_val_imagesets(canteen, train_content, val_content, test_content):
     """create_train_and_val_imagesets
@@ -307,6 +310,7 @@ def create_train_and_val_imagesets(canteen, train_content, val_content, test_con
     print("saving test sets:{}".format(len(test_content)))
     with open(os.path.join(imgsets_path, "test.txt"), 'w') as f:
         f.writelines(test_content)
+
 
 def split_dishes2val_test(dishes):
     """splist_dishes2train_val
@@ -379,6 +383,7 @@ def create_mtN_imageset_economic(canteen, imgset, N: int):
         with open(os.path.join(imgsets_path, "{}mt{}.txt".format(imgset, N)), 'w') as f:
             f.writelines(content)
 
+
 def create_mtN_imageset(canteen, imgset, N: int):
     """create_mtN_imageset
 
@@ -438,20 +443,21 @@ def create_all_canteen_train_and_val_imageset():
 
     for ct in canteen:
         dishes_of_ct = create_dishes(ct)
-        train_content, val_content, test_content = split_dishes2train_val_test(dishes_of_ct)
-        create_train_and_val_imagesets(ct, train_content, val_content, test_content)
+        train_content, val_content, test_content = split_dishes2train_val_test(
+            dishes_of_ct)
+        create_train_and_val_imagesets(
+            ct, train_content, val_content, test_content)
+
 
 def create_origin_canteen_half_val_test_imagesets():
     canteen = ['Arts', 'Science', 'TechMixedVeg',
                'TechChicken', 'UTown', 'YIH']
 
-    imageset = 'innermt10'  #decide on which dataset the spliting based
+    imageset = 'innermt10'  # decide on which dataset the spliting based
     for ct in canteen:
         dishes_of_ct = create_dishes(ct, imageset)
         val_content, test_content = split_dishes2val_test(dishes_of_ct)
         create_half_val_test_imagesets(ct, val_content, test_content, imageset)
-
-
 
 
 def create_all_canteen_mtN_train_and_val_imageset(N):
@@ -476,14 +482,14 @@ def create_all_few_inner():
                     ct, 'innermt{}'.format(mtN), mtN, fewN)
 
 
+
 if __name__ == '__main__':
+    """create_collectedct_cd_train_val"""
     #dishes_of_ct = create_dishes("EconomicBeeHoon")
 
     #train_content, val_content = split_dishes2train_val(dishes_of_ct)
     #create_train_and_val_imagesets("EconomicBeeHoon", train_content, val_content)
-    #exit()
-
-
+    # exit()
 
     create_origin_canteen_half_val_test_imagesets()
     exit()

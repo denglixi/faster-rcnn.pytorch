@@ -21,7 +21,7 @@ NET=foodres50 #{foodres50, res101, vgg16}
 
 WEB_NUM=-1
 
-CUDA_VISIBLE_DEVICES=$GPU_ID python demo.py --net $NET \
+CUDA_VISIBLE_DEVICES=$GPU_ID python sources/demo.py --net $NET \
                --cfg $CFG_FILE \
                --dataset $DATASET \
                --image_dir $IMAGEDIR \

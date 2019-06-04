@@ -198,9 +198,10 @@ def get_data2imdbval_dict(imgset):
                     imdbval_name = "food_{}_inner{}{}_excl{}_train_mt{}".format(
                         ct, mtN_str, imgset, ct, mtN)  # innermt10val or innermt10test
                 else:
-                    imdbval_name = "food_{}_inner{}{}val_excl{}_train_mt{}".format(
-                            ct, fewN_str, mtN_str, ct, mtN) # it not working anymore . it is like innerfew1mt10val: TODO spliting to val and test
+                    imdbval_name = "food_{}_inner{}{}{}_excl{}_train_mt{}".format(
+                            ct, fewN_str, mtN_str, imgset, ct, mtN) # it not working anymore . it is like innerfew1mt10val: TODO spliting to val and test
                 data2imdbval_dict[dataset] = imdbval_name
+
     # 3. create exclcanteen_finecanteenfewN -> canteenfewN
     for ct in collected_cts:
         for mtN in [10]:
@@ -682,7 +683,7 @@ if __name__ == '__main__':
         topk_alarm15 = imdb.evalute_topk_falsealarm(all_boxes, 15)
     # print(topk_false_alarm)
 
-    test_cls_loc = False
+    test_cls_loc = True
     if test_cls_loc:
         # get loc cls results
         threshold = 0.5
@@ -690,7 +691,7 @@ if __name__ == '__main__':
             all_boxes, threshold)
 
         # get MAP results
-        cls_ap_zip, dataset_map = imdb.evaluate_detections(
+        cls_ap_zip, dataset_mAP= imdb.evaluate_detections(
             all_boxes, output_dir)
         cls_ap = list(cls_ap_zip)
 
@@ -747,6 +748,7 @@ if __name__ == '__main__':
                             f.write(str(cls) + '\n')
                         else:
                             f.write(str(cls) + '\t' + str(ap) + '\n')
+                            print(cls, ap)
                             map_exist_cls.append(ap)
                 map_exist_cls = sum(map_exist_cls) / len(map_exist_cls)
                 print("exist {} :{}".format(metrics, map_exist_cls))
@@ -762,6 +764,7 @@ if __name__ == '__main__':
     ##########################
     # write result for CRF   #
     ##########################
+    exit()
     CRF_results_save_dir = "crf_result/model_{}/{}_{}/session_{}".format(
         model_name,
         args.imgset,

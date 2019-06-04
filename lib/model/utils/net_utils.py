@@ -54,7 +54,7 @@ def clip_gradient(model, clip_norm):
             p.grad.mul_(norm)
 
 
-def vis_detections(im, class_name, dets, thresh=0.1, color=(233, 174, 61)):
+def vis_detections(im, class_name, dets, thresh=0.1, color=(233, 174, 61),is_show_text=True):
     # color  BGR
     """Visual debugging of detections."""
     for i in range(np.minimum(10, dets.shape[0])):
@@ -66,9 +66,10 @@ def vis_detections(im, class_name, dets, thresh=0.1, color=(233, 174, 61)):
             textColor = (color[2], color[1], color[0])
             im = cv2ImgAddText(im, class_name + ":" + "{:.2f}".format(score),
                                bbox[0], bbox[1] + 20, textColor=textColor)
-            # cv2.putText(im, '%s: %.3f' %
-            #            (class_name, score), (bbox[0], bbox[1] +
-            # 15), cv2.FONT_HERSHEY_PLAIN, 1.0, (0, 0, 255), thickness=1)
+            if is_show_text:
+                cv2.putText(im, '%s: %.3f' %
+                           (class_name, score), (bbox[0], bbox[1] +
+                15), cv2.FONT_HERSHEY_PLAIN, 1.0, (0, 0, 255), thickness=1)
     return im
 
 

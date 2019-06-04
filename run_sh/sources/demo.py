@@ -49,7 +49,7 @@ beehoonid2name = {'1': 'bee hoon', '2': 'fried noodles', '3': 'kway teow', '4': 
                   '41': 'hotdog/taiwan sausage', '42': 'seaweed chicken', '43': 'chicken nugget', '44': 'fried chicken / chicken wings', '441': 'fried chicken chopped up', '45': 'fried chicken cutlet (not ground meat)', '55': 'curry mixed veg', '551': 'curry chicken and potato', '61': 'ikan bilis', '62': 'chilli paste', '63': 'green chilli', '64': 'peanut', '65': 'Sweet Sauce', '66': 'red chilli chopped', '71': 'deep fried fish', '91': 'Butter cereal chicken', '92': 'fried wanton/ dumpling', '93':
                   'Vegetarian meat', '94': 'Fried onions', '95': 'Crabstick'}
 
-id2chn = beehoonid2name
+#id2chn = beehoonid2name
 
 def parse_rec(filename):
     """ Parse a PASCAL VOC xml file """
@@ -196,7 +196,8 @@ if __name__ == '__main__':
     load_name = os.path.join(input_dir,
                              'faster_rcnn_{}_{}_{}.pth'.format(args.checksession, args.checkepoch, args.checkpoint))
 
-    pascal_classes = np.asarray(get_categories("EconomicBeeHoon_train"))
+    #pascal_classes = np.asarray(get_categories("EconomicBeeHoon_train"))
+    pascal_classes = get_categories('All_train_mt10')
 
     # initilize the network here.
     if args.net == 'vgg16':
@@ -393,7 +394,7 @@ if __name__ == '__main__':
                 cls_dets = cls_dets[keep.view(-1).long()]
                 if vis:
                     im2show = vis_detections(
-                        im2show, id2chn[pascal_classes[j]], cls_dets.cpu().numpy(), 0.5)
+                        im2show, id2eng[pascal_classes[j]], cls_dets.cpu().numpy(), 0.5)
 
         misc_toc = time.time()
         nms_time = misc_toc - misc_tic
