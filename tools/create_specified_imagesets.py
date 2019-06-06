@@ -168,6 +168,51 @@ def create_inner_imageset(ct, excl_train_mtN):
             f.write(x_name + '\n')
 
 
+def create_few_inner_for_cross_domain(ct, imgset, mtN, fewN):
+    """select_few_inner_for_train
+    Selecting few shot training samples and from the val of canteen
+
+    :param ct:
+    :param mtN: N of mt which means the number of training sample is more than N
+    :param fewN: the number of selected sample for each categories
+    """
+    print("------processing {}-selecting few inner--------".format(ct))
+    imgsets_path = "../data/Food/Food_{}/ImageSets".format(ct)
+    anno_path = "../data/Food/Food_{}/Annotations".format(ct)
+    imset_path = os.path.join(imgsets_path, imgset+'.txt')
+
+    if mtN == 0:
+        excl_classes = get_categories("excl"+ct+"_train")
+    else:
+        excl_classes = get_categories("excl"+ct+"_trainmt{}".format(mtN))
+
+    cls_sample_count = {}
+    for ex_cls in excl_classes[1:]:
+        cls_sample_count[ex_cls] = 0
+
+    few_filter = Xml_in_few_sample_filter(cls_sample_count, fewN)
+    dishes = create_dishes(ct, 'innermt10val')
+    process_xml_from_file(imset_path, anno_path,
+                          few_filter.process)
+
+    # 保存筛选信息
+
+    def saving_file(xmls, imgset):
+        print("saving inner few{} mt {} {} sets:{}".format(
+            fewN, mtN, imgset, len(xmls)))
+
+        if mtN == 0:
+            saving_file = "innermt10valfew{}{}.txt".format(fewN, imgset)
+        else:
+            saving_file = "innermt10valfew{}mt{}{}.txt".format(fewN, mtN, imgset)
+        with open(os.path.join(imgsets_path, saving_file), 'w') as f:
+            for x_name in xmls:
+                f.write(x_name + '\n')
+
+    few_filter.clean_discard_by_dishes(dishes)
+    saving_file(few_filter.reserver_xmls, 'train')
+    saving_file(few_filter.discard_xmls, 'val')
+
 def create_few_inner_for_train_val(ct, imgset, mtN, fewN):
     """select_few_inner_for_train
 
@@ -481,6 +526,14 @@ def create_all_few_inner():
                 create_few_inner_for_train_val(
                     ct, 'innermt{}'.format(mtN), mtN, fewN)
 
+def create_all_few_inner_cross_domain():
+    canteens = ['Arts', 'Science', 'TechMixedVeg',
+                'TechChicken', 'UTown', 'YIH']
+    for ct in canteens:
+        for mtN in [10]:
+            for fewN in [1, 5]:
+                create_few_inner_for_cross_domain(
+                    ct, 'innermt{}'.format(mtN), mtN, fewN)
 
 
 if __name__ == '__main__':
@@ -491,7 +544,7 @@ if __name__ == '__main__':
     #create_train_and_val_imagesets("EconomicBeeHoon", train_content, val_content)
     # exit()
 
-    create_origin_canteen_half_val_test_imagesets()
+    create_all_few_inner_cross_domain()
     exit()
 
     create_all_canteen_train_and_val_imageset()
@@ -499,3 +552,5 @@ if __name__ == '__main__':
         create_all_canteen_mtN_train_and_val_imageset(N)
     create_inner_imagesets()
     create_all_few_inner()
+    create_origin_canteen_half_val_test_imagesets()
+    exit()
