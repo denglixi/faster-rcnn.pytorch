@@ -10,7 +10,7 @@
 
 """
 import os
-food_dataset_dir = "/home/dlx/Big/Codes/faster-rcnn.pytorch/data/Food/"
+food_dataset_dir = "/storage/lxdeng/Data/Food/"
 
 canteens = ['Arts', 'Science', 'TechChicken', 'TechMixedVeg', 'UTown', 'YIH']
 
@@ -18,7 +18,6 @@ canteens = ['Arts', 'Science', 'TechChicken', 'TechMixedVeg', 'UTown', 'YIH']
 def create_dir(path):
     if not os.path.exists(path):
         os.makedirs(path)
-
 
 
 def create_excl_ct__softlink():
@@ -29,7 +28,8 @@ def create_excl_ct__softlink():
         print("canteens: exclude ", exclude_ct)
         # create
         if exclude_ct == 'All':
-            exclude_food_root = os.path.join(food_dataset_dir, 'Food_'+exclude_ct)
+            exclude_food_root = os.path.join(
+                food_dataset_dir, 'Food_'+exclude_ct)
         else:
             exclude_food_root = os.path.join(
                 food_dataset_dir, 'Food_excl'+exclude_ct)
@@ -54,7 +54,8 @@ def create_excl_ct__softlink():
             # 处理空格
             # create soft link for mixed datset
             for f in os.listdir(ct_Anno_dir):
-                os.symlink(ct_Anno_dir+'/' + f, exclude_food_Anno_dir + '/' + f)
+                os.symlink(ct_Anno_dir+'/' + f,
+                           exclude_food_Anno_dir + '/' + f)
             for f in os.listdir(ct_JPEG_dir):
                 os.symlink(ct_JPEG_dir+'/' + f, exclude_food_JPEG_dir+'/' + f)
             # trainval.txt
@@ -89,5 +90,6 @@ def split_train_val(imgsets_path):
     trainval_content = []
     with open(trainval_file) as f:
         pass
+
 
 create_excl_ct__softlink()

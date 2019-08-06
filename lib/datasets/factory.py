@@ -18,6 +18,7 @@ from datasets.food import food
 from datasets.food_data import food_merge_imdb
 from datasets.school_lunch import school_lunch
 from datasets.food_meta_data import food_meta_imdb
+from datasets.minipro import minipro
 
 __sets = {}
 
@@ -112,6 +113,11 @@ for split in ['train', 'val', 'val1', 'val2', 'test']:
     data_path = 'data/imagenet/ILSVRC'
     __sets[name] = (lambda split=split, devkit_path=devkit_path,
                     data_path=data_path: imagenet(split, devkit_path, data_path))
+
+
+for split in ['train', 'val']:
+    __sets[name] = (lambda split=split,
+                    : minipro(split))
 
 
 def get_imdb(name):

@@ -239,6 +239,10 @@ def get_data2imdb_dict():
     # 5.voc
     data2imdb_dict[''] = 'voc'
 
+    # 6. minipro
+    data2imdb_dict['minipro_train'] = 'minipro_train'
+    data2imdb_dict['minipro_val'] = 'minipro_val'
+
 
 def set_imdb_name(args):
     data2imdb_dict = get_data2imdb_dict()
